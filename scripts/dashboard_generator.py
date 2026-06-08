@@ -248,7 +248,7 @@ body {{ font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-seri
 .card .lbl {{ font-size:11px; color:#94a3b8; margin-top:4px; text-transform:uppercase; letter-spacing:0.5px; }}
 .chart-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }}
 .chart-full {{ grid-column:1/-1; }}
-.chart-box {{ background:#1e293b; border:1px solid #334155; border-radius:10px; padding:12px; }}
+.chart-box {{ background:#1e293b; border:1px solid #334155; border-radius:10px; padding:12px; height:350px; }}
 .chart-box h3 {{ font-size:14px; font-weight:600; margin-bottom:8px; color:#cbd5e1; }}
 table {{ width:100%; border-collapse:collapse; font-size:13px; }}
 th {{ background:#334155; color:#94a3b8; text-align:left; padding:8px 10px; font-weight:600; text-transform:uppercase; font-size:11px; letter-spacing:0.5px; }}
@@ -316,7 +316,7 @@ Plotly.plot('chart-equity', [{{
   font:{{color:'#94a3b8',size:11}},
   xaxis:{{gridcolor:'#334155'}}, yaxis:{{gridcolor:'#334155',title:'EUR'}},
   margin:{{l:50,r:20,t:10,b:30}}, legend:{{orientation:'h',y:1.1}},
-  hovermode:'x unified'
+  hovermode:'x unified', height:320
 }});
 
 if(assetData.length){{
@@ -327,7 +327,7 @@ if(assetData.length){{
     hovertemplate:'%{{label}}<br>%{{value:.2f}} EUR<extra></extra>'
   }}], {{
     paper_bgcolor:'#1e293b', font:{{color:'#94a3b8',size:11}},
-    margin:{{l:0,r:0,t:0,b:0}}
+    margin:{{l:0,r:0,t:0,b:0}}, height:320
   }});
 }}
 
@@ -340,7 +340,7 @@ if(sectorData.length){{
     paper_bgcolor:'#1e293b', plot_bgcolor:'#1e293b',
     font:{{color:'#94a3b8',size:11}},
     xaxis:{{gridcolor:'#334155'}}, yaxis:{{gridcolor:'#334155',title:'EUR'}},
-    margin:{{l:50,r:20,t:10,b:40}}
+    margin:{{l:50,r:20,t:10,b:40}}, height:320
   }});
 }}
 
@@ -356,7 +356,7 @@ Plotly.plot('chart-drawdown',[{{
   paper_bgcolor:'#1e293b', plot_bgcolor:'#1e293b',
   font:{{color:'#94a3b8',size:11}},
   xaxis:{{gridcolor:'#334155'}}, yaxis:{{gridcolor:'#334155',title:'%',range:[-50,5]}},
-  margin:{{l:50,r:20,t:10,b:30}}
+  margin:{{l:50,r:20,t:10,b:30}}, height:320
 }});
 
 const dailyRets = {json.dumps(metrics.get("daily_rets", []))};
@@ -370,7 +370,7 @@ if(dailyRets.length){{
     font:{{color:'#94a3b8',size:11}},
     xaxis:{{gridcolor:'#334155',title:'Return %'}},
     yaxis:{{gridcolor:'#334155',title:'Freq'}},
-    margin:{{l:50,r:20,t:10,b:40}}
+    margin:{{l:50,r:20,t:10,b:40}}, height:320
   }});
 }}
 
@@ -386,7 +386,7 @@ if(pnlData.length){{
     font:{{color:'#94a3b8',size:11}},
     xaxis:{{gridcolor:'#334155',title:'PnL EUR'}},
     yaxis:{{gridcolor:'#334155'}},
-    margin:{{l:60,r:20,t:10,b:40}}
+    margin:{{l:60,r:20,t:10,b:40}}, height:320
   }});
 }}
 </script>
