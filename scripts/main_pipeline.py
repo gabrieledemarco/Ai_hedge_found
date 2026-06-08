@@ -290,6 +290,24 @@ def run_pipeline(session_label: str) -> None:
     else:
         print("  Nessuna transazione.")
     print("")
+    print("--- POSIZIONI DETTAGLIO ---")
+    pos = portfolio.get("current_positions", {})
+    pos_sorted = sorted(pos.keys())
+    for ticker in pos_sorted:
+        entry = pos[ticker]
+        shares = entry["shares"]
+        avg = entry["avg_price"]
+        cur_local = prices.get(ticker) or avg
+        cur = convert_to_eur(cur_local, UNIVERSE[ticker]["currency"])
+        eq = shares * cur
+        cost = shares * avg
+        pnl_e = eq - cost
+        pnl_p = ((cur / avg) - 1) * 100 if avg > 0 else 0
+        s = "+" if pnl_e >= 0 else ""
+        print(
+            f"  {ticker}: {shares}x | avg {avg:.2f} | cur {cur:.2f} | eq {eq:.2f} | PnL {s}{pnl_e:.2f} ({s}{pnl_p:.2f}%)"
+        )
+    print("")
     print("--- REASONING ---")
     for line in reasoning_parts:
         print(f"  {line}")
