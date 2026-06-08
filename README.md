@@ -109,6 +109,24 @@ python scripts/main_pipeline.py --hour 21   # sera
 
 Dopo aver pushato la repository su GitHub, assicurati che **Actions** sia abilitato. Il workflow si attiverà automaticamente agli orari schedulati (UTC) dal lunedì al venerdì.
 
+### 5. Dashboard interattiva
+
+Ad ogni iterazione viene generata una **dashboard HTML professionale** in `docs/index.html` con:
+
+- **Metriche istituzionali**: Sharpe ratio, Max Drawdown, Calmar Ratio, Win Rate, Profit Factor
+- **Equity Curve** interattiva (Plotly) con overlay della cassa
+- **Asset Allocation** treemap
+- **Sector Exposure** a barre
+- **Drawdown chart**
+- **Distribuzione dei rendimenti giornalieri**
+- **PnL per singolo asset**
+- **Tabella posizioni** con PnL assoluto e percentuale
+- **Storico transazioni**
+
+Per visualizzarla:
+- **GitHub Pages**: vai su Settings → Pages → sorgente `docs/` → salva. Poi visita `https://<user>.github.io/<repo>/`
+- **Locale**: apri `docs/index.html` nel browser
+
 ---
 
 ## Universo dei ticker

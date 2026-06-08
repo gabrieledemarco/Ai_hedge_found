@@ -65,7 +65,7 @@ jobs:
         run: |
           git config user.name "Paper Trading Bot"
           git config user.email "bot@paper-trading.local"
-          git add data/portfolio_history.json
+          git add data/portfolio_history.json docs/index.html
           if git diff --cached --quiet; then
             echo "No changes to portfolio — skipping commit"
           else

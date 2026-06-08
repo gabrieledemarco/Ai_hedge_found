@@ -10,6 +10,7 @@ import yfinance as yf
 from portfolio_io import load_portfolio, log_iteration
 from telegram_utils import send_telegram_message, send_telegram_photo
 from chart_utils import generate_dashboard
+from dashboard_generator import build_html
 
 TIINGO_KEY = os.environ.get("TIINGO_API_KEY", "")
 AV_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "")
@@ -344,6 +345,17 @@ def run_pipeline(session_label: str) -> None:
         )
     except Exception as e:
         print(f"[WARN] Chart generation/send failed: {e}")
+
+    try:
+        html = build_html(portfolio)
+        docs_dir = os.path.join(os.path.dirname(__file__), "..", "docs")
+        os.makedirs(docs_dir, exist_ok=True)
+        html_path = os.path.join(docs_dir, "index.html")
+        with open(html_path, "w", encoding="utf-8") as f:
+            f.write(html)
+        print(f"[OK] Dashboard HTML saved: {html_path}")
+    except Exception as e:
+        print(f"[WARN] Dashboard HTML generation failed: {e}")
 
     print(f"[DONE] Session {session_label} completed. Total: {total_value_eur:.2f} EUR")
     return total_value_eur
