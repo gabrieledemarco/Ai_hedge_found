@@ -96,10 +96,30 @@ def calculate_targets(
     return {ticker: total_capital_eur * target_weight for ticker in UNIVERSE}
 
 
+def validate_env() -> bool:
+    checks = [
+        ("TIINGO_API_KEY", TIINGO_KEY, "Prezzi azionari (Tiingo)"),
+        ("ALPHA_VANTAGE_KEY", AV_KEY, "Tassi FX (Alpha Vantage)"),
+        ("TELEGRAM_TOKEN", os.environ.get("TELEGRAM_TOKEN", ""), "Bot Telegram"),
+        ("TELEGRAM_CHAT_ID", os.environ.get("TELEGRAM_CHAT_ID", ""), "Chat Telegram"),
+    ]
+    all_ok = True
+    for name, val, label in checks:
+        if not val:
+            print(f"[WARN] {name} non impostata — {label} userà dati di fallback")
+            all_ok = False
+    if not all_ok:
+        print(
+            "[WARN] Imposta i GitHub Secrets: Settings → Secrets and variables → Actions"
+        )
+    return all_ok
+
+
 def run_pipeline(session_label: str) -> None:
     print(
         f"=== Paper Trading Pipeline | Session: {session_label} | {datetime.now(timezone.utc).isoformat()} ==="
     )
+    validate_env()
     portfolio = load_portfolio()
     tickers = list(UNIVERSE.keys())
 
