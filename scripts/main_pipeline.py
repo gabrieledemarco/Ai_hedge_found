@@ -20,7 +20,7 @@ UNIVERSE = {
     "AMZN": {"exchange": "NASDAQ", "currency": "USD", "sector": "Consumer"},
     "TSLA": {"exchange": "NASDAQ", "currency": "USD", "sector": "Auto"},
     "JPM": {"exchange": "NYSE", "currency": "USD", "sector": "Financial"},
-    "BRK.B": {"exchange": "NYSE", "currency": "USD", "sector": "Financial"},
+    "NVDA": {"exchange": "NASDAQ", "currency": "USD", "sector": "Tech"},
     "JNJ": {"exchange": "NYSE", "currency": "USD", "sector": "Healthcare"},
     "V": {"exchange": "NYSE", "currency": "USD", "sector": "Financial"},
     "KO": {"exchange": "NYSE", "currency": "USD", "sector": "Consumer"},

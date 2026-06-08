@@ -97,7 +97,7 @@ export TELEGRAM_TOKEN=your_token
 export TELEGRAM_CHAT_ID=your_chat_id
 
 # Installa dipendenze
-pip install pandas requests
+pip install pandas requests yfinance
 
 # Esegui una sessione
 python scripts/main_pipeline.py --hour 7    # mattina
@@ -114,12 +114,12 @@ Dopo aver pushato la repository su GitHub, assicurati che **Actions** sia abilit
 ## Universo dei ticker
 
 ### NASDAQ
-AAPL, MSFT, GOOGL, AMZN, TSLA
+AAPL, MSFT, GOOGL, AMZN, TSLA, NVDA
 
 ### NYSE
-JPM, BRK.B, JNJ, V, KO
+JPM, JNJ, V, KO
 
-### FTSE
+### FTSE (London)
 ULVR.L, HSBA.L, BP.L, GSK.L, RIO.L
 
 ---
