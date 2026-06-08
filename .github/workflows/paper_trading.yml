@@ -65,5 +65,6 @@ jobs:
             echo "No changes to portfolio — skipping commit"
           else
             git commit -m "chore: portfolio update $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git pull --rebase origin main
             git push
           fi
