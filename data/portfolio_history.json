@@ -2,8 +2,99 @@
   "metadata": {
     "currency": "EUR",
     "initial_capital": 1000.0,
-    "current_cash": 1000.0
+    "current_cash": 29.76,
+    "price_source": "yfinance"
   },
-  "current_positions": {},
-  "iterations_log": []
+  "current_positions": {
+    "AAPL": {
+      "shares": 1,
+      "avg_price": 289.5884
+    },
+    "MSFT": {
+      "shares": 1,
+      "avg_price": 380.0382
+    },
+    "AMZN": {
+      "shares": 1,
+      "avg_price": 227.5252
+    },
+    "KO": {
+      "shares": 1,
+      "avg_price": 73.0855
+    }
+  },
+  "iterations_log": [
+    {
+      "timestamp": "2026-06-08T15:08:20.863251+00:00",
+      "session": "pomeriggio",
+      "total_value_eur": 1000.0,
+      "current_cash": 29.76,
+      "positions": {
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 289.5884
+        },
+        "MSFT": {
+          "shares": 1,
+          "avg_price": 380.0382
+        },
+        "AMZN": {
+          "shares": 1,
+          "avg_price": 227.5252
+        },
+        "KO": {
+          "shares": 1,
+          "avg_price": 73.0855
+        }
+      },
+      "prices_used": {
+        "AAPL": 314.77,
+        "MSFT": 413.085,
+        "GOOGL": 363.265,
+        "AMZN": 247.31,
+        "TSLA": 403.47,
+        "JPM": 313.62,
+        "NVDA": 208.72,
+        "JNJ": 232.58,
+        "V": 321.29,
+        "KO": 79.4408,
+        "ULVR.L": 4173.0,
+        "HSBA.L": 1371.0,
+        "BP.L": 547.2,
+        "GSK.L": 1906.0,
+        "RIO.L": 7594.0
+      },
+      "transactions": [
+        {
+          "action": "BUY",
+          "ticker": "AAPL",
+          "shares": 1,
+          "price_eur": 289.5884,
+          "total_cost_eur": 289.59
+        },
+        {
+          "action": "BUY",
+          "ticker": "MSFT",
+          "shares": 1,
+          "price_eur": 380.0382,
+          "total_cost_eur": 380.04
+        },
+        {
+          "action": "BUY",
+          "ticker": "AMZN",
+          "shares": 1,
+          "price_eur": 227.5252,
+          "total_cost_eur": 227.53
+        },
+        {
+          "action": "BUY",
+          "ticker": "KO",
+          "shares": 1,
+          "price_eur": 73.0855,
+          "total_cost_eur": 73.09
+        }
+      ],
+      "reasoning": "AAPL: BUY 1 @ 289.59€ (deviation 0.0667)\nMSFT: BUY 1 @ 380.04€ (deviation 0.0667)\nGOOGL: BUY skipped (1 share @ 334.20€ > cash 330.37€)\nAMZN: BUY 1 @ 227.53€ (deviation 0.0667)\nTSLA: BUY skipped (1 share @ 371.19€ > cash 102.85€)\nJPM: BUY skipped (1 share @ 288.53€ > cash 102.85€)\nNVDA: BUY skipped (1 share @ 180.84€ > cash 102.85€)\nJNJ: BUY skipped (1 share @ 213.97€ > cash 102.85€)\nV: BUY skipped (1 share @ 295.59€ > cash 102.85€)\nKO: BUY 1 @ 73.09€ (deviation 0.0667)\nULVR.L: BUY skipped (1 share @ 4882.41€ > cash 29.76€)\nHSBA.L: BUY skipped (1 share @ 1604.07€ > cash 29.76€)\nBP.L: BUY skipped (1 share @ 640.22€ > cash 29.76€)\nGSK.L: BUY skipped (1 share @ 2203.27€ > cash 29.76€)\nRIO.L: BUY skipped (1 share @ 8884.98€ > cash 29.76€)"
+    }
+  ]
 }
