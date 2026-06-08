@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: paper-trading-live
+    runtime: python
+    region: frankfurt
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn web.app:app --workers 1 --threads 2 --timeout 120
+    healthCheckPath: /health
+    envVars:
+      - key: TIINGO_API_KEY
+        sync: false
+      - key: ALPHA_VANTAGE_KEY
+        sync: false
