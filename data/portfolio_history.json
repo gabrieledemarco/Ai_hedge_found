@@ -2,7 +2,7 @@
   "metadata": {
     "currency": "EUR",
     "initial_capital": 1000.0,
-    "current_cash": 65.64
+    "current_cash": 3706.1
   },
   "current_positions": {
     "V": {
@@ -13,13 +13,13 @@
       "shares": 1,
       "avg_price": 92.0
     },
-    "ULVR.L": {
+    "BP.L": {
       "shares": 1,
-      "avg_price": 175.5
+      "avg_price": 640.224
     },
-    "HSBA.L": {
+    "GSK.L": {
       "shares": 1,
-      "avg_price": 175.5
+      "avg_price": 2205.0898
     }
   },
   "iterations_log": [
@@ -476,6 +476,78 @@
         }
       ],
       "reasoning": "AAPL: BUY skipped (1 share @ 282.75€ > cash 23.84€)\nMSFT: BUY skipped (1 share @ 92.00€ > cash 23.84€)\nGOOGL: BUY skipped (1 share @ 92.00€ > cash 23.84€)\nAMZN: SELL 1 @ 92.00€ (deviation 0.0865)\nTSLA: SELL 1 @ 92.00€ (deviation 0.0776)\nJPM: SELL 1 @ 92.00€ (deviation 0.0865)\nBRK.B: SELL 1 @ 86.65€ (deviation 0.0865)\nJNJ: SELL 1 @ 214.15€ (deviation 0.2899)\nV: BUY 1 @ 92.00€ (deviation 0.0667)\nKO: BUY 1 @ 92.00€ (deviation 0.0667)\nULVR.L: BUY 1 @ 175.50€ (deviation 0.0667)\nHSBA.L: BUY 1 @ 175.50€ (deviation 0.0667)\nBP.L: BUY skipped (1 share @ 175.50€ > cash 65.64€)\nGSK.L: BUY skipped (1 share @ 175.50€ > cash 65.64€)\nRIO.L: BUY skipped (1 share @ 175.50€ > cash 65.64€)"
+    },
+    {
+      "timestamp": "2026-06-08T14:52:07.108626+00:00",
+      "session": "sera",
+      "total_value_eur": 6944.86,
+      "current_cash": 3706.1,
+      "positions": {
+        "V": {
+          "shares": 1,
+          "avg_price": 92.0
+        },
+        "KO": {
+          "shares": 1,
+          "avg_price": 92.0
+        },
+        "BP.L": {
+          "shares": 1,
+          "avg_price": 640.224
+        },
+        "GSK.L": {
+          "shares": 1,
+          "avg_price": 2205.0898
+        }
+      },
+      "prices_used": {
+        "AAPL": 314.62,
+        "MSFT": 412.47,
+        "GOOGL": 362.79,
+        "AMZN": 246.525,
+        "TSLA": 403.44,
+        "JPM": 312.265,
+        "BRK.B": 100.0,
+        "JNJ": 232.04,
+        "V": 320.55,
+        "KO": 79.38,
+        "ULVR.L": 4175.0,
+        "HSBA.L": 1368.4,
+        "BP.L": 547.2,
+        "GSK.L": 1906.5,
+        "RIO.L": 7586.0
+      },
+      "transactions": [
+        {
+          "action": "SELL",
+          "ticker": "ULVR.L",
+          "shares": 1,
+          "price_eur": 4884.75,
+          "total_proceeds_eur": 4884.75
+        },
+        {
+          "action": "SELL",
+          "ticker": "HSBA.L",
+          "shares": 1,
+          "price_eur": 1601.028,
+          "total_proceeds_eur": 1601.03
+        },
+        {
+          "action": "BUY",
+          "ticker": "BP.L",
+          "shares": 1,
+          "price_eur": 640.224,
+          "total_cost_eur": 640.22
+        },
+        {
+          "action": "BUY",
+          "ticker": "GSK.L",
+          "shares": 1,
+          "price_eur": 2205.0898,
+          "total_cost_eur": 2205.09
+        }
+      ],
+      "reasoning": "AAPL: BUY skipped (1 share @ 289.45€ > cash 65.64€)\nMSFT: BUY skipped (1 share @ 379.47€ > cash 65.64€)\nGOOGL: BUY skipped (1 share @ 333.77€ > cash 65.64€)\nAMZN: BUY skipped (1 share @ 226.80€ > cash 65.64€)\nTSLA: BUY skipped (1 share @ 371.16€ > cash 65.64€)\nJPM: BUY skipped (1 share @ 270.60€ > cash 65.64€)\nBRK.B: BUY skipped (1 share @ 92.00€ > cash 65.64€)\nJNJ: BUY skipped (1 share @ 213.48€ > cash 65.64€)\nV: HOLD (deviation 0.0240 < 0.05)\nKO: BUY skipped (1 share @ 73.03€ > cash 65.64€)\nULVR.L: SELL 1 @ 4884.75€ (deviation 0.6393)\nHSBA.L: SELL 1 @ 1601.03€ (deviation 0.1647)\nBP.L: BUY 1 @ 640.22€ (deviation 0.0667)\nGSK.L: BUY 1 @ 2205.09€ (deviation 0.0667)\nRIO.L: BUY skipped (1 share @ 8875.62€ > cash 3706.10€)"
     }
   ]
 }
