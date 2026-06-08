@@ -327,37 +327,44 @@ def build_telegram_report(
     reasoning: list[str],
     portfolio: dict,
 ) -> str:
+    pos_count = len(portfolio["current_positions"])
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     lines = [
-        f"<b>Paper Trading Report \u2014 {h(session.upper())}</b>",
-        f"Portfolio: {h(f'{total_eur:.2f}')} EUR",
-        f"Cash: {h(f'{cash_eur:.2f}')} EUR",
-        f"Positions: {h(str(len(portfolio['current_positions'])))}",
+        "<b>Paper Trading Report \u2014 {}</b>".format(h(session.upper())),
+        "Portfolio: {} EUR".format(h("{:.2f}".format(total_eur))),
+        "Cash: {} EUR".format(h("{:.2f}".format(cash_eur))),
+        "Positions: {}".format(h(str(pos_count))),
         "",
     ]
     if transactions:
         lines.append("<b>Transazioni:</b>")
         for t in transactions:
             action = t["action"]
+            shares = h(str(t["shares"]))
+            ticker = h(t["ticker"])
+            price = h("{:.2f}".format(t["price_eur"]))
             if action == "BUY":
+                cost = h("{:.2f}".format(t["total_cost_eur"]))
                 lines.append(
-                    f"  {h(action)} {h(str(t['shares']))}x {h(t['ticker'])} @ {h(f'{t['price_eur']:.2f}')}\u20ac"
-                    f" = {h(f'{t['total_cost_eur']:.2f}')}\u20ac"
+                    "  {} {}x {} @ {}\u20ac = {}\u20ac".format(
+                        h(action), shares, ticker, price, cost
+                    )
                 )
             else:
+                proceeds = h("{:.2f}".format(t["total_proceeds_eur"]))
                 lines.append(
-                    f"  {h(action)} {h(str(t['shares']))}x {h(t['ticker'])} @ {h(f'{t['price_eur']:.2f}')}\u20ac"
-                    f" = +{h(f'{t['total_proceeds_eur']:.2f}')}\u20ac"
+                    "  {} {}x {} @ {}\u20ac = +{}\u20ac".format(
+                        h(action), shares, ticker, price, proceeds
+                    )
                 )
     else:
         lines.append("<i>Nessuna transazione eseguita.</i>")
     lines.append("")
     lines.append("<b>Reasoning:</b>")
     for r in reasoning:
-        lines.append(f"  {h(r)}")
+        lines.append("  {}".format(h(r)))
     lines.append("")
-    lines.append(
-        f"<i>Aggiornato: {h(datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC'))}</i>"
-    )
+    lines.append("<i>Aggiornato: {}</i>".format(h(timestamp)))
     return "\n".join(lines)
 
 
