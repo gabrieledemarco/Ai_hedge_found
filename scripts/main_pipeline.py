@@ -33,8 +33,9 @@ UNIVERSE = {
 }
 
 
-def fetch_prices(tickers: list[str]) -> dict[str, float]:
+def fetch_prices(tickers: list[str]) -> tuple[dict[str, float], bool]:
     prices: dict[str, float] = {}
+    all_real = True
     for t in tickers:
         try:
             tk = yf.Ticker(t)
@@ -43,16 +44,18 @@ def fetch_prices(tickers: list[str]) -> dict[str, float]:
                 hist = tk.history(period="5d")
             if not hist.empty:
                 prices[t] = float(hist["Close"].iloc[-1])
-                print(f"  {t}: {prices[t]:.2f} {UNIVERSE[t]['currency']}")
+                print(f"  {t}: {prices[t]:.2f} {UNIVERSE[t]['currency']} (yfinance)")
             else:
                 fallback = 150.0 if t.endswith(".L") else 100.0
                 print(f"[WARN] yfinance: no data for {t}, fallback {fallback}")
                 prices[t] = fallback
+                all_real = False
         except Exception as e:
             fallback = 150.0 if t.endswith(".L") else 100.0
             print(f"[WARN] yfinance failed for {t}: {e}, fallback {fallback}")
             prices[t] = fallback
-    return prices
+            all_real = False
+    return prices, all_real
 
 
 def fetch_fx_rate(base: str, quote: str = "EUR") -> float:
@@ -118,7 +121,7 @@ def run_pipeline(session_label: str) -> None:
     portfolio = load_portfolio()
     tickers = list(UNIVERSE.keys())
 
-    prices = fetch_prices(tickers)
+    prices, all_prices_real = fetch_prices(tickers)
     fx_rates = {}
     currencies_used = set(info["currency"] for info in UNIVERSE.values())
     for c in currencies_used:
@@ -140,6 +143,24 @@ def run_pipeline(session_label: str) -> None:
     portfolio_value_eur += cash_eur
     print(f"  Portfolio total (incl. cash): {portfolio_value_eur:.2f} EUR")
     print(f"  Cash: {cash_eur:.2f} EUR")
+
+    if not all_prices_real:
+        msg = (
+            "ATTENZIONE: alcuni prezzi sono fallback (fonte yfinance non disponibile). "
+            "Il trading è disabilitato fino a quando tutti i prezzi saranno reali. "
+            "Solo report generato, nessuna transazione eseguita."
+        )
+        print(f"[WARN] {msg}")
+        portfolio["metadata"]["price_source"] = "fallback"
+        log_iteration(portfolio, session_label, portfolio_value_eur, [], prices, msg)
+        send_telegram_message(
+            f"FALLBACK: {session_label.upper()}\n{msg}\nNessun trade eseguito.",
+            session=session_label,
+            has_trades=False,
+        )
+        return portfolio_value_eur
+
+    portfolio["metadata"]["price_source"] = "yfinance"
 
     targets_eur = calculate_targets(portfolio_value_eur)
     transactions: list[dict] = []
