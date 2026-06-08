@@ -302,13 +302,27 @@ def run_pipeline(session_label: str) -> None:
         transactions,
         reasoning_parts,
         portfolio,
+        prices,
     )
     send_telegram_message(report, session=session_label, has_trades=has_trades)
 
     try:
         chart_path = generate_dashboard(portfolio, UNIVERSE, total_value_eur)
+        pos_summary = " | ".join(
+            "{}:{}x".format(t, p["shares"])
+            for t, p in sorted(portfolio["current_positions"].items())
+        )
+        photo_caption = (
+            "{} - Portfolio: {:.2f}€ - {} posizioni\n{}\nCash: {:.2f}€".format(
+                session_label.upper(),
+                total_value_eur,
+                len(portfolio["current_positions"]),
+                pos_summary[:400],
+                cash_eur,
+            )
+        )
         send_telegram_photo(
-            report[:500], chart_path, session=session_label, has_trades=has_trades
+            photo_caption, chart_path, session=session_label, has_trades=has_trades
         )
     except Exception as e:
         print(f"[WARN] Chart generation/send failed: {e}")
@@ -324,10 +338,11 @@ def build_telegram_report(
     transactions: list[dict],
     reasoning: list[str],
     portfolio: dict,
+    prices: dict[str, float],
 ) -> str:
     pos_count = len(portfolio["current_positions"])
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    sep = "-" * 30
+    sep = "-" * 20
     lines = [
         "PAPER TRADING REPORT - {}".format(session.upper()),
         sep,
@@ -358,6 +373,36 @@ def build_telegram_report(
     else:
         lines.append("Nessuna transazione eseguita.")
     lines.append("")
+
+    pos = portfolio.get("current_positions", {})
+    if pos:
+        lines.append("POSIZIONI DETTAGLIO:")
+        for ticker in sorted(pos.keys()):
+            entry = pos[ticker]
+            shares = entry["shares"]
+            avg_price = entry["avg_price"]
+            cur_price_local = prices.get(ticker) or avg_price
+            currency = UNIVERSE[ticker]["currency"]
+            cur_price_eur = convert_to_eur(cur_price_local, currency)
+            equity_eur = shares * cur_price_eur
+            cost_basis = shares * avg_price
+            pnl_eur = equity_eur - cost_basis
+            pnl_pct = ((cur_price_eur / avg_price) - 1) * 100 if avg_price > 0 else 0
+            sign = "+" if pnl_eur >= 0 else ""
+            lines.append(
+                "  {}: {}x | prezzo {:.2f}€ | Eq {:.2f}€ | PnL {}{:.2f}€ ({}{:.2f}%)".format(
+                    ticker,
+                    shares,
+                    cur_price_eur,
+                    equity_eur,
+                    sign,
+                    pnl_eur,
+                    sign,
+                    pnl_pct,
+                )
+            )
+        lines.append("")
+
     lines.append("REASONING:")
     for r in reasoning:
         lines.append("  {}".format(r))
