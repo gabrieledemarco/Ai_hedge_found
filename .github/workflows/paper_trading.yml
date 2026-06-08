@@ -2,15 +2,11 @@ name: Paper Trading Pipeline
 
 on:
   schedule:
-    # Mattina: 08:15 IT = 06:15 UTC (winter) / 07:15 UTC non esiste regola semplice,
-    # usiamo 06:15 UTC che copre CET; CEST sarebbe 07:15 UTC.
-    # Scegliamo 07:15 UTC (copre ora legale IT).
-    - cron: "15 7 * * 1-5"
-    # Pomeriggio: 17:15 IT = 15:15 UTC (winter) / 16:15 UTC (summer).
-    # Usiamo 15:15 UTC come compromesso.
+    # Mattina ~08:15 IT: 06:15 UTC (CEST) / 07:15 UTC (CET)
+    - cron: "15 6 * * 1-5"
+    # Pomeriggio ~17:15 IT: 15:15 UTC (CEST) / 16:15 UTC (CET)
     - cron: "15 15 * * 1-5"
-    # Sera: 22:30 IT = 20:30 UTC (winter) / 21:30 UTC (summer).
-    # Usiamo 20:30 UTC come compromesso.
+    # Sera ~22:30 IT: 20:30 UTC (CEST) / 21:30 UTC (CET)
     - cron: "30 20 * * 1-5"
   workflow_dispatch:
 
@@ -43,8 +39,14 @@ jobs:
       - name: Determine session hour
         id: session
         run: |
-          HOUR=$(TZ='Europe/Rome' date +%H)
-          echo "hour=$HOUR" >> $GITHUB_OUTPUT
+          HOUR=$(date -u +%H)
+          if [ "$HOUR" -eq 6 ] || [ "$HOUR" -eq 7 ]; then
+            echo "hour=7" >> "$GITHUB_OUTPUT"
+          elif [ "$HOUR" -eq 15 ] || [ "$HOUR" -eq 16 ]; then
+            echo "hour=15" >> "$GITHUB_OUTPUT"
+          else
+            echo "hour=21" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Run pipeline
         run: |
