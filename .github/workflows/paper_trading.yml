@@ -1,0 +1,64 @@
+name: Paper Trading Pipeline
+
+on:
+  schedule:
+    # Mattina: 08:15 IT = 06:15 UTC (winter) / 07:15 UTC non esiste regola semplice,
+    # usiamo 06:15 UTC che copre CET; CEST sarebbe 07:15 UTC.
+    # Scegliamo 07:15 UTC (copre ora legale IT).
+    - cron: "15 7 * * 1-5"
+    # Pomeriggio: 17:15 IT = 15:15 UTC (winter) / 16:15 UTC (summer).
+    # Usiamo 15:15 UTC come compromesso.
+    - cron: "15 15 * * 1-5"
+    # Sera: 22:30 IT = 20:30 UTC (winter) / 21:30 UTC (summer).
+    # Usiamo 20:30 UTC come compromesso.
+    - cron: "30 20 * * 1-5"
+  workflow_dispatch:
+
+env:
+  TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
+  ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+jobs:
+  run_pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas requests
+
+      - name: Determine session hour
+        id: session
+        run: |
+          HOUR=$(TZ='Europe/Rome' date +%H)
+          echo "hour=$HOUR" >> $GITHUB_OUTPUT
+
+      - name: Run pipeline
+        run: |
+          python scripts/main_pipeline.py --hour ${{ steps.session.outputs.hour }}
+        working-directory: ${{ github.workspace }}
+
+      - name: Commit and push updated portfolio JSON
+        run: |
+          git config user.name "Paper Trading Bot"
+          git config user.email "bot@paper-trading.local"
+          git add data/portfolio_history.json
+          if git diff --cached --quiet; then
+            echo "No changes to portfolio — skipping commit"
+          else
+            git commit -m "chore: portfolio update $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
