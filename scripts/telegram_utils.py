@@ -1,9 +1,14 @@
 import os
+import html as htmlmod
 import requests
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "")
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+
+
+def h(text: str) -> str:
+    return htmlmod.escape(text, quote=False)
 
 
 def send_telegram_message(

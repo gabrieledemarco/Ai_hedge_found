@@ -64,7 +64,8 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to portfolio — skipping commit"
           else
+            git fetch origin main
+            git reset --soft origin/main
             git commit -m "chore: portfolio update $(date -u '+%Y-%m-%d %H:%M UTC')"
-            git pull --rebase origin main
             git push
           fi

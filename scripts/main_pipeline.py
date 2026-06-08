@@ -7,7 +7,7 @@ import pandas as pd
 import requests
 
 from portfolio_io import load_portfolio, log_iteration
-from telegram_utils import send_telegram_message
+from telegram_utils import send_telegram_message, h
 
 TIINGO_KEY = os.environ.get("TIINGO_API_KEY", "")
 AV_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "")
@@ -31,32 +31,75 @@ UNIVERSE = {
 }
 
 
+def _tiingo_symbol(ticker: str) -> str:
+    if ticker.endswith(".L"):
+        return ""
+    sym = ticker.replace(".B", "-B").replace(".", "-")
+    return sym
+
+
+def _alpha_vantage_symbol(ticker: str) -> str:
+    if ticker.endswith(".L"):
+        return ticker.replace(".L", ".LON")
+    return ticker
+
+
+def fetch_price_tiingo(ticker: str) -> float | None:
+    symbol = _tiingo_symbol(ticker)
+    if not symbol:
+        return None
+    url = f"https://api.tiingo.com/tiingo/daily/{symbol}/prices"
+    params = {"token": TIINGO_KEY, "resampleFreq": "daily"}
+    try:
+        resp = requests.get(url, params=params, timeout=15)
+        resp.raise_for_status()
+        data = resp.json()
+        if data:
+            return float(data[-1]["adjClose"])
+        print(f"[WARN] Tiingo: no price data for {ticker} ({symbol})")
+    except requests.RequestException as e:
+        print(f"[WARN] Tiingo failed for {ticker} ({symbol}): {e}")
+    return None
+
+
+def fetch_price_alphavantage(ticker: str) -> float | None:
+    symbol = _alpha_vantage_symbol(ticker)
+    url = "https://www.alphavantage.co/query"
+    params = {
+        "function": "TIME_SERIES_DAILY",
+        "symbol": symbol,
+        "apikey": AV_KEY,
+        "outputsize": "compact",
+    }
+    try:
+        resp = requests.get(url, params=params, timeout=15)
+        resp.raise_for_status()
+        data = resp.json()
+        key = "Time Series (Daily)"
+        if key in data:
+            dates = sorted(data[key].keys(), reverse=True)
+            if dates:
+                return float(data[key][dates[0]]["4. close"])
+        print(f"[WARN] Alpha Vantage: no data for {ticker} ({symbol})")
+    except requests.RequestException as e:
+        print(f"[WARN] Alpha Vantage failed for {ticker} ({symbol}): {e}")
+    return None
+
+
 def fetch_prices(tickers: list[str]) -> dict[str, float]:
     prices: dict[str, float] = {}
     for t in tickers:
-        symbol = t.replace(".L", "")
-        url = f"https://api.tiingo.com/tiingo/daily/{symbol}/prices"
-        params = {
-            "token": TIINGO_KEY,
-            "startDate": datetime.now().strftime("%Y-%m-%d"),
-            "resampleFreq": "daily",
-        }
-        try:
-            resp = requests.get(url, params=params, timeout=15)
-            resp.raise_for_status()
-            data = resp.json()
-            if data:
-                prices[t] = float(data[-1]["adjClose"])
-            else:
-                print(f"[WARN] No price data for {t}")
-        except requests.RequestException as e:
-            print(f"[ERROR] Tiingo fetch failed for {t}: {e}")
-    for t in tickers:
-        if t not in prices:
-            if t.endswith(".L"):
-                prices[t] = 150.0
-            else:
-                prices[t] = 100.0
+        price = fetch_price_tiingo(t)
+        if price is not None:
+            prices[t] = price
+            continue
+        price = fetch_price_alphavantage(t)
+        if price is not None:
+            prices[t] = price
+            continue
+        fallback = 150.0 if t.endswith(".L") else 100.0
+        print(f"[WARN] {t}: nessun prezzo da fonti primarie, uso fallback {fallback}")
+        prices[t] = fallback
     return prices
 
 
@@ -285,10 +328,10 @@ def build_telegram_report(
     portfolio: dict,
 ) -> str:
     lines = [
-        f"<b>Paper Trading Report — {session.upper()}</b>",
-        f"Portfolio: {total_eur:.2f} EUR",
-        f"Cash: {cash_eur:.2f} EUR",
-        f"Positions: {len(portfolio['current_positions'])}",
+        f"<b>Paper Trading Report \u2014 {h(session.upper())}</b>",
+        f"Portfolio: {h(f'{total_eur:.2f}')} EUR",
+        f"Cash: {h(f'{cash_eur:.2f}')} EUR",
+        f"Positions: {h(str(len(portfolio['current_positions'])))}",
         "",
     ]
     if transactions:
@@ -297,23 +340,23 @@ def build_telegram_report(
             action = t["action"]
             if action == "BUY":
                 lines.append(
-                    f"  {action} {t['shares']}x {t['ticker']} @ {t['price_eur']:.2f}€ "
-                    f"= {t['total_cost_eur']:.2f}€"
+                    f"  {h(action)} {h(str(t['shares']))}x {h(t['ticker'])} @ {h(f'{t['price_eur']:.2f}')}\u20ac"
+                    f" = {h(f'{t['total_cost_eur']:.2f}')}\u20ac"
                 )
             else:
                 lines.append(
-                    f"  {action} {t['shares']}x {t['ticker']} @ {t['price_eur']:.2f}€ "
-                    f"= +{t['total_proceeds_eur']:.2f}€"
+                    f"  {h(action)} {h(str(t['shares']))}x {h(t['ticker'])} @ {h(f'{t['price_eur']:.2f}')}\u20ac"
+                    f" = +{h(f'{t['total_proceeds_eur']:.2f}')}\u20ac"
                 )
     else:
         lines.append("<i>Nessuna transazione eseguita.</i>")
     lines.append("")
     lines.append("<b>Reasoning:</b>")
     for r in reasoning:
-        lines.append(f"  {r}")
+        lines.append(f"  {h(r)}")
     lines.append("")
     lines.append(
-        f"<i>Aggiornato: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}</i>"
+        f"<i>Aggiornato: {h(datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC'))}</i>"
     )
     return "\n".join(lines)
 
