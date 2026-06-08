@@ -222,6 +222,45 @@
       },
       "transactions": [],
       "reasoning": "AAPL: SELL skipped (lot < 1 share)\nMSFT: SELL skipped (lot < 1 share)\nGOOGL: SELL skipped (lot < 1 share)\nAMZN: BUY skipped (1 share @ 213.24€ > cash 17.09€)\nTSLA: BUY skipped (1 share @ 92.00€ > cash 17.09€)\nJPM: BUY skipped (1 share @ 92.00€ > cash 17.09€)\nBRK.B: BUY skipped (1 share @ 449.08€ > cash 17.09€)\nJNJ: BUY skipped (1 share @ 92.00€ > cash 17.09€)\nV: BUY skipped (1 share @ 92.00€ > cash 17.09€)\nKO: BUY skipped (1 share @ 73.12€ > cash 17.09€)\nULVR.L: BUY skipped (1 share @ 175.50€ > cash 17.09€)\nHSBA.L: BUY skipped (1 share @ 173.49€ > cash 17.09€)\nBP.L: BUY skipped (1 share @ 175.50€ > cash 17.09€)\nGSK.L: BUY skipped (1 share @ 175.50€ > cash 17.09€)\nRIO.L: BUY skipped (1 share @ 175.50€ > cash 17.09€)"
+    },
+    {
+      "timestamp": "2026-06-08T14:44:46.625772+00:00",
+      "session": "sera",
+      "total_value_eur": 483.84,
+      "current_cash": 17.09,
+      "positions": {
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 282.7528
+        },
+        "MSFT": {
+          "shares": 1,
+          "avg_price": 361.1124
+        },
+        "GOOGL": {
+          "shares": 1,
+          "avg_price": 339.0476
+        }
+      },
+      "prices_used": {
+        "AAPL": 307.34,
+        "MSFT": 100.0,
+        "GOOGL": 100.0,
+        "AMZN": 100.0,
+        "TSLA": 100.0,
+        "JPM": 100.0,
+        "BRK.B": 100.0,
+        "JNJ": 100.0,
+        "V": 323.57,
+        "KO": 100.0,
+        "ULVR.L": 150.0,
+        "HSBA.L": 150.0,
+        "BP.L": 150.0,
+        "GSK.L": 150.0,
+        "RIO.L": 150.0
+      },
+      "transactions": [],
+      "reasoning": "AAPL: SELL skipped (lot < 1 share)\nMSFT: SELL skipped (lot < 1 share)\nGOOGL: SELL skipped (lot < 1 share)\nAMZN: BUY skipped (1 share @ 92.00€ > cash 17.09€)\nTSLA: BUY skipped (1 share @ 92.00€ > cash 17.09€)\nJPM: BUY skipped (1 share @ 92.00€ > cash 17.09€)\nBRK.B: BUY skipped (1 share @ 92.00€ > cash 17.09€)\nJNJ: BUY skipped (1 share @ 92.00€ > cash 17.09€)\nV: BUY skipped (1 share @ 280.46€ > cash 17.09€)\nKO: BUY skipped (1 share @ 92.00€ > cash 17.09€)\nULVR.L: BUY skipped (1 share @ 175.50€ > cash 17.09€)\nHSBA.L: BUY skipped (1 share @ 175.50€ > cash 17.09€)\nBP.L: BUY skipped (1 share @ 175.50€ > cash 17.09€)\nGSK.L: BUY skipped (1 share @ 175.50€ > cash 17.09€)\nRIO.L: BUY skipped (1 share @ 175.50€ > cash 17.09€)"
     }
   ]
 }
