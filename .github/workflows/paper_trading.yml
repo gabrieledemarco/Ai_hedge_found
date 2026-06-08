@@ -51,6 +51,11 @@ jobs:
             echo "hour=21" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Fetch latest portfolio from remote
+        run: |
+          git fetch origin main
+          git checkout origin/main -- data/portfolio_history.json
+
       - name: Run pipeline
         run: |
           python scripts/main_pipeline.py --hour ${{ steps.session.outputs.hour }}
