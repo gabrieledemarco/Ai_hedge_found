@@ -260,7 +260,7 @@ def run_pipeline(session_label: str) -> None:
                 reasoning_parts.append(f"{ticker}: HOLD (no shares to sell)")
                 continue
             shares_to_sell = min(
-                math.floor(abs(diff_eur) / price_eur) if price_eur > 0 else 0,
+                max(1, math.floor(abs(diff_eur) / price_eur)) if price_eur > 0 else 0,
                 entry["shares"],
             )
             if shares_to_sell <= 0:
