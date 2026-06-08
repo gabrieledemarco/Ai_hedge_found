@@ -116,19 +116,16 @@ def generate_charts_html(portfolio: dict) -> str:
 
     charts_html = ""
 
-    # --- Chart 1: Equity Curve ---
+    cash_hist = [e["current_cash"] for e in history] if history else []
+
+    # --- Chart 1a: Equity Curve (Portfolio) ---
     fig, ax = plt.subplots(figsize=(10, 3.2))
     if timestamps:
         ts = [datetime.fromisoformat(t) for t in timestamps]
-        ax.plot(ts, values, color="#22c55e", linewidth=2, label="Portfolio")
+        ax.plot(ts, values, color="#22c55e", linewidth=2)
         ax.fill_between(ts, values, alpha=0.1, color="#22c55e")
-        cash_hist = [e["current_cash"] for e in history]
-        ax.plot(
-            ts, cash_hist, color="#3b82f6", linewidth=1.2, linestyle="--", label="Cash"
-        )
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%m/%d"))
-        ax.legend(fontsize=8)
-    ax.set_title("Equity Curve", color="#f8fafc", fontweight="bold")
+    ax.set_title("Equity Curve - Portfolio", color="#f8fafc", fontweight="bold")
     ax.set_facecolor("#1e293b")
     fig.patch.set_facecolor("#0f172a")
     ax.tick_params(colors="#94a3b8")
@@ -138,7 +135,28 @@ def generate_charts_html(portfolio: dict) -> str:
     ax.spines["right"].set_visible(False)
     ax.grid(True, alpha=0.15, color="#334155")
     ax.set_ylabel("EUR", color="#94a3b8")
-    charts_html += f'<img src="{_fig_to_b64(fig)}" style="width:100%;border-radius:8px;" alt="Equity Curve">'
+    charts_html += f'<div style="display:flex;gap:12px;flex-wrap:wrap;">'
+    charts_html += f'<div style="flex:1;min-width:300px;"><img src="{_fig_to_b64(fig)}" style="width:100%;border-radius:8px;" alt="Equity Curve - Portfolio"></div>'
+
+    # --- Chart 1b: Cash Curve ---
+    fig, ax = plt.subplots(figsize=(10, 3.2))
+    if timestamps:
+        ts = [datetime.fromisoformat(t) for t in timestamps]
+        ax.plot(ts, cash_hist, color="#3b82f6", linewidth=2)
+        ax.fill_between(ts, cash_hist, alpha=0.1, color="#3b82f6")
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%m/%d"))
+    ax.set_title("Cash", color="#f8fafc", fontweight="bold")
+    ax.set_facecolor("#1e293b")
+    fig.patch.set_facecolor("#0f172a")
+    ax.tick_params(colors="#94a3b8")
+    ax.spines["bottom"].set_color("#334155")
+    ax.spines["left"].set_color("#334155")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.grid(True, alpha=0.15, color="#334155")
+    ax.set_ylabel("EUR", color="#94a3b8")
+    charts_html += f'<div style="flex:1;min-width:300px;"><img src="{_fig_to_b64(fig)}" style="width:100%;border-radius:8px;" alt="Cash"></div>'
+    charts_html += f"</div>"
 
     # --- Chart 2: Allocation + Sector side-by-side ---
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 3.2))
