@@ -304,6 +304,19 @@ def run_pipeline(session_label: str) -> None:
         portfolio, session_label, total_value_eur, transactions, prices, reasoning
     )
 
+    print("")
+    print("--- TRANSAZIONI ---")
+    if transactions:
+        for t in transactions:
+            print(f"  {t['action']} {t['shares']}x {t['ticker']}")
+    else:
+        print("  Nessuna transazione.")
+    print("")
+    print("--- REASONING ---")
+    for line in reasoning_parts:
+        print(f"  {line}")
+    print("")
+
     report = build_telegram_report(
         session_label,
         total_value_eur,
