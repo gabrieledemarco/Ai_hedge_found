@@ -40,8 +40,8 @@ def _tiingo_symbol(ticker: str) -> str:
 
 def _alpha_vantage_symbol(ticker: str) -> str:
     if ticker.endswith(".L"):
-        return ticker.replace(".L", ".LON")
-    return ticker
+        return ticker.replace(".L", "")
+    return ticker.replace(".B", "-B").replace(".", "-")
 
 
 def fetch_price_tiingo(ticker: str) -> float | None:
