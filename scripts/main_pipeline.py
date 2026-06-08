@@ -7,7 +7,7 @@ import pandas as pd
 import requests
 
 from portfolio_io import load_portfolio, log_iteration
-from telegram_utils import send_telegram_message, h
+from telegram_utils import send_telegram_message
 
 TIINGO_KEY = os.environ.get("TIINGO_API_KEY", "")
 AV_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "")
@@ -203,34 +203,30 @@ def run_pipeline(session_label: str) -> None:
             else 0
         )
 
+        price_local = prices.get(ticker, 0)
+        currency = UNIVERSE[ticker]["currency"]
+        price_eur = convert_to_eur(price_local, currency)
+        diff_eur = target_eur - current_eur
+
         if weight_deviation < 0.05:
             reasoning_parts.append(
                 f"{ticker}: HOLD (deviation {weight_deviation:.4f} < 0.05)"
             )
             continue
 
-        price_local = prices.get(ticker, 0)
-        currency = UNIVERSE[ticker]["currency"]
-        price_eur = convert_to_eur(price_local, currency)
-        diff_eur = target_eur - current_eur
-
-        if diff_eur > 0 and cash_eur <= 0:
-            reasoning_parts.append(f"{ticker}: BUY skipped (no cash)")
-            continue
-
         if diff_eur > 0:
-            max_shares = math.floor(cash_eur / price_eur) if price_eur > 0 else 0
-            needed_shares = math.floor(diff_eur / price_eur) if price_eur > 0 else 0
-            shares_to_trade = min(needed_shares, max_shares)
-            if shares_to_trade <= 0:
-                reasoning_parts.append(f"{ticker}: BUY skipped (lot < 1 share)")
+            if cash_eur <= 0:
+                reasoning_parts.append(f"{ticker}: BUY skipped (no cash)")
                 continue
-            cost = shares_to_trade * price_eur
-            if cost > cash_eur:
+            max_shares = math.floor(cash_eur / price_eur) if price_eur > 0 else 0
+            if max_shares <= 0:
                 reasoning_parts.append(
-                    f"{ticker}: BUY skipped (insufficient cash after lot check)"
+                    f"{ticker}: BUY skipped (1 share @ {price_eur:.2f}€ > cash {cash_eur:.2f}€)"
                 )
                 continue
+            needed_shares = max(1, math.floor(diff_eur / price_eur))
+            shares_to_trade = min(needed_shares, max_shares)
+            cost = shares_to_trade * price_eur
             entry = portfolio["current_positions"].get(
                 ticker, {"shares": 0, "avg_price": 0.0}
             )
@@ -260,6 +256,9 @@ def run_pipeline(session_label: str) -> None:
             has_trades = True
         elif diff_eur < 0:
             entry = portfolio["current_positions"].get(ticker, {"shares": 0})
+            if entry["shares"] <= 0:
+                reasoning_parts.append(f"{ticker}: HOLD (no shares to sell)")
+                continue
             shares_to_sell = min(
                 math.floor(abs(diff_eur) / price_eur) if price_eur > 0 else 0,
                 entry["shares"],
@@ -329,42 +328,42 @@ def build_telegram_report(
 ) -> str:
     pos_count = len(portfolio["current_positions"])
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    sep = "-" * 30
     lines = [
-        "<b>Paper Trading Report \u2014 {}</b>".format(h(session.upper())),
-        "Portfolio: {} EUR".format(h("{:.2f}".format(total_eur))),
-        "Cash: {} EUR".format(h("{:.2f}".format(cash_eur))),
-        "Positions: {}".format(h(str(pos_count))),
+        "PAPER TRADING REPORT - {}".format(session.upper()),
+        sep,
+        "Portfolio: {:.2f} EUR".format(total_eur),
+        "Cash: {:.2f} EUR".format(cash_eur),
+        "Posizioni aperte: {}".format(pos_count),
         "",
     ]
     if transactions:
-        lines.append("<b>Transazioni:</b>")
+        lines.append("TRANSAZIONI:")
         for t in transactions:
             action = t["action"]
-            shares = h(str(t["shares"]))
-            ticker = h(t["ticker"])
-            price = h("{:.2f}".format(t["price_eur"]))
+            shares = t["shares"]
+            ticker = t["ticker"]
+            price = t["price_eur"]
             if action == "BUY":
-                cost = h("{:.2f}".format(t["total_cost_eur"]))
                 lines.append(
-                    "  {} {}x {} @ {}\u20ac = {}\u20ac".format(
-                        h(action), shares, ticker, price, cost
+                    "  {} {}x {} @ {:.2f}€ = {:.2f}€".format(
+                        action, shares, ticker, price, t["total_cost_eur"]
                     )
                 )
             else:
-                proceeds = h("{:.2f}".format(t["total_proceeds_eur"]))
                 lines.append(
-                    "  {} {}x {} @ {}\u20ac = +{}\u20ac".format(
-                        h(action), shares, ticker, price, proceeds
+                    "  {} {}x {} @ {:.2f}€ = +{:.2f}€".format(
+                        action, shares, ticker, price, t["total_proceeds_eur"]
                     )
                 )
     else:
-        lines.append("<i>Nessuna transazione eseguita.</i>")
+        lines.append("Nessuna transazione eseguita.")
     lines.append("")
-    lines.append("<b>Reasoning:</b>")
+    lines.append("REASONING:")
     for r in reasoning:
-        lines.append("  {}".format(h(r)))
+        lines.append("  {}".format(r))
     lines.append("")
-    lines.append("<i>Aggiornato: {}</i>".format(h(timestamp)))
+    lines.append("Aggiornato: {}".format(timestamp))
     return "\n".join(lines)
 
 

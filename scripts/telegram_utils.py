@@ -1,14 +1,9 @@
 import os
-import html as htmlmod
 import requests
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "")
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-
-
-def h(text: str) -> str:
-    return htmlmod.escape(text, quote=False)
 
 
 def send_telegram_message(
@@ -26,10 +21,10 @@ def send_telegram_message(
         print(f"[INFO] Session '{session}' — no trades, skipping notification")
         return False
 
+    print(f"[DEBUG] Sending to chat_id='{CHAT_ID}' (len={len(CHAT_ID)})")
     payload = {
         "chat_id": CHAT_ID,
         "text": text,
-        "parse_mode": "HTML",
         "disable_web_page_preview": True,
     }
     try:
@@ -39,4 +34,11 @@ def send_telegram_message(
         return True
     except requests.RequestException as e:
         print(f"[ERROR] Telegram send failed: {e}")
+        status = getattr(e.response, "status_code", None)
+        if status == 403:
+            print("[HINT] 403 = bot non autorizzato per questa chat.")
+            print("[HINT] Devi: 1) Aprire il bot su Telegram 2) Inviare /start")
+            print(
+                "[HINT] Poi trova il chat_id in: https://api.telegram.org/bot<TOKEN>/getUpdates"
+            )
         return False
