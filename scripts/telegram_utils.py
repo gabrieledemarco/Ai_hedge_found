@@ -4,6 +4,7 @@ import requests
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "")
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+PHOTO_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto"
 
 
 def send_telegram_message(
@@ -41,4 +42,36 @@ def send_telegram_message(
             print(
                 "[HINT] Poi trova il chat_id in: https://api.telegram.org/bot<TOKEN>/getUpdates"
             )
+        return False
+
+
+def send_telegram_photo(
+    caption: str,
+    photo_path: str,
+    session: str,
+    has_trades: bool = False,
+) -> bool:
+    if not TELEGRAM_TOKEN or not CHAT_ID:
+        print("[WARN] TELEGRAM_TOKEN or TELEGRAM_CHAT_ID not set — skipping photo")
+        return False
+
+    if session == "sera":
+        pass
+    elif session in ("mattina", "pomeriggio") and not has_trades:
+        return False
+
+    if not os.path.exists(photo_path):
+        print(f"[WARN] Photo not found: {photo_path}")
+        return False
+
+    try:
+        with open(photo_path, "rb") as f:
+            files = {"photo": f}
+            data = {"chat_id": CHAT_ID, "caption": caption}
+            resp = requests.post(PHOTO_URL, files=files, data=data, timeout=30)
+        resp.raise_for_status()
+        print(f"[OK] Telegram photo sent ({session})")
+        return True
+    except requests.RequestException as e:
+        print(f"[ERROR] Telegram photo send failed: {e}")
         return False

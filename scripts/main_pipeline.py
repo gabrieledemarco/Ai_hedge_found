@@ -8,7 +8,8 @@ import requests
 import yfinance as yf
 
 from portfolio_io import load_portfolio, log_iteration
-from telegram_utils import send_telegram_message
+from telegram_utils import send_telegram_message, send_telegram_photo
+from chart_utils import generate_dashboard
 
 TIINGO_KEY = os.environ.get("TIINGO_API_KEY", "")
 AV_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "")
@@ -277,6 +278,14 @@ def run_pipeline(session_label: str) -> None:
         portfolio,
     )
     send_telegram_message(report, session=session_label, has_trades=has_trades)
+
+    try:
+        chart_path = generate_dashboard(portfolio, UNIVERSE, total_value_eur)
+        send_telegram_photo(
+            report[:500], chart_path, session=session_label, has_trades=has_trades
+        )
+    except Exception as e:
+        print(f"[WARN] Chart generation/send failed: {e}")
 
     print(f"[DONE] Session {session_label} completed. Total: {total_value_eur:.2f} EUR")
     return total_value_eur
