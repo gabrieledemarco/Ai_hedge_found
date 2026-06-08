@@ -30,6 +30,11 @@ UNIVERSE = {
     "BP.L": {"exchange": "FTSE", "currency": "GBP", "sector": "Energy"},
     "GSK.L": {"exchange": "FTSE", "currency": "GBP", "sector": "Healthcare"},
     "RIO.L": {"exchange": "FTSE", "currency": "GBP", "sector": "Materials"},
+    "ENI.MI": {"exchange": "BIT", "currency": "EUR", "sector": "Energy"},
+    "ISP.MI": {"exchange": "BIT", "currency": "EUR", "sector": "Financial"},
+    "ENEL.MI": {"exchange": "BIT", "currency": "EUR", "sector": "Utilities"},
+    "LDO.MI": {"exchange": "BIT", "currency": "EUR", "sector": "Aerospace"},
+    "MONC.MI": {"exchange": "BIT", "currency": "EUR", "sector": "Consumer"},
 }
 
 

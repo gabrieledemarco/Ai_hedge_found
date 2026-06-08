@@ -1,6 +1,6 @@
 # Paper Trading Quant Platform
 
-Piattaforma di Paper Trading multi-mercato con capitale iniziale **1.000 €**, esposta su **NASDAQ**, **NYSE** e **FTSE**. Integrata con GitHub Actions per esecuzione schedulata e Telegram per notifiche.
+Piattaforma di Paper Trading multi-mercato con capitale iniziale **3.000 €**, esposta su **NASDAQ**, **NYSE**, **FTSE** e **Borsa Italiana (BIT)**. Integrata con GitHub Actions per esecuzione schedulata e Telegram per notifiche.
 
 ---
 
@@ -121,6 +121,9 @@ JPM, JNJ, V, KO
 
 ### FTSE (London)
 ULVR.L, HSBA.L, BP.L, GSK.L, RIO.L
+
+### Borsa Italiana (BIT)
+ENI.MI, ISP.MI, ENEL.MI, LDO.MI, MONC.MI
 
 ---
 
