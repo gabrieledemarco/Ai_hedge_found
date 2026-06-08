@@ -2,7 +2,7 @@
   "metadata": {
     "currency": "EUR",
     "initial_capital": 1000.0,
-    "current_cash": 2668.42
+    "current_cash": 1064.12
   },
   "current_positions": {
     "V": {
@@ -48,6 +48,10 @@
     "JNJ": {
       "shares": 2,
       "avg_price": 213.532
+    },
+    "HSBA.L": {
+      "shares": 1,
+      "avg_price": 1604.3039
     }
   },
   "iterations_log": [
@@ -718,6 +722,89 @@
         }
       ],
       "reasoning": "AAPL: BUY 1 @ 289.46€ (deviation 0.0667)\nMSFT: BUY 1 @ 357.21€ (deviation 0.0667)\nGOOGL: BUY 1 @ 334.32€ (deviation 0.0667)\nAMZN: BUY 2 @ 226.66€ (deviation 0.0667)\nTSLA: BUY 1 @ 371.26€ (deviation 0.0667)\nJPM: BUY 1 @ 287.57€ (deviation 0.0667)\nNVDA: BUY 2 @ 191.61€ (deviation 0.0667)\nJNJ: BUY 2 @ 213.53€ (deviation 0.0667)\nV: HOLD (deviation 0.0242 < 0.05)\nKO: BUY 5 @ 73.09€ (deviation 0.0561)\nULVR.L: BUY skipped (1 share @ 4883.58€ > cash 437.23€)\nHSBA.L: BUY skipped (1 share @ 1602.20€ > cash 437.23€)\nBP.L: HOLD (deviation 0.0256 < 0.05)\nGSK.L: SELL 1 @ 2231.19€ (deviation 0.2545)\nRIO.L: BUY skipped (1 share @ 8884.98€ > cash 2668.42€)"
+    },
+    {
+      "timestamp": "2026-06-08T15:01:12.273537+00:00",
+      "session": "pomeriggio",
+      "total_value_eur": 6973.8,
+      "current_cash": 1064.12,
+      "positions": {
+        "V": {
+          "shares": 1,
+          "avg_price": 92.0
+        },
+        "KO": {
+          "shares": 6,
+          "avg_price": 76.2412
+        },
+        "BP.L": {
+          "shares": 1,
+          "avg_price": 640.224
+        },
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 289.4596
+        },
+        "MSFT": {
+          "shares": 1,
+          "avg_price": 357.2102
+        },
+        "GOOGL": {
+          "shares": 1,
+          "avg_price": 334.3188
+        },
+        "AMZN": {
+          "shares": 2,
+          "avg_price": 226.6604
+        },
+        "TSLA": {
+          "shares": 1,
+          "avg_price": 371.2568
+        },
+        "JPM": {
+          "shares": 1,
+          "avg_price": 287.5736
+        },
+        "NVDA": {
+          "shares": 2,
+          "avg_price": 191.6084
+        },
+        "JNJ": {
+          "shares": 2,
+          "avg_price": 213.532
+        },
+        "HSBA.L": {
+          "shares": 1,
+          "avg_price": 1604.3039
+        }
+      },
+      "prices_used": {
+        "AAPL": 315.13,
+        "MSFT": 412.85,
+        "GOOGL": 364.375,
+        "AMZN": 246.97,
+        "TSLA": 404.02,
+        "JPM": 313.38,
+        "NVDA": 208.34,
+        "JNJ": 232.545,
+        "V": 321.525,
+        "KO": 79.415,
+        "ULVR.L": 4175.0,
+        "HSBA.L": 1371.2,
+        "BP.L": 547.5,
+        "GSK.L": 1906.5,
+        "RIO.L": 7606.0
+      },
+      "transactions": [
+        {
+          "action": "BUY",
+          "ticker": "HSBA.L",
+          "shares": 1,
+          "price_eur": 1604.3039,
+          "total_cost_eur": 1604.3
+        }
+      ],
+      "reasoning": "AAPL: HOLD (deviation 0.0251 < 0.05)\nMSFT: HOLD (deviation 0.0122 < 0.05)\nGOOGL: HOLD (deviation 0.0186 < 0.05)\nAMZN: HOLD (deviation 0.0015 < 0.05)\nTSLA: HOLD (deviation 0.0134 < 0.05)\nJPM: HOLD (deviation 0.0253 < 0.05)\nNVDA: HOLD (deviation 0.0117 < 0.05)\nJNJ: HOLD (deviation 0.0053 < 0.05)\nV: HOLD (deviation 0.0243 < 0.05)\nKO: HOLD (deviation 0.0038 < 0.05)\nULVR.L: BUY skipped (1 share @ 4884.75€ > cash 2668.42€)\nHSBA.L: BUY 1 @ 1604.30€ (deviation 0.0667)\nBP.L: HOLD (deviation 0.0252 < 0.05)\nGSK.L: BUY skipped (1 share @ 2230.61€ > cash 1064.12€)\nRIO.L: BUY skipped (1 share @ 8790.19€ > cash 1064.12€)"
     }
   ]
 }
