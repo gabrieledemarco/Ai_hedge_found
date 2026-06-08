@@ -18,7 +18,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif
 .card .lbl { font-size:11px; color:#94a3b8; margin-top:4px; text-transform:uppercase; letter-spacing:0.5px; }
 .chart-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
 .chart-full { grid-column:1/-1; }
-.chart-box { background:#1e293b; border:1px solid #334155; border-radius:10px; padding:12px; }
+.chart-box { background:#1e293b; border:1px solid #334155; border-radius:10px; padding:12px; height:350px; }
 .chart-box h3 { font-size:14px; font-weight:600; margin-bottom:8px; color:#cbd5e1; }
 table { width:100%; border-collapse:collapse; font-size:13px; }
 th { background:#334155; color:#94a3b8; text-align:left; padding:8px 10px; font-weight:600; text-transform:uppercase; font-size:11px; letter-spacing:0.5px; }
@@ -35,20 +35,20 @@ tr:hover td { background:#1e293b; }
 <body>
 <div class="header">
   <h1>Paper Trading Dashboard</h1>
-  <p>Aggiornato: 2026-06-08 15:38 UTC &middot; Capitale: 3000 EUR &middot; Multi-mercato: NASDAQ, NYSE, FTSE, BIT</p>
+  <p>Aggiornato: 2026-06-08 15:41 UTC &middot; Capitale: 3000 EUR &middot; Multi-mercato: NASDAQ, NYSE, FTSE, BIT</p>
 </div>
 <div class="container">
   
     <div class="metric-grid">
-      <div class="card"><div class="val">-0.47%</div><div class="lbl">Total Return</div></div>
-      <div class="card"><div class="val">-23.47%</div><div class="lbl">Ann. Return (CAGR)</div></div>
-      <div class="card"><div class="val">7.14%</div><div class="lbl">Ann. Volatility</div></div>
-      <div class="card"><div class="val">-3.29</div><div class="lbl">Sharpe Ratio</div></div>
+      <div class="card"><div class="val">-0.32%</div><div class="lbl">Total Return</div></div>
+      <div class="card"><div class="val">-13.63%</div><div class="lbl">Ann. Return (CAGR)</div></div>
+      <div class="card"><div class="val">6.59%</div><div class="lbl">Ann. Volatility</div></div>
+      <div class="card"><div class="val">-2.07</div><div class="lbl">Sharpe Ratio</div></div>
       <div class="card"><div class="val" style="color:#dc2626">0.95%</div><div class="lbl">Max Drawdown</div></div>
-      <div class="card"><div class="val">-24.65</div><div class="lbl">Calmar Ratio</div></div>
-      <div class="card"><div class="val">50.0%</div><div class="lbl">Win Rate</div></div>
-      <div class="card"><div class="val">0.51</div><div class="lbl">Profit Factor</div></div>
-      <div class="card"><div class="val">0.25%</div><div class="lbl">Avg Winning Day</div></div>
+      <div class="card"><div class="val">-14.31</div><div class="lbl">Calmar Ratio</div></div>
+      <div class="card"><div class="val">60.0%</div><div class="lbl">Win Rate</div></div>
+      <div class="card"><div class="val">0.66</div><div class="lbl">Profit Factor</div></div>
+      <div class="card"><div class="val">0.21%</div><div class="lbl">Avg Winning Day</div></div>
       <div class="card"><div class="val" style="color:#dc2626">-0.48%</div><div class="lbl">Avg Losing Day</div></div>
     </div>
 
@@ -73,10 +73,10 @@ tr:hover td { background:#1e293b; }
           <td>USD</td>
           <td>1</td>
           <td>272.23</td>
-          <td>271.97</td>
-          <td>271.97</td>
-          <td class="neg">-0.26</td>
-          <td class="neg">-0.10%</td>
+          <td>272.10</td>
+          <td>272.10</td>
+          <td class="neg">-0.12</td>
+          <td class="neg">-0.04%</td>
         </tr>
         <tr>
           <td><strong>AMZN</strong></td>
@@ -85,10 +85,10 @@ tr:hover td { background:#1e293b; }
           <td>USD</td>
           <td>1</td>
           <td>227.73</td>
-          <td>212.95</td>
-          <td>212.95</td>
-          <td class="neg">-14.78</td>
-          <td class="neg">-6.49%</td>
+          <td>213.57</td>
+          <td>213.57</td>
+          <td class="neg">-14.16</td>
+          <td class="neg">-6.22%</td>
         </tr>
         <tr>
           <td><strong>ENEL.MI</strong></td>
@@ -97,10 +97,10 @@ tr:hover td { background:#1e293b; }
           <td>EUR</td>
           <td>15</td>
           <td>9.61</td>
-          <td>9.61</td>
-          <td>144.15</td>
-          <td class="pos">+0.06</td>
-          <td class="pos">+0.04%</td>
+          <td>9.60</td>
+          <td>144.03</td>
+          <td class="neg">-0.06</td>
+          <td class="neg">-0.04%</td>
         </tr>
         <tr>
           <td><strong>ENI.MI</strong></td>
@@ -109,10 +109,22 @@ tr:hover td { background:#1e293b; }
           <td>EUR</td>
           <td>6</td>
           <td>23.60</td>
-          <td>23.57</td>
-          <td>141.39</td>
-          <td class="neg">-0.21</td>
-          <td class="neg">-0.15%</td>
+          <td>23.54</td>
+          <td>141.24</td>
+          <td class="neg">-0.36</td>
+          <td class="neg">-0.25%</td>
+        </tr>
+        <tr>
+          <td><strong>GOOGL</strong></td>
+          <td>NASDAQ</td>
+          <td>Tech</td>
+          <td>USD</td>
+          <td>1</td>
+          <td>333.83</td>
+          <td>314.35</td>
+          <td>314.35</td>
+          <td class="neg">-19.49</td>
+          <td class="neg">-5.84%</td>
         </tr>
         <tr>
           <td><strong>ISP.MI</strong></td>
@@ -121,10 +133,10 @@ tr:hover td { background:#1e293b; }
           <td>EUR</td>
           <td>24</td>
           <td>5.56</td>
-          <td>5.59</td>
-          <td>134.14</td>
-          <td class="pos">+0.70</td>
-          <td class="pos">+0.52%</td>
+          <td>5.58</td>
+          <td>133.90</td>
+          <td class="pos">+0.46</td>
+          <td class="pos">+0.34%</td>
         </tr>
         <tr>
           <td><strong>JNJ</strong></td>
@@ -133,10 +145,10 @@ tr:hover td { background:#1e293b; }
           <td>USD</td>
           <td>1</td>
           <td>214.02</td>
-          <td>200.87</td>
-          <td>200.87</td>
-          <td class="neg">-13.15</td>
-          <td class="neg">-6.14%</td>
+          <td>201.13</td>
+          <td>201.13</td>
+          <td class="neg">-12.89</td>
+          <td class="neg">-6.02%</td>
         </tr>
         <tr>
           <td><strong>JPM</strong></td>
@@ -145,10 +157,10 @@ tr:hover td { background:#1e293b; }
           <td>USD</td>
           <td>1</td>
           <td>288.02</td>
-          <td>270.71</td>
-          <td>270.71</td>
-          <td class="neg">-17.31</td>
-          <td class="neg">-6.01%</td>
+          <td>271.02</td>
+          <td>271.02</td>
+          <td class="neg">-17.00</td>
+          <td class="neg">-5.90%</td>
         </tr>
         <tr>
           <td><strong>KO</strong></td>
@@ -169,10 +181,10 @@ tr:hover td { background:#1e293b; }
           <td>EUR</td>
           <td>2</td>
           <td>51.68</td>
-          <td>51.51</td>
-          <td>103.02</td>
-          <td class="neg">-0.34</td>
-          <td class="neg">-0.33%</td>
+          <td>51.53</td>
+          <td>103.06</td>
+          <td class="neg">-0.30</td>
+          <td class="neg">-0.29%</td>
         </tr>
         <tr>
           <td><strong>MONC.MI</strong></td>
@@ -181,10 +193,10 @@ tr:hover td { background:#1e293b; }
           <td>EUR</td>
           <td>2</td>
           <td>55.28</td>
-          <td>55.18</td>
-          <td>110.36</td>
-          <td class="neg">-0.20</td>
-          <td class="neg">-0.18%</td>
+          <td>55.14</td>
+          <td>110.28</td>
+          <td class="neg">-0.28</td>
+          <td class="neg">-0.25%</td>
         </tr>
         <tr>
           <td><strong>NVDA</strong></td>
@@ -193,22 +205,10 @@ tr:hover td { background:#1e293b; }
           <td>USD</td>
           <td>1</td>
           <td>192.07</td>
-          <td>180.11</td>
-          <td>180.11</td>
-          <td class="neg">-11.96</td>
-          <td class="neg">-6.22%</td>
-        </tr>
-        <tr>
-          <td><strong>TSLA</strong></td>
-          <td>NASDAQ</td>
-          <td>Auto</td>
-          <td>USD</td>
-          <td>1</td>
-          <td>369.05</td>
-          <td>347.51</td>
-          <td>347.51</td>
-          <td class="neg">-21.54</td>
-          <td class="neg">-5.84%</td>
+          <td>180.57</td>
+          <td>180.57</td>
+          <td class="neg">-11.50</td>
+          <td class="neg">-5.99%</td>
         </tr>
         <tr>
           <td><strong>V</strong></td>
@@ -217,19 +217,35 @@ tr:hover td { background:#1e293b; }
           <td>USD</td>
           <td>1</td>
           <td>295.05</td>
-          <td>277.25</td>
-          <td>277.25</td>
-          <td class="neg">-17.80</td>
-          <td class="neg">-6.03%</td>
+          <td>277.61</td>
+          <td>277.61</td>
+          <td class="neg">-17.44</td>
+          <td class="neg">-5.91%</td>
         </tr></tbody>
   </table>
   </div>
 
-  <div class="section-title">Transazioni (25)</div>
+  <div class="section-title">Transazioni (27)</div>
   <div style="overflow-x:auto;max-height:400px;overflow-y:auto;">
   <table>
     <thead><tr><th>Date</th><th>Action</th><th>Ticker</th><th>Shares</th><th>Price</th><th>Total</th></tr></thead>
     <tbody>
+            <tr>
+              <td>2026-06-08T15:41</td>
+              <td class="tx-buy">BUY</td>
+              <td><strong>GOOGL</strong></td>
+              <td>1</td>
+              <td>333.83</td>
+              <td>333.83</td>
+            </tr>
+            <tr>
+              <td>2026-06-08T15:41</td>
+              <td class="tx-sell">SELL</td>
+              <td><strong>TSLA</strong></td>
+              <td>1</td>
+              <td>368.93</td>
+              <td>368.93</td>
+            </tr>
             <tr>
               <td>2026-06-08T15:38</td>
               <td class="tx-sell">SELL</td>
@@ -434,13 +450,13 @@ tr:hover td { background:#1e293b; }
   </div>
 </div>
 <script>
-const timestamps = ["2026-06-08T15:15:25.344157+00:00", "2026-06-08T15:21:08.402882+00:00", "2026-06-08T15:23:32.592056+00:00", "2026-06-08T15:28:54.861213+00:00", "2026-06-08T15:38:01.831061+00:00"];
-const values = [3003.62, 3014.18, 2988.84, 2985.47, 2989.63];
-const cashHist = [4.28, 90.27, 721.93, 8.54, 351.21];
-const posData = [{"ticker": "AAPL", "sector": "Tech", "exchange": "NASDAQ", "currency": "USD", "shares": 1, "equity_eur": 271.97, "pnl_eur": -0.26, "pnl_pct": -0.1}, {"ticker": "AMZN", "sector": "Consumer", "exchange": "NASDAQ", "currency": "USD", "shares": 1, "equity_eur": 212.95, "pnl_eur": -14.78, "pnl_pct": -6.49}, {"ticker": "ENEL.MI", "sector": "Utilities", "exchange": "BIT", "currency": "EUR", "shares": 15, "equity_eur": 144.15, "pnl_eur": 0.06, "pnl_pct": 0.04}, {"ticker": "ENI.MI", "sector": "Energy", "exchange": "BIT", "currency": "EUR", "shares": 6, "equity_eur": 141.39, "pnl_eur": -0.21, "pnl_pct": -0.15}, {"ticker": "ISP.MI", "sector": "Financial", "exchange": "BIT", "currency": "EUR", "shares": 24, "equity_eur": 134.14, "pnl_eur": 0.7, "pnl_pct": 0.52}, {"ticker": "JNJ", "sector": "Healthcare", "exchange": "NYSE", "currency": "USD", "shares": 1, "equity_eur": 200.87, "pnl_eur": -13.15, "pnl_pct": -6.14}, {"ticker": "JPM", "sector": "Financial", "exchange": "NYSE", "currency": "USD", "shares": 1, "equity_eur": 270.71, "pnl_eur": -17.31, "pnl_pct": -6.01}, {"ticker": "KO", "sector": "Consumer", "exchange": "NYSE", "currency": "USD", "shares": 2, "equity_eur": 137.41, "pnl_eur": -8.61, "pnl_pct": -5.9}, {"ticker": "LDO.MI", "sector": "Aerospace", "exchange": "BIT", "currency": "EUR", "shares": 2, "equity_eur": 103.02, "pnl_eur": -0.34, "pnl_pct": -0.33}, {"ticker": "MONC.MI", "sector": "Consumer", "exchange": "BIT", "currency": "EUR", "shares": 2, "equity_eur": 110.36, "pnl_eur": -0.2, "pnl_pct": -0.18}, {"ticker": "NVDA", "sector": "Tech", "exchange": "NASDAQ", "currency": "USD", "shares": 1, "equity_eur": 180.11, "pnl_eur": -11.96, "pnl_pct": -6.22}, {"ticker": "TSLA", "sector": "Auto", "exchange": "NASDAQ", "currency": "USD", "shares": 1, "equity_eur": 347.51, "pnl_eur": -21.54, "pnl_pct": -5.84}, {"ticker": "V", "sector": "Financial", "exchange": "NYSE", "currency": "USD", "shares": 1, "equity_eur": 277.25, "pnl_eur": -17.8, "pnl_pct": -6.03}];
-const txData = [{"timestamp": "2026-06-08T15:38", "action": "SELL", "ticker": "MSFT", "shares": 1, "price_eur": 378.028}, {"timestamp": "2026-06-08T15:38", "action": "SELL", "ticker": "GOOGL", "shares": 1, "price_eur": 333.6932}, {"timestamp": "2026-06-08T15:38", "action": "BUY", "ticker": "TSLA", "shares": 1, "price_eur": 369.0488}, {"timestamp": "2026-06-08T15:28", "action": "BUY", "ticker": "MSFT", "shares": 1, "price_eur": 378.9066}, {"timestamp": "2026-06-08T15:28", "action": "BUY", "ticker": "GOOGL", "shares": 1, "price_eur": 334.4844}, {"timestamp": "2026-06-08T15:23", "action": "SELL", "ticker": "BP.L", "shares": 1, "price_eur": 631.6603}, {"timestamp": "2026-06-08T15:21", "action": "SELL", "ticker": "MSFT", "shares": 1, "price_eur": 379.2951}, {"timestamp": "2026-06-08T15:21", "action": "SELL", "ticker": "GOOGL", "shares": 1, "price_eur": 334.3096}, {"timestamp": "2026-06-08T15:21", "action": "SELL", "ticker": "TSLA", "shares": 1, "price_eur": 370.0332}, {"timestamp": "2026-06-08T15:21", "action": "BUY", "ticker": "BP.L", "shares": 1, "price_eur": 639.639}, {"timestamp": "2026-06-08T15:21", "action": "BUY", "ticker": "ENEL.MI", "shares": 15, "price_eur": 9.606}, {"timestamp": "2026-06-08T15:21", "action": "BUY", "ticker": "LDO.MI", "shares": 2, "price_eur": 51.68}, {"timestamp": "2026-06-08T15:21", "action": "BUY", "ticker": "MONC.MI", "shares": 2, "price_eur": 55.28}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "AAPL", "shares": 1, "price_eur": 272.226}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "MSFT", "shares": 1, "price_eur": 379.8864}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "GOOGL", "shares": 1, "price_eur": 334.466}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "AMZN", "shares": 1, "price_eur": 227.7276}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "TSLA", "shares": 1, "price_eur": 371.1924}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "JPM", "shares": 1, "price_eur": 288.0198}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "NVDA", "shares": 1, "price_eur": 192.0684}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "JNJ", "shares": 1, "price_eur": 214.0196}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "V", "shares": 1, "price_eur": 295.0532}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "KO", "shares": 2, "price_eur": 73.0112}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "ENI.MI", "shares": 6, "price_eur": 23.6}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "ISP.MI", "shares": 24, "price_eur": 5.56}];
-const sectorData = [{"sector": "Aerospace", "value": 103.02}, {"sector": "Auto", "value": 347.51}, {"sector": "Consumer", "value": 460.72}, {"sector": "Energy", "value": 141.39}, {"sector": "Financial", "value": 682.1}, {"sector": "Healthcare", "value": 200.87}, {"sector": "Tech", "value": 452.08}, {"sector": "Utilities", "value": 144.15}];
-const assetData = [{"ticker": "AAPL", "value": 271.97}, {"ticker": "AMZN", "value": 212.95}, {"ticker": "ENEL.MI", "value": 144.15}, {"ticker": "ENI.MI", "value": 141.39}, {"ticker": "ISP.MI", "value": 134.14}, {"ticker": "JNJ", "value": 200.87}, {"ticker": "JPM", "value": 270.71}, {"ticker": "KO", "value": 137.41}, {"ticker": "LDO.MI", "value": 103.02}, {"ticker": "MONC.MI", "value": 110.36}, {"ticker": "NVDA", "value": 180.11}, {"ticker": "TSLA", "value": 347.51}, {"ticker": "V", "value": 277.25}];
+const timestamps = ["2026-06-08T15:15:25.344157+00:00", "2026-06-08T15:21:08.402882+00:00", "2026-06-08T15:23:32.592056+00:00", "2026-06-08T15:28:54.861213+00:00", "2026-06-08T15:38:01.831061+00:00", "2026-06-08T15:41:30.924096+00:00"];
+const values = [3003.62, 3014.18, 2988.84, 2985.47, 2989.63, 2993.87];
+const cashHist = [4.28, 90.27, 721.93, 8.54, 351.21, 386.31];
+const posData = [{"ticker": "AAPL", "sector": "Tech", "exchange": "NASDAQ", "currency": "USD", "shares": 1, "equity_eur": 272.1, "pnl_eur": -0.12, "pnl_pct": -0.04}, {"ticker": "AMZN", "sector": "Consumer", "exchange": "NASDAQ", "currency": "USD", "shares": 1, "equity_eur": 213.57, "pnl_eur": -14.16, "pnl_pct": -6.22}, {"ticker": "ENEL.MI", "sector": "Utilities", "exchange": "BIT", "currency": "EUR", "shares": 15, "equity_eur": 144.03, "pnl_eur": -0.06, "pnl_pct": -0.04}, {"ticker": "ENI.MI", "sector": "Energy", "exchange": "BIT", "currency": "EUR", "shares": 6, "equity_eur": 141.24, "pnl_eur": -0.36, "pnl_pct": -0.25}, {"ticker": "GOOGL", "sector": "Tech", "exchange": "NASDAQ", "currency": "USD", "shares": 1, "equity_eur": 314.35, "pnl_eur": -19.49, "pnl_pct": -5.84}, {"ticker": "ISP.MI", "sector": "Financial", "exchange": "BIT", "currency": "EUR", "shares": 24, "equity_eur": 133.9, "pnl_eur": 0.46, "pnl_pct": 0.34}, {"ticker": "JNJ", "sector": "Healthcare", "exchange": "NYSE", "currency": "USD", "shares": 1, "equity_eur": 201.13, "pnl_eur": -12.89, "pnl_pct": -6.02}, {"ticker": "JPM", "sector": "Financial", "exchange": "NYSE", "currency": "USD", "shares": 1, "equity_eur": 271.02, "pnl_eur": -17.0, "pnl_pct": -5.9}, {"ticker": "KO", "sector": "Consumer", "exchange": "NYSE", "currency": "USD", "shares": 2, "equity_eur": 137.41, "pnl_eur": -8.61, "pnl_pct": -5.9}, {"ticker": "LDO.MI", "sector": "Aerospace", "exchange": "BIT", "currency": "EUR", "shares": 2, "equity_eur": 103.06, "pnl_eur": -0.3, "pnl_pct": -0.29}, {"ticker": "MONC.MI", "sector": "Consumer", "exchange": "BIT", "currency": "EUR", "shares": 2, "equity_eur": 110.28, "pnl_eur": -0.28, "pnl_pct": -0.25}, {"ticker": "NVDA", "sector": "Tech", "exchange": "NASDAQ", "currency": "USD", "shares": 1, "equity_eur": 180.57, "pnl_eur": -11.5, "pnl_pct": -5.99}, {"ticker": "V", "sector": "Financial", "exchange": "NYSE", "currency": "USD", "shares": 1, "equity_eur": 277.61, "pnl_eur": -17.44, "pnl_pct": -5.91}];
+const txData = [{"timestamp": "2026-06-08T15:41", "action": "BUY", "ticker": "GOOGL", "shares": 1, "price_eur": 333.8312}, {"timestamp": "2026-06-08T15:41", "action": "SELL", "ticker": "TSLA", "shares": 1, "price_eur": 368.9338}, {"timestamp": "2026-06-08T15:38", "action": "SELL", "ticker": "MSFT", "shares": 1, "price_eur": 378.028}, {"timestamp": "2026-06-08T15:38", "action": "SELL", "ticker": "GOOGL", "shares": 1, "price_eur": 333.6932}, {"timestamp": "2026-06-08T15:38", "action": "BUY", "ticker": "TSLA", "shares": 1, "price_eur": 369.0488}, {"timestamp": "2026-06-08T15:28", "action": "BUY", "ticker": "MSFT", "shares": 1, "price_eur": 378.9066}, {"timestamp": "2026-06-08T15:28", "action": "BUY", "ticker": "GOOGL", "shares": 1, "price_eur": 334.4844}, {"timestamp": "2026-06-08T15:23", "action": "SELL", "ticker": "BP.L", "shares": 1, "price_eur": 631.6603}, {"timestamp": "2026-06-08T15:21", "action": "SELL", "ticker": "MSFT", "shares": 1, "price_eur": 379.2951}, {"timestamp": "2026-06-08T15:21", "action": "SELL", "ticker": "GOOGL", "shares": 1, "price_eur": 334.3096}, {"timestamp": "2026-06-08T15:21", "action": "SELL", "ticker": "TSLA", "shares": 1, "price_eur": 370.0332}, {"timestamp": "2026-06-08T15:21", "action": "BUY", "ticker": "BP.L", "shares": 1, "price_eur": 639.639}, {"timestamp": "2026-06-08T15:21", "action": "BUY", "ticker": "ENEL.MI", "shares": 15, "price_eur": 9.606}, {"timestamp": "2026-06-08T15:21", "action": "BUY", "ticker": "LDO.MI", "shares": 2, "price_eur": 51.68}, {"timestamp": "2026-06-08T15:21", "action": "BUY", "ticker": "MONC.MI", "shares": 2, "price_eur": 55.28}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "AAPL", "shares": 1, "price_eur": 272.226}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "MSFT", "shares": 1, "price_eur": 379.8864}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "GOOGL", "shares": 1, "price_eur": 334.466}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "AMZN", "shares": 1, "price_eur": 227.7276}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "TSLA", "shares": 1, "price_eur": 371.1924}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "JPM", "shares": 1, "price_eur": 288.0198}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "NVDA", "shares": 1, "price_eur": 192.0684}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "JNJ", "shares": 1, "price_eur": 214.0196}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "V", "shares": 1, "price_eur": 295.0532}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "KO", "shares": 2, "price_eur": 73.0112}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "ENI.MI", "shares": 6, "price_eur": 23.6}, {"timestamp": "2026-06-08T15:15", "action": "BUY", "ticker": "ISP.MI", "shares": 24, "price_eur": 5.56}];
+const sectorData = [{"sector": "Aerospace", "value": 103.06}, {"sector": "Consumer", "value": 461.26}, {"sector": "Energy", "value": 141.24}, {"sector": "Financial", "value": 682.53}, {"sector": "Healthcare", "value": 201.13}, {"sector": "Tech", "value": 767.02}, {"sector": "Utilities", "value": 144.03}];
+const assetData = [{"ticker": "AAPL", "value": 272.1}, {"ticker": "AMZN", "value": 213.57}, {"ticker": "ENEL.MI", "value": 144.03}, {"ticker": "ENI.MI", "value": 141.24}, {"ticker": "GOOGL", "value": 314.35}, {"ticker": "ISP.MI", "value": 133.9}, {"ticker": "JNJ", "value": 201.13}, {"ticker": "JPM", "value": 271.02}, {"ticker": "KO", "value": 137.41}, {"ticker": "LDO.MI", "value": 103.06}, {"ticker": "MONC.MI", "value": 110.28}, {"ticker": "NVDA", "value": 180.57}, {"ticker": "V", "value": 277.61}];
 
 Plotly.plot('chart-equity', [{
   x: timestamps, y: values, type:'scatter', mode:'lines+markers',
@@ -454,7 +470,7 @@ Plotly.plot('chart-equity', [{
   font:{color:'#94a3b8',size:11},
   xaxis:{gridcolor:'#334155'}, yaxis:{gridcolor:'#334155',title:'EUR'},
   margin:{l:50,r:20,t:10,b:30}, legend:{orientation:'h',y:1.1},
-  hovermode:'x unified'
+  hovermode:'x unified', height:320
 });
 
 if(assetData.length){
@@ -465,7 +481,7 @@ if(assetData.length){
     hovertemplate:'%{label}<br>%{value:.2f} EUR<extra></extra>'
   }], {
     paper_bgcolor:'#1e293b', font:{color:'#94a3b8',size:11},
-    margin:{l:0,r:0,t:0,b:0}
+    margin:{l:0,r:0,t:0,b:0}, height:320
   });
 }
 
@@ -478,7 +494,7 @@ if(sectorData.length){
     paper_bgcolor:'#1e293b', plot_bgcolor:'#1e293b',
     font:{color:'#94a3b8',size:11},
     xaxis:{gridcolor:'#334155'}, yaxis:{gridcolor:'#334155',title:'EUR'},
-    margin:{l:50,r:20,t:10,b:40}
+    margin:{l:50,r:20,t:10,b:40}, height:320
   });
 }
 
@@ -494,10 +510,10 @@ Plotly.plot('chart-drawdown',[{
   paper_bgcolor:'#1e293b', plot_bgcolor:'#1e293b',
   font:{color:'#94a3b8',size:11},
   xaxis:{gridcolor:'#334155'}, yaxis:{gridcolor:'#334155',title:'%',range:[-50,5]},
-  margin:{l:50,r:20,t:10,b:30}
+  margin:{l:50,r:20,t:10,b:30}, height:320
 });
 
-const dailyRets = [0.35157576524327133, -0.8406929911285885, -0.11275277365132778, 0.13934154421247943];
+const dailyRets = [0.35157576524327133, -0.8406929911285885, -0.11275277365132778, 0.13934154421247943, 0.14182357014077934];
 if(dailyRets.length){
   Plotly.plot('chart-returns',[{
     x:dailyRets, type:'histogram', nbinsx:20,
@@ -508,7 +524,7 @@ if(dailyRets.length){
     font:{color:'#94a3b8',size:11},
     xaxis:{gridcolor:'#334155',title:'Return %'},
     yaxis:{gridcolor:'#334155',title:'Freq'},
-    margin:{l:50,r:20,t:10,b:40}
+    margin:{l:50,r:20,t:10,b:40}, height:320
   });
 }
 
@@ -524,7 +540,7 @@ if(pnlData.length){
     font:{color:'#94a3b8',size:11},
     xaxis:{gridcolor:'#334155',title:'PnL EUR'},
     yaxis:{gridcolor:'#334155'},
-    margin:{l:60,r:20,t:10,b:40}
+    margin:{l:60,r:20,t:10,b:40}, height:320
   });
 }
 </script>
