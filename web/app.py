@@ -1,13 +1,16 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+# Ensure parent directory and scripts/ are on the path
+parent_dir = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0, parent_dir)
+sys.path.insert(0, os.path.join(parent_dir, "scripts"))
 
 from flask import Flask
 
 from web.live_dashboard import load_portfolio, build_live_html
 from web.price_cache import get_live_prices
-from main_pipeline import UNIVERSE
+from config import UNIVERSE
 
 app = Flask(__name__)
 
