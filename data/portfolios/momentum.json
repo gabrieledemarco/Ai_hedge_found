@@ -3,7 +3,7 @@
   "metadata": {
     "initial_capital": 3000.0,
     "current_cash": 331.85,
-    "price_source": "yfinance"
+    "price_source": "fallback"
   },
   "current_positions": {
     "AAPL": {
@@ -221,6 +221,78 @@
         }
       ],
       "reasoning": "AAPL: BUY 1 @ 251.81EUR (deviation 0.1000, weight 0.100)\nMSFT: BUY 1 @ 347.26EUR (deviation 0.1000, weight 0.100)\nGOOGL: BUY 1 @ 311.22EUR (deviation 0.1000, weight 0.100)\nAMZN: BUY 1 @ 210.22EUR (deviation 0.1000, weight 0.100)\nTSLA: BUY 1 @ 336.73EUR (deviation 0.1000, weight 0.100)\nJPM: BUY 1 @ 269.25EUR (deviation 0.1000, weight 0.100)\nNVDA: BUY 1 @ 173.96EUR (deviation 0.1000, weight 0.100)\nJNJ: BUY 1 @ 204.86EUR (deviation 0.1000, weight 0.100)\nV: BUY 1 @ 280.38EUR (deviation 0.1000, weight 0.100)\nKO: BUY 4 @ 70.62EUR (deviation 0.1000, weight 0.100)\nULVR.L: HOLD (deviation 0.0000 < 0.05)\nHSBA.L: HOLD (deviation 0.0000 < 0.05)\nBP.L: HOLD (deviation 0.0000 < 0.05)\nGSK.L: HOLD (deviation 0.0000 < 0.05)\nRIO.L: HOLD (deviation 0.0000 < 0.05)\nENI.MI: HOLD (deviation 0.0000 < 0.05)\nISP.MI: HOLD (deviation 0.0000 < 0.05)\nENEL.MI: HOLD (deviation 0.0000 < 0.05)\nLDO.MI: HOLD (deviation 0.0000 < 0.05)\nMONC.MI: HOLD (deviation 0.0000 < 0.05)"
+    },
+    {
+      "timestamp": "2026-06-09T17:34:14.223298+00:00",
+      "session": "sera",
+      "total_value_eur": 1457.06,
+      "current_cash": 331.85,
+      "positions": {
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 251.8083
+        },
+        "MSFT": {
+          "shares": 1,
+          "avg_price": 347.2587
+        },
+        "GOOGL": {
+          "shares": 1,
+          "avg_price": 311.2223
+        },
+        "AMZN": {
+          "shares": 1,
+          "avg_price": 210.2176
+        },
+        "TSLA": {
+          "shares": 1,
+          "avg_price": 336.73
+        },
+        "JPM": {
+          "shares": 1,
+          "avg_price": 269.2507
+        },
+        "NVDA": {
+          "shares": 1,
+          "avg_price": 173.9563
+        },
+        "JNJ": {
+          "shares": 1,
+          "avg_price": 204.8581
+        },
+        "V": {
+          "shares": 1,
+          "avg_price": 280.3767
+        },
+        "KO": {
+          "shares": 4,
+          "avg_price": 70.618
+        }
+      },
+      "prices_used": {
+        "AAPL": 100.0,
+        "MSFT": 100.0,
+        "GOOGL": 100.0,
+        "AMZN": 100.0,
+        "TSLA": 100.0,
+        "JPM": 100.0,
+        "NVDA": 100.0,
+        "JNJ": 100.0,
+        "V": 100.0,
+        "KO": 100.0,
+        "ULVR.L": 150.0,
+        "HSBA.L": 150.0,
+        "BP.L": 150.0,
+        "GSK.L": 150.0,
+        "RIO.L": 150.0,
+        "ENI.MI": 100.0,
+        "ISP.MI": 100.0,
+        "ENEL.MI": 100.0,
+        "LDO.MI": 100.0,
+        "MONC.MI": 100.0
+      },
+      "transactions": [],
+      "reasoning": "ATTENZIONE: alcuni prezzi sono fallback. Trading disabilitato, solo report."
     }
   ]
 }
