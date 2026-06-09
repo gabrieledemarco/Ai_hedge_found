@@ -109,6 +109,52 @@ def _compute_metrics(history: list[dict]) -> dict[str, Any]:
     }
 
 
+def get_portfolio_json(portfolio: dict, live_prices: dict[str, float]) -> dict:
+    _load_universe()
+    positions = portfolio.get("current_positions", {})
+    metadata = portfolio.get("metadata", {})
+    cash = metadata.get("current_cash", 0)
+    total_eur = cash
+    assets = []
+    for ticker in sorted(positions.keys()):
+        p = positions[ticker]
+        cur = live_prices.get(ticker, p["avg_price"])
+        ccy = UNIVERSE.get(ticker, {}).get("currency", "EUR")
+        cur_eur = _convert_price(cur, ccy)
+        eq = p["shares"] * cur_eur
+        cost = p["shares"] * p["avg_price"]
+        pnl = round(eq - cost, 2)
+        pnl_pct = (
+            round(((cur_eur / p["avg_price"]) - 1) * 100, 2)
+            if p["avg_price"] > 0
+            else 0
+        )
+        total_eur += eq
+        assets.append(
+            {
+                "ticker": ticker,
+                "shares": p["shares"],
+                "avg_price": p["avg_price"],
+                "current_price": round(cur_eur, 2),
+                "equity": round(eq, 2),
+                "pnl": pnl,
+                "pnl_pct": pnl_pct,
+                "currency": ccy,
+                "exchange": UNIVERSE.get(ticker, {}).get("exchange", ""),
+                "sector": UNIVERSE.get(ticker, {}).get("sector", ""),
+            }
+        )
+    history = portfolio.get("iterations_log", [])
+    last_ts = history[-1]["timestamp"] if history else None
+    return {
+        "total_value": round(total_eur, 2),
+        "cash": round(cash, 2),
+        "positions_count": len(positions),
+        "assets": assets,
+        "last_update": last_ts,
+    }
+
+
 def build_live_html(portfolio: dict, live_prices: dict[str, float]) -> str:
     _load_universe()
     history = portfolio.get("iterations_log", [])
@@ -353,6 +399,26 @@ def build_live_html(portfolio: dict, live_prices: dict[str, float]) -> str:
 
     total_label = "LIVE" if live_prices else "STALE"
 
+    pos_data_json = json.dumps(
+        [
+            {
+                "ticker": t,
+                "shares": p["shares"],
+                "avg_price": p["avg_price"],
+                "currency": UNIVERSE.get(t, {}).get("currency", "EUR"),
+                "exchange": UNIVERSE.get(t, {}).get("exchange", ""),
+                "sector": UNIVERSE.get(t, {}).get("sector", ""),
+                "initial_price": live_prices.get(t, p["avg_price"]),
+                "initial_equity": pos_equity.get(t, 0),
+            }
+            for t, p in sorted(positions.items())
+        ]
+    )
+
+    initial_total = round(total_eur, 2)
+    initial_capital = metadata.get("initial_capital", 3000)
+    initial_cash = round(cash, 2)
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -365,6 +431,9 @@ body {{ font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-seri
 .header {{ background:linear-gradient(135deg,#1e293b,#0f172a); padding:24px 32px; border-bottom:1px solid #334155; }}
 .header h1 {{ font-size:24px; font-weight:700; color:#f8fafc; }}
 .header p {{ color:#94a3b8; font-size:13px; margin-top:4px; }}
+.nav {{ display:flex; gap:8px; padding:12px 32px; background:#1e293b; border-bottom:1px solid #334155; }}
+.nav a {{ color:#94a3b8; text-decoration:none; padding:6px 14px; border-radius:6px; font-size:13px; font-weight:500; }}
+.nav a:hover {{ background:#334155; color:#f8fafc; }}
 .badge {{ display:inline-block; background:#22c55e; color:#0f172a; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; margin-left:8px; }}
 .container {{ max-width:1200px; margin:0 auto; padding:24px; }}
 .metric-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:24px; }}
@@ -372,6 +441,10 @@ body {{ font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-seri
 .card .val {{ font-size:22px; font-weight:700; color:#22c55e; }}
 .card .lbl {{ font-size:11px; color:#94a3b8; margin-top:4px; text-transform:uppercase; letter-spacing:0.5px; }}
 .charts img {{ max-width:100%; height:auto; margin-bottom:12px; }}
+.widgets {{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }}
+.widget-full {{ grid-column:1/-1; }}
+.widget-box {{ background:#1e293b; border:1px solid #334155; border-radius:10px; padding:12px; min-height:400px; }}
+.widget-box h3 {{ font-size:14px; font-weight:600; margin-bottom:8px; color:#cbd5e1; }}
 table {{ width:100%; border-collapse:collapse; font-size:13px; }}
 th {{ background:#334155; color:#94a3b8; text-align:left; padding:8px 10px; font-weight:600; text-transform:uppercase; font-size:11px; letter-spacing:0.5px; }}
 td {{ padding:8px 10px; border-bottom:1px solid #1e293b; }}
@@ -380,24 +453,133 @@ tr:hover td {{ background:#1e293b; }}
 .tx-buy {{ color:#22c55e; font-weight:600; }} .tx-sell {{ color:#ef4444; font-weight:600; }}
 .section-title {{ font-size:16px; font-weight:600; margin:24px 0 12px; color:#f1f5f9; }}
 .refresh-note {{ text-align:center; color:#64748b; font-size:12px; margin-top:8px; }}
-@media(max-width:768px){{ .metric-grid {{ grid-template-columns:repeat(2,1fr); }} }}
+.live-dot {{ display:inline-block; width:8px; height:8px; border-radius:50%; background:#22c55e; margin-right:6px; animation:pulse 2s infinite; }}
+@keyframes pulse {{ 0%{{opacity:1}} 50%{{opacity:0.4}} 100%{{opacity:1}} }}
+@media(max-width:768px){{ .metric-grid {{ grid-template-columns:repeat(2,1fr); }} .widgets {{ grid-template-columns:1fr; }} }}
 </style>
 </head>
 <body>
 <div class="header">
   <h1>Paper Trading Dashboard <span class="badge">{total_label}</span></h1>
-  <p>{now} &middot; Capitale: {metadata.get("initial_capital", 0):.0f} EUR &middot; Prezzi yfinance live</p>
+  <p>{now} &middot; Capitale: {initial_capital:.0f} EUR &middot; <span class="live-dot"></span>Auto-refresh ogni 30s</p>
+</div>
+<div class="nav">
+  <a href="/">Dashboard</a>
+  <a href="/screener">Screener</a>
+  <a href="/chart/AAPL">Chart</a>
 </div>
 <div class="container">
   {metric_cards}
   <div class="charts">{chart_html}</div>
-  <div class="section-title">Posizioni Aperte ({len(positions)})</div>
-  <div style="overflow-x:auto;"><table><thead><tr><th>Ticker</th><th>Exc</th><th>Sector</th><th>CCY</th><th>Shares</th><th>Avg</th><th>Live Price</th><th>Equity</th><th>PnL Live</th><th>PnL%</th></tr></thead>
-    <tbody>{pos_rows}</tbody></table></div>
+
+  <div class="widgets">
+    <div class="widget-box widget-full">
+      <h3>Market Overview — NASDAQ, NYSE, FTSE, BIT</h3>
+      <!-- TradingView Widget BEGIN -->
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+        {{
+          "colorTheme": "dark",
+          "dateRange": "1M",
+          "showChart": true,
+          "locale": "it",
+          "width": "100%",
+          "height": "400",
+          "largeChartUrl": "",
+          "tabs": [
+            {{ "title": "NASDAQ", "symbols": [
+              {{"s": "NASDAQ:AAPL"}},{{"s": "NASDAQ:MSFT"}},{{"s": "NASDAQ:GOOGL"}},
+              {{"s": "NASDAQ:AMZN"}},{{"s": "NASDAQ:TSLA"}},{{"s": "NASDAQ:NVDA"}}
+            ]}},
+            {{ "title": "NYSE", "symbols": [
+              {{"s": "NYSE:JPM"}},{{"s": "NYSE:JNJ"}},{{"s": "NYSE:V"}},{{"s": "NYSE:KO"}}
+            ]}},
+            {{ "title": "FTSE", "symbols": [
+              {{"s": "LSE:ULVR"}},{{"s": "LSE:HSBA"}},{{"s": "LSE:BP"}},{{"s": "LSE:GSK"}},{{"s": "LSE:RIO"}}
+            ]}},
+            {{ "title": "BIT", "symbols": [
+              {{"s": "MIL:ENI"}},{{"s": "MIL:ISP"}},{{"s": "MIL:ENEL"}},{{"s": "MIL:LDO"}},{{"s": "MIL:MONC"}}
+            ]}}
+          ]
+        }}
+        </script>
+      </div>
+      <!-- TradingView Widget END -->
+    </div>
+  </div>
+
+  <div class="section-title">Posizioni Aperte (<span id="pos-count">{len(positions)}</span>)</div>
+  <div style="overflow-x:auto;">
+  <table>
+    <thead><tr><th>Ticker</th><th>Exc</th><th>Sector</th><th>CCY</th><th>Shares</th><th>Avg</th><th>Live Price</th><th>Equity</th><th>PnL Live</th><th>PnL%</th></tr></thead>
+    <tbody id="positions-table">{pos_rows}</tbody>
+  </table>
+  </div>
+
   <div class="section-title">Transazioni</div>
   <div style="overflow-x:auto;max-height:400px;overflow-y:auto;"><table><thead><tr><th>Date</th><th>Action</th><th>Ticker</th><th>Shares</th><th>Price</th><th>Total</th></tr></thead>
     <tbody>{tx_rows}</tbody></table></div>
-  <p class="refresh-note">I prezzi vengono aggiornati da yfinance ad ogni caricamento pagina. Cache: 60s.</p>
+  <p class="refresh-note" id="refresh-note">Aggiornamento automatico ogni 30 secondi. Ultimo refresh: {now}</p>
 </div>
+
+<script>
+const FX_RATES = {{ "USD": 0.92, "GBP": 1.17, "EUR": 1.0 }};
+const PORTFOLIO_DATA = {pos_data_json};
+
+function convertPrice(price, ccy) {{
+  return price * (FX_RATES[ccy] || 1.0);
+}}
+
+function updatePnL(prices) {{
+  let totalEquity = 0;
+  const priceMap = {{}};
+  prices.forEach(p => {{ priceMap[p.ticker] = p.price; }});
+
+  const tbody = document.getElementById('positions-table');
+  const rows = tbody.querySelectorAll('tr');
+  let totalPnl = 0;
+  let totalReturn = 0;
+
+  PORTFOLIO_DATA.forEach((pos, i) => {{
+    const livePrice = priceMap[pos.ticker] || pos.initial_price;
+    const livePriceEur = convertPrice(livePrice, pos.currency);
+    const avgPriceEur = convertPrice(pos.avg_price, pos.currency);
+    const equity = pos.shares * livePriceEur;
+    const cost = pos.shares * avgPriceEur;
+    const pnl = equity - cost;
+    const pnlPct = avgPriceEur > 0 ? ((livePriceEur / avgPriceEur) - 1) * 100 : 0;
+    totalEquity += equity;
+    totalPnl += pnl;
+    totalReturn += (livePriceEur - avgPriceEur) / avgPriceEur;
+
+    if (rows[i]) {{
+      const cells = rows[i].querySelectorAll('td');
+      if (cells.length >= 10) {{
+        cells[6].textContent = livePriceEur.toFixed(2);
+        cells[7].textContent = equity.toFixed(2);
+        cells[8].textContent = (pnl >= 0 ? '+' : '') + pnl.toFixed(2);
+        cells[8].className = pnl >= 0 ? 'pos' : 'neg';
+        cells[9].textContent = (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%';
+        cells[9].className = pnl >= 0 ? 'pos' : 'neg';
+      }}
+    }}
+  }});
+
+  document.getElementById('refresh-note').textContent =
+    'Aggiornamento automatico ogni 30 secondi. Ultimo refresh: ' + new Date().toISOString().slice(0,19).replace('T',' ');
+}}
+
+function fetchPrices() {{
+  fetch('/api/prices')
+    .then(r => r.json())
+    .then(data => {{
+      if (data.ts) updatePnL(data.ts);
+    }})
+    .catch(e => console.log('Price fetch error:', e));
+}}
+
+setInterval(fetchPrices, 30000);
+</script>
 </body>
 </html>"""

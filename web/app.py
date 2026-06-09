@@ -1,14 +1,13 @@
 import os
 import sys
 
-# Ensure parent directory and scripts/ are on the path
 parent_dir = os.path.dirname(os.path.dirname(__file__))
 sys.path.insert(0, parent_dir)
 sys.path.insert(0, os.path.join(parent_dir, "scripts"))
 
-from flask import Flask
+from flask import Flask, jsonify
 
-from web.live_dashboard import load_portfolio, build_live_html
+from web.live_dashboard import load_portfolio, build_live_html, get_portfolio_json
 from web.price_cache import get_live_prices
 from config import UNIVERSE
 
@@ -26,15 +25,96 @@ def dashboard():
     except Exception as e:
         print(f"[FATAL] dashboard error: {e}")
         return (
-            """
-        <html><body style="background:#0f172a;color:#e2e8f0;font-family:sans-serif;padding:40px;">
-        <h1>Paper Trading Dashboard</h1>
-        <p>Servizio momentaneamente non disponibile. I dati verranno caricati al prossimo refresh.</p>
-        <p style="color:#64748b;">Tempo di attesa tipico: 30-60s (cold start + yfinance).</p>
-        </body></html>
-        """,
+            "<html><body style='background:#0f172a;color:#e2e8f0;padding:40px;'>"
+            "<h1>Paper Trading Dashboard</h1><p>Servizio momentaneamente non disponibile.</p>"
+            "<p style='color:#64748b;'>Ricarica la pagina tra qualche secondo.</p></body></html>",
             200,
         )
+
+
+@app.route("/api/portfolio")
+def api_portfolio():
+    try:
+        portfolio = load_portfolio()
+        tickers = list(UNIVERSE.keys())
+        live_prices = get_live_prices(tickers, ttl=300)
+        data = get_portfolio_json(portfolio, live_prices)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/prices")
+def api_prices():
+    try:
+        tickers = list(UNIVERSE.keys())
+        prices = get_live_prices(tickers, ttl=300)
+        return jsonify(
+            {
+                "ts": [
+                    {
+                        "ticker": t,
+                        "price": round(p, 4),
+                        "ccy": UNIVERSE[t]["currency"],
+                        "name": t,
+                    }
+                    for t, p in prices.items()
+                ]
+            }
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/chart/<ticker>")
+def chart_view(ticker):
+    ticker_upper = ticker.upper()
+    if ticker_upper not in UNIVERSE:
+        return f"<h3>Ticker {ticker_upper} sconosciuto</h3>", 404
+    return f"""<!DOCTYPE html>
+<html><head><title>{ticker_upper} Chart</title>
+<style>body {{ margin:0; background:#0f172a; }}</style></head>
+<body>
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container" style="height:100vh;width:100%;">
+  <div id="tv-chart"></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <script>
+  new TradingView.widget({{
+    "width": "100%", "height": "100%",
+    "symbol": "{"NASDAQ:" if UNIVERSE[ticker_upper]["exchange"] == "NASDAQ" else "NYSE:" if UNIVERSE[ticker_upper]["exchange"] == "NYSE" else "LSE:" if UNIVERSE[ticker_upper]["exchange"] == "FTSE" else "MIL:"}{ticker_upper.replace(".MI", "").replace(".L", "")}",
+    "interval": "D", "timezone": "Europe/Rome",
+    "theme": "dark", "style": "1", "locale": "it",
+    "toolbar_bg": "#1e293b", "enable_publishing": false,
+    "hide_side_toolbar": false, "allow_symbol_change": true,
+    "studies": ["RSI@tv-basicstudies","MASimple@tv-basicstudies","MACD@tv-basicstudies"]
+  }});
+  </script>
+</div>
+<!-- TradingView Widget END -->
+</body></html>"""
+
+
+@app.route("/screener")
+def screener():
+    return """<!DOCTYPE html>
+<html><head><title>Stock Screener</title>
+<style>body{margin:0;background:#0f172a;}</style></head>
+<body>
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container" style="height:100vh;width:100%;">
+  <div class="tradingview-widget-container__widget"></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-screener.js" async>
+  {
+    "width": "100%", "height": "100%",
+    "defaultColumn": "overview", "screener_type": "stock_market",
+    "displayCurrency": "EUR", "colorTheme": "dark",
+    "locale": "it", "market": "global"
+  }
+  </script>
+</div>
+<!-- TradingView Widget END -->
+</body></html>"""
 
 
 @app.route("/health")
