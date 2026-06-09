@@ -14,7 +14,6 @@ permissions:
   contents: write
 
 env:
-  TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
   ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
   TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -34,10 +33,22 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Cache HuggingFace models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: ${{ runner.os }}-hf-finbert-v1
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas requests yfinance matplotlib
+          pip install -r requirements.txt
 
       - name: Determine session hour
         id: session
@@ -54,7 +65,7 @@ jobs:
       - name: Fetch latest portfolio from remote
         run: |
           git fetch origin main
-          git checkout origin/main -- data/portfolio_history.json
+          git checkout origin/main -- data/portfolio_history.json data/portfolios/ data/signals.json docs/ || true
 
       - name: Run pipeline
         run: |
@@ -65,7 +76,7 @@ jobs:
         run: |
           git config user.name "Paper Trading Bot"
           git config user.email "bot@paper-trading.local"
-          git add data/portfolio_history.json docs/index.html
+          git add data/portfolio_history.json data/portfolios/ data/signals.json docs/index.html
           if git diff --cached --quiet; then
             echo "No changes to portfolio — skipping commit"
           else

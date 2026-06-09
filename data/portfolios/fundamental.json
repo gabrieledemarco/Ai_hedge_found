@@ -1,0 +1,10 @@
+{
+  "strategy": "fundamental",
+  "metadata": {
+    "initial_capital": 3000.0,
+    "current_cash": 3000.0,
+    "price_source": "yfinance"
+  },
+  "current_positions": {},
+  "iterations_log": []
+}

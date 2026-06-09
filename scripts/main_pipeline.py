@@ -1,46 +1,50 @@
 import argparse
 import os
+import sys
 import math
+import json
 from datetime import datetime, timezone
 
-import pandas as pd
 import requests
 import yfinance as yf
 
-from portfolio_io import load_portfolio, log_iteration
+# Ensure scripts/ directory is on the path so config and strategies are importable
+sys.path.insert(0, os.path.dirname(__file__))
+
+from config import UNIVERSE, STRATEGIES, INITIAL_CAPITAL, REBALANCE_THRESHOLD
+from portfolio_io import (
+    load_portfolio,
+    log_iteration,
+    load_portfolio_for_strategy,
+    log_iteration_for_strategy,
+)
 from telegram_utils import send_telegram_message, send_telegram_photo
 from chart_utils import generate_dashboard
 from dashboard_generator import build_html
 
-TIINGO_KEY = os.environ.get("TIINGO_API_KEY", "")
+from strategies import (
+    EqualWeightStrategy,
+    MomentumStrategy,
+    FundamentalStrategy,
+    SentimentStrategy,
+)
+
 AV_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "")
 
-UNIVERSE = {
-    "AAPL": {"exchange": "NASDAQ", "currency": "USD", "sector": "Tech"},
-    "MSFT": {"exchange": "NASDAQ", "currency": "USD", "sector": "Tech"},
-    "GOOGL": {"exchange": "NASDAQ", "currency": "USD", "sector": "Tech"},
-    "AMZN": {"exchange": "NASDAQ", "currency": "USD", "sector": "Consumer"},
-    "TSLA": {"exchange": "NASDAQ", "currency": "USD", "sector": "Auto"},
-    "JPM": {"exchange": "NYSE", "currency": "USD", "sector": "Financial"},
-    "NVDA": {"exchange": "NASDAQ", "currency": "USD", "sector": "Tech"},
-    "JNJ": {"exchange": "NYSE", "currency": "USD", "sector": "Healthcare"},
-    "V": {"exchange": "NYSE", "currency": "USD", "sector": "Financial"},
-    "KO": {"exchange": "NYSE", "currency": "USD", "sector": "Consumer"},
-    "ULVR.L": {"exchange": "FTSE", "currency": "GBP", "sector": "Consumer"},
-    "HSBA.L": {"exchange": "FTSE", "currency": "GBP", "sector": "Financial"},
-    "BP.L": {"exchange": "FTSE", "currency": "GBP", "sector": "Energy"},
-    "GSK.L": {"exchange": "FTSE", "currency": "GBP", "sector": "Healthcare"},
-    "RIO.L": {"exchange": "FTSE", "currency": "GBP", "sector": "Materials"},
-    "ENI.MI": {"exchange": "BIT", "currency": "EUR", "sector": "Energy"},
-    "ISP.MI": {"exchange": "BIT", "currency": "EUR", "sector": "Financial"},
-    "ENEL.MI": {"exchange": "BIT", "currency": "EUR", "sector": "Utilities"},
-    "LDO.MI": {"exchange": "BIT", "currency": "EUR", "sector": "Aerospace"},
-    "MONC.MI": {"exchange": "BIT", "currency": "EUR", "sector": "Consumer"},
+STRATEGY_INSTANCES = {
+    "equal_weight": EqualWeightStrategy(),
+    "momentum": MomentumStrategy(),
+    "fundamental": FundamentalStrategy(),
+    "sentiment": SentimentStrategy(),
 }
 
 
-def fetch_prices(tickers: list[str]) -> tuple[dict[str, float], bool]:
-    prices: dict[str, float] = {}
+# ---------------------------------------------------------------------------
+# Price / FX helpers
+# ---------------------------------------------------------------------------
+
+def fetch_prices(tickers: list) -> tuple:
+    prices: dict = {}
     all_real = True
     for t in tickers:
         try:
@@ -87,22 +91,14 @@ def fetch_fx_rate(base: str, quote: str = "EUR") -> float:
     return fallback_rates.get(base, 1.0)
 
 
-def convert_to_eur(amount: float, currency: str) -> float:
-    rate = fetch_fx_rate(currency, "EUR")
-    return amount * rate
-
-
-def calculate_targets(
-    total_capital_eur: float,
-) -> dict[str, float]:
-    num_assets = len(UNIVERSE)
-    target_weight = 1.0 / num_assets
-    return {ticker: total_capital_eur * target_weight for ticker in UNIVERSE}
+def convert_to_eur(amount: float, currency: str, fx_rates: dict = None) -> float:
+    if fx_rates and currency in fx_rates:
+        return amount * fx_rates[currency]
+    return amount * fetch_fx_rate(currency, "EUR")
 
 
 def validate_env() -> bool:
     checks = [
-        ("TIINGO_API_KEY", TIINGO_KEY, "Prezzi azionari (Tiingo)"),
         ("ALPHA_VANTAGE_KEY", AV_KEY, "Tassi FX (Alpha Vantage)"),
         ("TELEGRAM_TOKEN", os.environ.get("TELEGRAM_TOKEN", ""), "Bot Telegram"),
         ("TELEGRAM_CHAT_ID", os.environ.get("TELEGRAM_CHAT_ID", ""), "Chat Telegram"),
@@ -113,33 +109,47 @@ def validate_env() -> bool:
             print(f"[WARN] {name} non impostata — {label} userà dati di fallback")
             all_ok = False
     if not all_ok:
-        print(
-            "[WARN] Imposta i GitHub Secrets: Settings → Secrets and variables → Actions"
-        )
+        print("[WARN] Imposta i GitHub Secrets: Settings → Secrets and variables → Actions")
     return all_ok
 
 
-def run_pipeline(session_label: str) -> None:
-    print(
-        f"=== Paper Trading Pipeline | Session: {session_label} | {datetime.now(timezone.utc).isoformat()} ==="
-    )
-    validate_env()
-    portfolio = load_portfolio()
+def load_signals() -> dict:
+    """Load signals.json, return empty dict if missing/invalid."""
+    signals_path = os.path.join(os.path.dirname(__file__), "..", "data", "signals.json")
+    try:
+        with open(signals_path) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+# ---------------------------------------------------------------------------
+# Single-strategy pipeline
+# ---------------------------------------------------------------------------
+
+def run_strategy_pipeline(
+    strategy_name: str,
+    session_label: str,
+    prices: dict,
+    fx_rates: dict,
+    signals: dict,
+    all_prices_real: bool,
+) -> dict:
+    """
+    Run the trading pipeline for one strategy.
+    Returns {total_value_eur, cash_eur, transactions, reasoning_parts, portfolio}.
+    """
+    strategy = STRATEGY_INSTANCES[strategy_name]
+    portfolio = load_portfolio_for_strategy(strategy_name)
     tickers = list(UNIVERSE.keys())
 
-    prices, all_prices_real = fetch_prices(tickers)
-    fx_rates = {}
-    currencies_used = set(info["currency"] for info in UNIVERSE.values())
-    for c in currencies_used:
-        fx_rates[c] = fetch_fx_rate(c, "EUR")
-        print(f"  FX {c}/EUR = {fx_rates[c]:.4f}")
-
+    # --- Compute portfolio value ---
     portfolio_value_eur = 0.0
     position_values_eur = {}
     for ticker in tickers:
         price_local = prices.get(ticker, 0)
         currency = UNIVERSE[ticker]["currency"]
-        price_eur = convert_to_eur(price_local, currency)
+        price_eur = price_local * fx_rates.get(currency, 1.0)
         shares = portfolio["current_positions"].get(ticker, {}).get("shares", 0)
         pos_val_eur = price_eur * shares
         position_values_eur[ticker] = pos_val_eur
@@ -147,35 +157,38 @@ def run_pipeline(session_label: str) -> None:
 
     cash_eur = portfolio["metadata"]["current_cash"]
     portfolio_value_eur += cash_eur
-    print(f"  Portfolio total (incl. cash): {portfolio_value_eur:.2f} EUR")
-    print(f"  Cash: {cash_eur:.2f} EUR")
 
     if not all_prices_real:
         msg = (
-            "ATTENZIONE: alcuni prezzi sono fallback (fonte yfinance non disponibile). "
-            "Il trading è disabilitato fino a quando tutti i prezzi saranno reali. "
-            "Solo report generato, nessuna transazione eseguita."
+            "ATTENZIONE: alcuni prezzi sono fallback. "
+            "Trading disabilitato, solo report."
         )
-        print(f"[WARN] {msg}")
         portfolio["metadata"]["price_source"] = "fallback"
-        log_iteration(portfolio, session_label, portfolio_value_eur, [], prices, msg)
-        send_telegram_message(
-            f"FALLBACK: {session_label.upper()}\n{msg}\nNessun trade eseguito.",
-            session=session_label,
-            has_trades=False,
+        log_iteration_for_strategy(
+            strategy_name, portfolio, session_label, portfolio_value_eur, [], prices, msg
         )
-        return portfolio_value_eur
+        return {
+            "total_value_eur": portfolio_value_eur,
+            "cash_eur": cash_eur,
+            "transactions": [],
+            "reasoning_parts": [msg],
+            "portfolio": portfolio,
+            "has_trades": False,
+        }
 
     portfolio["metadata"]["price_source"] = "yfinance"
 
-    targets_eur = calculate_targets(portfolio_value_eur)
-    transactions: list[dict] = []
+    # --- Compute target weights from strategy ---
+    weights = strategy.compute_weights(UNIVERSE, prices, signals)
+
+    transactions = []
     reasoning_parts = []
     has_trades = False
 
     for ticker in tickers:
-        target_eur = targets_eur[ticker]
-        current_eur = position_values_eur[ticker]
+        target_weight = weights.get(ticker, 0.0)
+        target_eur = portfolio_value_eur * target_weight
+        current_eur = position_values_eur.get(ticker, 0.0)
         weight_deviation = (
             abs(target_eur - current_eur) / portfolio_value_eur
             if portfolio_value_eur > 0
@@ -184,12 +197,12 @@ def run_pipeline(session_label: str) -> None:
 
         price_local = prices.get(ticker, 0)
         currency = UNIVERSE[ticker]["currency"]
-        price_eur = convert_to_eur(price_local, currency)
+        price_eur = price_local * fx_rates.get(currency, 1.0)
         diff_eur = target_eur - current_eur
 
-        if weight_deviation < 0.05:
+        if weight_deviation < REBALANCE_THRESHOLD:
             reasoning_parts.append(
-                f"{ticker}: HOLD (deviation {weight_deviation:.4f} < 0.05)"
+                f"{ticker}: HOLD (deviation {weight_deviation:.4f} < {REBALANCE_THRESHOLD})"
             )
             continue
 
@@ -197,10 +210,13 @@ def run_pipeline(session_label: str) -> None:
             if cash_eur <= 0:
                 reasoning_parts.append(f"{ticker}: BUY skipped (no cash)")
                 continue
-            max_shares = math.floor(cash_eur / price_eur) if price_eur > 0 else 0
+            if price_eur <= 0:
+                reasoning_parts.append(f"{ticker}: BUY skipped (price=0)")
+                continue
+            max_shares = math.floor(cash_eur / price_eur)
             if max_shares <= 0:
                 reasoning_parts.append(
-                    f"{ticker}: BUY skipped (1 share @ {price_eur:.2f}€ > cash {cash_eur:.2f}€)"
+                    f"{ticker}: BUY skipped (1 share @ {price_eur:.2f}EUR > cash {cash_eur:.2f}EUR)"
                 )
                 continue
             needed_shares = max(1, math.floor(diff_eur / price_eur))
@@ -213,9 +229,7 @@ def run_pipeline(session_label: str) -> None:
             total_cost = entry["avg_price"] * entry["shares"] + cost
             portfolio["current_positions"][ticker] = {
                 "shares": total_shares,
-                "avg_price": round(total_cost / total_shares, 4)
-                if total_shares > 0
-                else 0,
+                "avg_price": round(total_cost / total_shares, 4) if total_shares > 0 else 0,
             }
             cash_eur -= cost
             portfolio["metadata"]["current_cash"] = round(cash_eur, 2)
@@ -229,17 +243,21 @@ def run_pipeline(session_label: str) -> None:
                 }
             )
             reasoning_parts.append(
-                f"{ticker}: BUY {shares_to_trade} @ {price_eur:.2f}€ "
-                f"(deviation {weight_deviation:.4f})"
+                f"{ticker}: BUY {shares_to_trade} @ {price_eur:.2f}EUR "
+                f"(deviation {weight_deviation:.4f}, weight {target_weight:.3f})"
             )
             has_trades = True
+
         elif diff_eur < 0:
             entry = portfolio["current_positions"].get(ticker, {"shares": 0})
             if entry["shares"] <= 0:
                 reasoning_parts.append(f"{ticker}: HOLD (no shares to sell)")
                 continue
+            if price_eur <= 0:
+                reasoning_parts.append(f"{ticker}: SELL skipped (price=0)")
+                continue
             shares_to_sell = min(
-                max(1, math.floor(abs(diff_eur) / price_eur)) if price_eur > 0 else 0,
+                max(1, math.floor(abs(diff_eur) / price_eur)),
                 entry["shares"],
             )
             if shares_to_sell <= 0:
@@ -261,93 +279,167 @@ def run_pipeline(session_label: str) -> None:
                 }
             )
             reasoning_parts.append(
-                f"{ticker}: SELL {shares_to_sell} @ {price_eur:.2f}€ "
-                f"(deviation {weight_deviation:.4f})"
+                f"{ticker}: SELL {shares_to_sell} @ {price_eur:.2f}EUR "
+                f"(deviation {weight_deviation:.4f}, weight {target_weight:.3f})"
             )
             has_trades = True
         else:
             reasoning_parts.append(f"{ticker}: HOLD (on target)")
 
+    # Recalculate total after trades
     cash_eur = portfolio["metadata"]["current_cash"]
     total_value_eur = cash_eur + sum(
-        convert_to_eur(
-            prices.get(t, 0)
-            * portfolio["current_positions"].get(t, {}).get("shares", 0),
-            UNIVERSE[t]["currency"],
-        )
+        prices.get(t, 0)
+        * fx_rates.get(UNIVERSE[t]["currency"], 1.0)
+        * portfolio["current_positions"].get(t, {}).get("shares", 0)
         for t in tickers
     )
 
     reasoning = "\n".join(reasoning_parts)
-    log_iteration(
-        portfolio, session_label, total_value_eur, transactions, prices, reasoning
+    log_iteration_for_strategy(
+        strategy_name, portfolio, session_label, total_value_eur, transactions, prices, reasoning
     )
 
-    print("")
-    print("--- TRANSAZIONI ---")
-    if transactions:
-        for t in transactions:
-            print(f"  {t['action']} {t['shares']}x {t['ticker']}")
-    else:
-        print("  Nessuna transazione.")
-    print("")
-    print("--- POSIZIONI DETTAGLIO ---")
-    pos = portfolio.get("current_positions", {})
-    pos_sorted = sorted(pos.keys())
-    for ticker in pos_sorted:
-        entry = pos[ticker]
-        shares = entry["shares"]
-        avg = entry["avg_price"]
-        cur_local = prices.get(ticker) or avg
-        cur = convert_to_eur(cur_local, UNIVERSE[ticker]["currency"])
-        eq = shares * cur
-        cost = shares * avg
-        pnl_e = eq - cost
-        pnl_p = ((cur / avg) - 1) * 100 if avg > 0 else 0
-        s = "+" if pnl_e >= 0 else ""
-        print(
-            f"  {ticker}: {shares}x | avg {avg:.2f} | cur {cur:.2f} | eq {eq:.2f} | PnL {s}{pnl_e:.2f} ({s}{pnl_p:.2f}%)"
-        )
-    print("")
-    print("--- REASONING ---")
-    for line in reasoning_parts:
-        print(f"  {line}")
-    print("")
+    return {
+        "total_value_eur": total_value_eur,
+        "cash_eur": cash_eur,
+        "transactions": transactions,
+        "reasoning_parts": reasoning_parts,
+        "portfolio": portfolio,
+        "has_trades": has_trades,
+    }
 
+
+# ---------------------------------------------------------------------------
+# Multi-strategy orchestrator
+# ---------------------------------------------------------------------------
+
+def run_pipeline(session_label: str) -> float:
+    print(
+        f"=== AI Hedge Fund Multi-Strategy Pipeline | "
+        f"Session: {session_label} | {datetime.now(timezone.utc).isoformat()} ==="
+    )
+    validate_env()
+    tickers = list(UNIVERSE.keys())
+
+    # Fetch prices once (shared across all strategies)
+    print("[INFO] Fetching prices...")
+    prices, all_prices_real = fetch_prices(tickers)
+
+    # Fetch FX rates once
+    fx_rates = {}
+    currencies_used = set(info["currency"] for info in UNIVERSE.values())
+    for c in currencies_used:
+        if c != "EUR":
+            fx_rates[c] = fetch_fx_rate(c, "EUR")
+        else:
+            fx_rates[c] = 1.0
+        print(f"  FX {c}/EUR = {fx_rates[c]:.4f}")
+
+    # Load signals (may be empty if market_analysis hasn't run yet)
+    signals = load_signals()
+    print(f"[INFO] Signals loaded — keys: {list(signals.keys())}")
+
+    # --- Run each strategy ---
+    strategy_results = {}
+    for strategy_name in STRATEGIES:
+        print(f"\n--- Strategy: {strategy_name} ---")
+        try:
+            result = run_strategy_pipeline(
+                strategy_name, session_label, prices, fx_rates, signals, all_prices_real
+            )
+            strategy_results[strategy_name] = result
+            print(
+                f"  [{strategy_name}] Total: {result['total_value_eur']:.2f} EUR | "
+                f"Trades: {len(result['transactions'])}"
+            )
+        except Exception as e:
+            print(f"[ERROR] Strategy {strategy_name} failed: {e}")
+            strategy_results[strategy_name] = None
+
+    # --- Backward compat: also update legacy portfolio_history.json ---
+    try:
+        legacy_portfolio = load_portfolio()
+        legacy_result = strategy_results.get("equal_weight")
+        if legacy_result:
+            eq_portfolio = legacy_result["portfolio"]
+            legacy_portfolio["current_positions"] = eq_portfolio["current_positions"]
+            legacy_portfolio["metadata"]["current_cash"] = eq_portfolio["metadata"]["current_cash"]
+            legacy_portfolio["metadata"]["price_source"] = eq_portfolio["metadata"].get(
+                "price_source", "yfinance"
+            )
+            log_iteration(
+                legacy_portfolio,
+                session_label,
+                legacy_result["total_value_eur"],
+                legacy_result["transactions"],
+                prices,
+                "\n".join(legacy_result["reasoning_parts"]),
+            )
+    except Exception as e:
+        print(f"[WARN] Legacy portfolio update failed: {e}")
+
+    # --- Determine primary result for Telegram (equal_weight) ---
+    primary = strategy_results.get("equal_weight") or next(
+        (v for v in strategy_results.values() if v), None
+    )
+    if not primary:
+        print("[ERROR] All strategies failed.")
+        return 0.0
+
+    total_value_eur = primary["total_value_eur"]
+    cash_eur = primary["cash_eur"]
+    has_any_trades = any(
+        r and r["has_trades"] for r in strategy_results.values()
+    )
+
+    # --- Print summary ---
+    print("\n=== STRATEGY SUMMARY ===")
+    for sname, result in strategy_results.items():
+        if result:
+            initial = result["portfolio"]["metadata"].get("initial_capital", INITIAL_CAPITAL)
+            ret_pct = (result["total_value_eur"] - initial) / initial * 100 if initial > 0 else 0
+            print(f"  {sname:20s}: {result['total_value_eur']:.2f} EUR ({ret_pct:+.2f}%)")
+
+    # --- Telegram report ---
     report = build_telegram_report(
         session_label,
-        total_value_eur,
-        cash_eur,
-        transactions,
-        reasoning_parts,
-        portfolio,
+        strategy_results,
+        primary["portfolio"],
         prices,
     )
-    send_telegram_message(report, session=session_label, has_trades=has_trades)
+    send_telegram_message(report, session=session_label, has_trades=has_any_trades)
 
+    # --- Chart (equal_weight primary) ---
     try:
-        chart_path = generate_dashboard(portfolio, UNIVERSE, total_value_eur)
+        chart_path = generate_dashboard(primary["portfolio"], UNIVERSE, total_value_eur)
         pos_summary = " | ".join(
             "{}:{}x".format(t, p["shares"])
-            for t, p in sorted(portfolio["current_positions"].items())
+            for t, p in sorted(primary["portfolio"]["current_positions"].items())
         )
         photo_caption = (
-            "{} - Portfolio: {:.2f}€ - {} posizioni\n{}\nCash: {:.2f}€".format(
+            "{} - Portfolio (EW): {:.2f}EUR - {} posizioni\n{}\nCash: {:.2f}EUR".format(
                 session_label.upper(),
                 total_value_eur,
-                len(portfolio["current_positions"]),
+                len(primary["portfolio"]["current_positions"]),
                 pos_summary[:400],
                 cash_eur,
             )
         )
         send_telegram_photo(
-            photo_caption, chart_path, session=session_label, has_trades=has_trades
+            photo_caption, chart_path, session=session_label, has_trades=has_any_trades
         )
     except Exception as e:
         print(f"[WARN] Chart generation/send failed: {e}")
 
+    # --- Dashboard HTML (multi-portfolio) ---
     try:
-        html = build_html(portfolio)
+        all_portfolios = {
+            sname: result["portfolio"]
+            for sname, result in strategy_results.items()
+            if result
+        }
+        html = build_html(all_portfolios, signals)
         docs_dir = os.path.join(os.path.dirname(__file__), "..", "docs")
         os.makedirs(docs_dir, exist_ok=True)
         html_path = os.path.join(docs_dir, "index.html")
@@ -357,92 +449,77 @@ def run_pipeline(session_label: str) -> None:
     except Exception as e:
         print(f"[WARN] Dashboard HTML generation failed: {e}")
 
-    print(f"[DONE] Session {session_label} completed. Total: {total_value_eur:.2f} EUR")
+    print(f"\n[DONE] Session {session_label} completed. Primary total: {total_value_eur:.2f} EUR")
     return total_value_eur
 
 
+# ---------------------------------------------------------------------------
+# Telegram report (multi-strategy)
+# ---------------------------------------------------------------------------
+
 def build_telegram_report(
     session: str,
-    total_eur: float,
-    cash_eur: float,
-    transactions: list[dict],
-    reasoning: list[str],
-    portfolio: dict,
-    prices: dict[str, float],
+    strategy_results: dict,
+    primary_portfolio: dict,
+    prices: dict,
 ) -> str:
-    pos_count = len(portfolio["current_positions"])
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    sep = "-" * 20
+    sep = "-" * 25
     lines = [
-        "PAPER TRADING REPORT - {}".format(session.upper()),
+        "AI HEDGE FUND — {}".format(session.upper()),
         sep,
-        "Portfolio: {:.2f} EUR".format(total_eur),
-        "Cash: {:.2f} EUR".format(cash_eur),
-        "Posizioni aperte: {}".format(pos_count),
-        "",
     ]
-    if transactions:
-        lines.append("TRANSAZIONI:")
-        for t in transactions:
-            action = t["action"]
-            shares = t["shares"]
-            ticker = t["ticker"]
-            price = t["price_eur"]
-            if action == "BUY":
-                lines.append(
-                    "  {} {}x {} @ {:.2f}€ = {:.2f}€".format(
-                        action, shares, ticker, price, t["total_cost_eur"]
-                    )
-                )
-            else:
-                lines.append(
-                    "  {} {}x {} @ {:.2f}€ = +{:.2f}€".format(
-                        action, shares, ticker, price, t["total_proceeds_eur"]
-                    )
-                )
-    else:
-        lines.append("Nessuna transazione eseguita.")
+
+    # Strategy comparison
+    lines.append("CONFRONTO STRATEGIE:")
+    for sname in STRATEGIES:
+        result = strategy_results.get(sname)
+        if result:
+            initial = result["portfolio"]["metadata"].get("initial_capital", INITIAL_CAPITAL)
+            total = result["total_value_eur"]
+            ret_pct = (total - initial) / initial * 100 if initial > 0 else 0
+            arrow = "+" if ret_pct >= 0 else ""
+            lines.append(f"  {sname:20s}: {total:.2f}EUR ({arrow}{ret_pct:.2f}%)")
+        else:
+            lines.append(f"  {sname:20s}: ERROR")
     lines.append("")
 
-    pos = portfolio.get("current_positions", {})
-    if pos:
-        lines.append("POSIZIONI DETTAGLIO:")
-        for ticker in sorted(pos.keys()):
-            entry = pos[ticker]
-            shares = entry["shares"]
-            avg_price = entry["avg_price"]
-            cur_price_local = prices.get(ticker) or avg_price
-            currency = UNIVERSE[ticker]["currency"]
-            cur_price_eur = convert_to_eur(cur_price_local, currency)
-            equity_eur = shares * cur_price_eur
-            cost_basis = shares * avg_price
-            pnl_eur = equity_eur - cost_basis
-            pnl_pct = ((cur_price_eur / avg_price) - 1) * 100 if avg_price > 0 else 0
-            sign = "+" if pnl_eur >= 0 else ""
-            lines.append(
-                "  {}: {}x | prezzo {:.2f}€ | Eq {:.2f}€ | PnL {}{:.2f}€ ({}{:.2f}%)".format(
-                    ticker,
-                    shares,
-                    cur_price_eur,
-                    equity_eur,
-                    sign,
-                    pnl_eur,
-                    sign,
-                    pnl_pct,
-                )
-            )
+    # Primary (equal_weight) detail
+    ew_result = strategy_results.get("equal_weight")
+    if ew_result:
+        lines.append("EQUAL_WEIGHT DETTAGLIO:")
+        lines.append("  Cash: {:.2f} EUR".format(ew_result["cash_eur"]))
+        lines.append("  Posizioni: {}".format(len(ew_result["portfolio"]["current_positions"])))
+        if ew_result["transactions"]:
+            lines.append("  Transazioni:")
+            for t in ew_result["transactions"]:
+                action = t["action"]
+                if action == "BUY":
+                    lines.append(
+                        "    BUY {}x {} @ {:.2f}EUR = {:.2f}EUR".format(
+                            t["shares"], t["ticker"], t["price_eur"], t["total_cost_eur"]
+                        )
+                    )
+                else:
+                    lines.append(
+                        "    SELL {}x {} @ {:.2f}EUR = +{:.2f}EUR".format(
+                            t["shares"], t["ticker"], t["price_eur"], t["total_proceeds_eur"]
+                        )
+                    )
+        else:
+            lines.append("  Nessuna transazione.")
         lines.append("")
 
-    lines.append("REASONING:")
-    for r in reasoning:
-        lines.append("  {}".format(r))
-    lines.append("")
     lines.append("Aggiornato: {}".format(timestamp))
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Paper Trading Pipeline")
+    parser = argparse.ArgumentParser(description="AI Hedge Fund Multi-Strategy Pipeline")
     parser.add_argument(
         "--hour", type=int, required=True, help="Esecuzione hour in UTC (7, 15, 21)"
     )

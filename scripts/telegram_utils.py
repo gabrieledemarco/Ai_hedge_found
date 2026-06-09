@@ -22,7 +22,6 @@ def send_telegram_message(
         print(f"[INFO] Session '{session}' — no trades, skipping notification")
         return False
 
-    print(f"[DEBUG] Sending to chat_id='{CHAT_ID}' (len={len(CHAT_ID)})")
     payload = {
         "chat_id": CHAT_ID,
         "text": text,
@@ -35,7 +34,7 @@ def send_telegram_message(
         return True
     except requests.RequestException as e:
         print(f"[ERROR] Telegram send failed: {e}")
-        status = getattr(e.response, "status_code", None)
+        status = getattr(getattr(e, "response", None), "status_code", None)
         if status == 403:
             print("[HINT] 403 = bot non autorizzato per questa chat.")
             print("[HINT] Devi: 1) Aprire il bot su Telegram 2) Inviare /start")
