@@ -1,0 +1,6 @@
+flask==3.1.1
+gunicorn==23.0.0
+yfinance==0.2.54
+matplotlib==3.10.1
+pandas==2.2.3
+requests==2.32.3
