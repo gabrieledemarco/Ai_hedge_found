@@ -2,10 +2,51 @@
   "strategy": "sentiment",
   "metadata": {
     "initial_capital": 3000.0,
-    "current_cash": 3000.0,
-    "price_source": "fallback"
+    "current_cash": 331.85,
+    "price_source": "yfinance"
   },
-  "current_positions": {},
+  "current_positions": {
+    "AAPL": {
+      "shares": 1,
+      "avg_price": 251.8083
+    },
+    "MSFT": {
+      "shares": 1,
+      "avg_price": 347.2587
+    },
+    "GOOGL": {
+      "shares": 1,
+      "avg_price": 311.2223
+    },
+    "AMZN": {
+      "shares": 1,
+      "avg_price": 210.2176
+    },
+    "TSLA": {
+      "shares": 1,
+      "avg_price": 336.73
+    },
+    "JPM": {
+      "shares": 1,
+      "avg_price": 269.2507
+    },
+    "NVDA": {
+      "shares": 1,
+      "avg_price": 173.9563
+    },
+    "JNJ": {
+      "shares": 1,
+      "avg_price": 204.8581
+    },
+    "V": {
+      "shares": 1,
+      "avg_price": 280.3767
+    },
+    "KO": {
+      "shares": 4,
+      "avg_price": 70.618
+    }
+  },
   "iterations_log": [
     {
       "timestamp": "2026-06-09T10:02:59.806949+00:00",
@@ -37,6 +78,149 @@
       },
       "transactions": [],
       "reasoning": "ATTENZIONE: alcuni prezzi sono fallback. Trading disabilitato, solo report."
+    },
+    {
+      "timestamp": "2026-06-09T16:22:29.984688+00:00",
+      "session": "pomeriggio",
+      "total_value_eur": 3000.0,
+      "current_cash": 331.85,
+      "positions": {
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 251.8083
+        },
+        "MSFT": {
+          "shares": 1,
+          "avg_price": 347.2587
+        },
+        "GOOGL": {
+          "shares": 1,
+          "avg_price": 311.2223
+        },
+        "AMZN": {
+          "shares": 1,
+          "avg_price": 210.2176
+        },
+        "TSLA": {
+          "shares": 1,
+          "avg_price": 336.73
+        },
+        "JPM": {
+          "shares": 1,
+          "avg_price": 269.2507
+        },
+        "NVDA": {
+          "shares": 1,
+          "avg_price": 173.9563
+        },
+        "JNJ": {
+          "shares": 1,
+          "avg_price": 204.8581
+        },
+        "V": {
+          "shares": 1,
+          "avg_price": 280.3767
+        },
+        "KO": {
+          "shares": 4,
+          "avg_price": 70.618
+        }
+      },
+      "prices_used": {
+        "AAPL": 290.825,
+        "MSFT": 401.065,
+        "GOOGL": 359.445,
+        "AMZN": 242.79,
+        "TSLA": 388.905,
+        "JPM": 310.97,
+        "NVDA": 200.9101,
+        "JNJ": 236.6,
+        "V": 323.82,
+        "KO": 81.56,
+        "ULVR.L": 4284.5,
+        "HSBA.L": 1311.4,
+        "BP.L": 529.3,
+        "GSK.L": 1903.5,
+        "RIO.L": 7469.0,
+        "ENI.MI": 23.125,
+        "ISP.MI": 5.646,
+        "ENEL.MI": 9.701,
+        "LDO.MI": 52.03,
+        "MONC.MI": 55.86
+      },
+      "transactions": [
+        {
+          "action": "BUY",
+          "ticker": "AAPL",
+          "shares": 1,
+          "price_eur": 251.8083,
+          "total_cost_eur": 251.81
+        },
+        {
+          "action": "BUY",
+          "ticker": "MSFT",
+          "shares": 1,
+          "price_eur": 347.2587,
+          "total_cost_eur": 347.26
+        },
+        {
+          "action": "BUY",
+          "ticker": "GOOGL",
+          "shares": 1,
+          "price_eur": 311.2223,
+          "total_cost_eur": 311.22
+        },
+        {
+          "action": "BUY",
+          "ticker": "AMZN",
+          "shares": 1,
+          "price_eur": 210.2176,
+          "total_cost_eur": 210.22
+        },
+        {
+          "action": "BUY",
+          "ticker": "TSLA",
+          "shares": 1,
+          "price_eur": 336.73,
+          "total_cost_eur": 336.73
+        },
+        {
+          "action": "BUY",
+          "ticker": "JPM",
+          "shares": 1,
+          "price_eur": 269.2507,
+          "total_cost_eur": 269.25
+        },
+        {
+          "action": "BUY",
+          "ticker": "NVDA",
+          "shares": 1,
+          "price_eur": 173.9563,
+          "total_cost_eur": 173.96
+        },
+        {
+          "action": "BUY",
+          "ticker": "JNJ",
+          "shares": 1,
+          "price_eur": 204.8581,
+          "total_cost_eur": 204.86
+        },
+        {
+          "action": "BUY",
+          "ticker": "V",
+          "shares": 1,
+          "price_eur": 280.3767,
+          "total_cost_eur": 280.38
+        },
+        {
+          "action": "BUY",
+          "ticker": "KO",
+          "shares": 4,
+          "price_eur": 70.618,
+          "total_cost_eur": 282.47
+        }
+      ],
+      "reasoning": "AAPL: BUY 1 @ 251.81EUR (deviation 0.1005, weight 0.100)\nMSFT: BUY 1 @ 347.26EUR (deviation 0.0962, weight 0.096)\nGOOGL: BUY 1 @ 311.22EUR (deviation 0.1009, weight 0.101)\nAMZN: BUY 1 @ 210.22EUR (deviation 0.1031, weight 0.103)\nTSLA: BUY 1 @ 336.73EUR (deviation 0.0916, weight 0.092)\nJPM: BUY 1 @ 269.25EUR (deviation 0.0951, weight 0.095)\nNVDA: BUY 1 @ 173.96EUR (deviation 0.1067, weight 0.107)\nJNJ: BUY 1 @ 204.86EUR (deviation 0.1055, weight 0.105)\nV: BUY 1 @ 280.38EUR (deviation 0.0999, weight 0.100)\nKO: BUY 4 @ 70.62EUR (deviation 0.1006, weight 0.101)\nULVR.L: HOLD (deviation 0.0000 < 0.05)\nHSBA.L: HOLD (deviation 0.0000 < 0.05)\nBP.L: HOLD (deviation 0.0000 < 0.05)\nGSK.L: HOLD (deviation 0.0000 < 0.05)\nRIO.L: HOLD (deviation 0.0000 < 0.05)\nENI.MI: HOLD (deviation 0.0000 < 0.05)\nISP.MI: HOLD (deviation 0.0000 < 0.05)\nENEL.MI: HOLD (deviation 0.0000 < 0.05)\nLDO.MI: HOLD (deviation 0.0000 < 0.05)\nMONC.MI: HOLD (deviation 0.0000 < 0.05)"
     }
   ]
 }
