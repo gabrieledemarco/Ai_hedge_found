@@ -17,11 +17,24 @@ app = Flask(__name__)
 
 @app.route("/")
 def dashboard():
-    portfolio = load_portfolio()
-    tickers = list(UNIVERSE.keys())
-    live_prices = get_live_prices(tickers, ttl=60)
-    html = build_live_html(portfolio, live_prices)
-    return html
+    try:
+        portfolio = load_portfolio()
+        tickers = list(UNIVERSE.keys())
+        live_prices = get_live_prices(tickers, ttl=300)
+        html = build_live_html(portfolio, live_prices)
+        return html
+    except Exception as e:
+        print(f"[FATAL] dashboard error: {e}")
+        return (
+            """
+        <html><body style="background:#0f172a;color:#e2e8f0;font-family:sans-serif;padding:40px;">
+        <h1>Paper Trading Dashboard</h1>
+        <p>Servizio momentaneamente non disponibile. I dati verranno caricati al prossimo refresh.</p>
+        <p style="color:#64748b;">Tempo di attesa tipico: 30-60s (cold start + yfinance).</p>
+        </body></html>
+        """,
+            200,
+        )
 
 
 @app.route("/health")
