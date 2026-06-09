@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 
 parent_dir = os.path.dirname(os.path.dirname(__file__))
 sys.path.insert(0, parent_dir)
@@ -23,11 +24,15 @@ def dashboard():
         html = build_live_html(portfolio, live_prices)
         return html
     except Exception as e:
+        tb = traceback.format_exc()
         print(f"[FATAL] dashboard error: {e}")
+        for line in tb.split("\n"):
+            print(f"  {line}")
         return (
-            "<html><body style='background:#0f172a;color:#e2e8f0;padding:40px;'>"
-            "<h1>Paper Trading Dashboard</h1><p>Servizio momentaneamente non disponibile.</p>"
-            "<p style='color:#64748b;'>Ricarica la pagina tra qualche secondo.</p></body></html>",
+            f"<html><body style='background:#0f172a;color:#e2e8f0;padding:40px;font-family:sans-serif;'>"
+            f"<h1>Paper Trading Dashboard</h1><p>Errore: {e}</p>"
+            f"<pre style='font-size:11px;color:#94a3b8;margin-top:20px;'>{tb[:2000]}</pre>"
+            f"</body></html>",
             200,
         )
 
