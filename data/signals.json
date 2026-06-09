@@ -1,7 +1,290 @@
 {
-  "sentiment": {},
-  "fundamentals": {},
-  "momentum": {},
-  "sentiment_updated": null,
-  "fundamentals_updated": null
+  "sentiment": {
+    "AAPL": {
+      "score": 0.203,
+      "av_score": 0.203,
+      "finbert_score": 0.0,
+      "label": "Bullish",
+      "num_articles": 50
+    },
+    "MSFT": {
+      "score": 0.1518,
+      "av_score": 0.1518,
+      "finbert_score": 0.0,
+      "label": "Bullish",
+      "num_articles": 50
+    },
+    "GOOGL": {
+      "score": 0.2078,
+      "av_score": 0.2078,
+      "finbert_score": 0.0,
+      "label": "Bullish",
+      "num_articles": 50
+    },
+    "AMZN": {
+      "score": 0.2341,
+      "av_score": 0.2341,
+      "finbert_score": 0.0,
+      "label": "Bullish",
+      "num_articles": 50
+    },
+    "TSLA": {
+      "score": 0.0963,
+      "av_score": 0.0963,
+      "finbert_score": 0.0,
+      "label": "Neutral",
+      "num_articles": 50
+    },
+    "JPM": {
+      "score": 0.1385,
+      "av_score": 0.1385,
+      "finbert_score": 0.0,
+      "label": "Bullish",
+      "num_articles": 50
+    },
+    "NVDA": {
+      "score": 0.2767,
+      "av_score": 0.2767,
+      "finbert_score": 0.0,
+      "label": "Bullish",
+      "num_articles": 50
+    },
+    "JNJ": {
+      "score": 0.2625,
+      "av_score": 0.2625,
+      "finbert_score": 0.0,
+      "label": "Bullish",
+      "num_articles": 50
+    },
+    "V": {
+      "score": 0.196,
+      "av_score": 0.196,
+      "finbert_score": 0.0,
+      "label": "Bullish",
+      "num_articles": 50
+    },
+    "KO": {
+      "score": 0.2037,
+      "av_score": 0.2037,
+      "finbert_score": 0.0,
+      "label": "Bullish",
+      "num_articles": 50
+    },
+    "ULVR.L": {
+      "score": 0.0,
+      "av_score": 0.0,
+      "finbert_score": 0.0,
+      "label": "neutral",
+      "num_articles": 0
+    },
+    "HSBA.L": {
+      "score": 0.0,
+      "av_score": 0.0,
+      "finbert_score": 0.0,
+      "label": "neutral",
+      "num_articles": 0
+    },
+    "BP.L": {
+      "score": 0.0,
+      "av_score": 0.0,
+      "finbert_score": 0.0,
+      "label": "neutral",
+      "num_articles": 0
+    },
+    "GSK.L": {
+      "score": 0.0,
+      "av_score": 0.0,
+      "finbert_score": 0.0,
+      "label": "neutral",
+      "num_articles": 0
+    },
+    "RIO.L": {
+      "score": 0.0,
+      "av_score": 0.0,
+      "finbert_score": 0.0,
+      "label": "neutral",
+      "num_articles": 0
+    },
+    "ENI.MI": {
+      "score": 0.0,
+      "av_score": 0.0,
+      "finbert_score": 0.0,
+      "label": "neutral",
+      "num_articles": 0
+    },
+    "ISP.MI": {
+      "score": 0.0,
+      "av_score": 0.0,
+      "finbert_score": 0.0,
+      "label": "neutral",
+      "num_articles": 0
+    },
+    "ENEL.MI": {
+      "score": 0.0,
+      "av_score": 0.0,
+      "finbert_score": 0.0,
+      "label": "neutral",
+      "num_articles": 0
+    },
+    "LDO.MI": {
+      "score": 0.0,
+      "av_score": 0.0,
+      "finbert_score": 0.0,
+      "label": "neutral",
+      "num_articles": 0
+    },
+    "MONC.MI": {
+      "score": 0.0,
+      "av_score": 0.0,
+      "finbert_score": 0.0,
+      "label": "neutral",
+      "num_articles": 0
+    }
+  },
+  "fundamentals": {
+    "AAPL": {
+      "f_score": 0.5
+    },
+    "MSFT": {
+      "f_score": 0.5
+    },
+    "GOOGL": {
+      "f_score": 0.5
+    },
+    "AMZN": {
+      "f_score": 0.5
+    },
+    "TSLA": {
+      "f_score": 0.5
+    },
+    "JPM": {
+      "f_score": 0.5
+    },
+    "NVDA": {
+      "f_score": 0.5
+    },
+    "JNJ": {
+      "f_score": 0.5
+    },
+    "V": {
+      "f_score": 0.5
+    },
+    "KO": {
+      "f_score": 0.5
+    },
+    "ULVR.L": {
+      "f_score": 0.5
+    },
+    "HSBA.L": {
+      "f_score": 0.5
+    },
+    "BP.L": {
+      "f_score": 0.5
+    },
+    "GSK.L": {
+      "f_score": 0.5
+    },
+    "RIO.L": {
+      "f_score": 0.5
+    },
+    "ENI.MI": {
+      "f_score": 0.5
+    },
+    "ISP.MI": {
+      "f_score": 0.5
+    },
+    "ENEL.MI": {
+      "f_score": 0.5
+    },
+    "LDO.MI": {
+      "f_score": 0.5
+    },
+    "MONC.MI": {
+      "f_score": 0.5
+    }
+  },
+  "momentum": {
+    "AAPL": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "MSFT": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "GOOGL": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "AMZN": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "TSLA": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "JPM": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "NVDA": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "JNJ": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "V": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "KO": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "ULVR.L": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "HSBA.L": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "BP.L": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "GSK.L": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "RIO.L": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "ENI.MI": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "ISP.MI": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "ENEL.MI": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "LDO.MI": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    },
+    "MONC.MI": {
+      "return_3m": 0.0,
+      "return_1m": 0.0
+    }
+  },
+  "sentiment_updated": "2026-06-09T09:17:31.428190+00:00",
+  "fundamentals_updated": "2026-06-09T09:13:03.509532+00:00"
 }

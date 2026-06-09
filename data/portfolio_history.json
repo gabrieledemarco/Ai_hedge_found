@@ -2,10 +2,59 @@
   "metadata": {
     "currency": "EUR",
     "initial_capital": 3000.0,
-    "current_cash": 3000.0,
-    "price_source": "fallback"
+    "current_cash": 740.28,
+    "price_source": "yfinance"
   },
-  "current_positions": {},
+  "current_positions": {
+    "AAPL": {
+      "shares": 1,
+      "avg_price": 272.226
+    },
+    "AMZN": {
+      "shares": 1,
+      "avg_price": 227.7276
+    },
+    "JPM": {
+      "shares": 1,
+      "avg_price": 288.0198
+    },
+    "NVDA": {
+      "shares": 1,
+      "avg_price": 192.0684
+    },
+    "JNJ": {
+      "shares": 1,
+      "avg_price": 214.0196
+    },
+    "V": {
+      "shares": 1,
+      "avg_price": 295.0532
+    },
+    "KO": {
+      "shares": 2,
+      "avg_price": 73.0112
+    },
+    "ENI.MI": {
+      "shares": 6,
+      "avg_price": 23.6
+    },
+    "ISP.MI": {
+      "shares": 24,
+      "avg_price": 5.56
+    },
+    "ENEL.MI": {
+      "shares": 15,
+      "avg_price": 9.606
+    },
+    "LDO.MI": {
+      "shares": 2,
+      "avg_price": 51.68
+    },
+    "MONC.MI": {
+      "shares": 2,
+      "avg_price": 55.28
+    }
+  },
   "iterations_log": [
     {
       "timestamp": "2026-06-08T15:15:25.344157+00:00",
@@ -1086,37 +1135,6 @@
         }
       ],
       "reasoning": "AAPL: HOLD (deviation 0.0416 < 0.05)\nMSFT: SELL 1 @ 356.90€ (deviation 0.0751)\nGOOGL: SELL 1 @ 334.25€ (deviation 0.0604)\nAMZN: HOLD (deviation 0.0245 < 0.05)\nTSLA: HOLD (deviation 0.0500 < 0.05)\nJPM: HOLD (deviation 0.0445 < 0.05)\nNVDA: HOLD (deviation 0.0134 < 0.05)\nJNJ: HOLD (deviation 0.0205 < 0.05)\nV: HOLD (deviation 0.0471 < 0.05)\nKO: HOLD (deviation 0.0017 < 0.05)\nULVR.L: HOLD (deviation 0.0500 < 0.05)\nHSBA.L: HOLD (deviation 0.0500 < 0.05)\nBP.L: HOLD (deviation 0.0500 < 0.05)\nGSK.L: HOLD (deviation 0.0500 < 0.05)\nRIO.L: HOLD (deviation 0.0500 < 0.05)\nENI.MI: HOLD (deviation 0.0034 < 0.05)\nISP.MI: HOLD (deviation 0.0057 < 0.05)\nENEL.MI: HOLD (deviation 0.0026 < 0.05)\nLDO.MI: HOLD (deviation 0.0161 < 0.05)\nMONC.MI: HOLD (deviation 0.0138 < 0.05)"
-    },
-    {
-      "timestamp": "2026-06-09T09:12:29.487417+00:00",
-      "session": "sera",
-      "total_value_eur": 3000.0,
-      "current_cash": 3000.0,
-      "positions": {},
-      "prices_used": {
-        "AAPL": 100.0,
-        "MSFT": 100.0,
-        "GOOGL": 100.0,
-        "AMZN": 100.0,
-        "TSLA": 100.0,
-        "JPM": 100.0,
-        "NVDA": 100.0,
-        "JNJ": 100.0,
-        "V": 100.0,
-        "KO": 100.0,
-        "ULVR.L": 150.0,
-        "HSBA.L": 150.0,
-        "BP.L": 150.0,
-        "GSK.L": 150.0,
-        "RIO.L": 150.0,
-        "ENI.MI": 100.0,
-        "ISP.MI": 100.0,
-        "ENEL.MI": 100.0,
-        "LDO.MI": 100.0,
-        "MONC.MI": 100.0
-      },
-      "transactions": [],
-      "reasoning": "ATTENZIONE: alcuni prezzi sono fallback. Trading disabilitato, solo report."
     }
   ]
 }
