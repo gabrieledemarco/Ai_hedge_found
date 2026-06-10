@@ -484,30 +484,50 @@ def build_telegram_report(
             lines.append(f"  {sname:20s}: ERROR")
     lines.append("")
 
-    # Primary (equal_weight) detail
+    # Equal-weight detail: transactions + top positions P&L
     ew_result = strategy_results.get("equal_weight")
     if ew_result:
-        lines.append("EQUAL_WEIGHT DETTAGLIO:")
-        lines.append("  Cash: {:.2f} EUR".format(ew_result["cash_eur"]))
-        lines.append("  Posizioni: {}".format(len(ew_result["portfolio"]["current_positions"])))
+        lines.append(sep)
         if ew_result["transactions"]:
-            lines.append("  Transazioni:")
+            lines.append("TRANSAZIONI (equal_weight):")
             for t in ew_result["transactions"]:
-                action = t["action"]
-                if action == "BUY":
+                if t["action"] == "BUY":
                     lines.append(
-                        "    BUY {}x {} @ {:.2f}EUR = {:.2f}EUR".format(
+                        "  BUY {}x {} @ {:.2f}€ = {:.2f}€".format(
                             t["shares"], t["ticker"], t["price_eur"], t["total_cost_eur"]
                         )
                     )
                 else:
                     lines.append(
-                        "    SELL {}x {} @ {:.2f}EUR = +{:.2f}EUR".format(
+                        "  SELL {}x {} @ {:.2f}€ = +{:.2f}€".format(
                             t["shares"], t["ticker"], t["price_eur"], t["total_proceeds_eur"]
                         )
                     )
         else:
-            lines.append("  Nessuna transazione.")
+            lines.append("Nessuna transazione oggi.")
+
+        # Show P&L for open positions (only at "sera")
+        if session == "sera":
+            pos = ew_result["portfolio"].get("current_positions", {})
+            if pos:
+                lines.append("")
+                lines.append("POSIZIONI P&L (equal_weight):")
+                for ticker in sorted(pos.keys()):
+                    entry = pos[ticker]
+                    cur_price = prices.get(ticker, entry["avg_price"])
+                    currency = UNIVERSE.get(ticker, {}).get("currency", "EUR")
+                    fx = 0.92 if currency == "USD" else (1.17 if currency == "GBP" else 1.0)
+                    cur_eur = cur_price * fx
+                    equity = entry["shares"] * cur_eur
+                    cost = entry["shares"] * entry["avg_price"]
+                    pnl_e = equity - cost
+                    pnl_p = (pnl_e / cost * 100) if cost > 0 else 0
+                    sign = "+" if pnl_e >= 0 else ""
+                    lines.append(
+                        "  {}: {}x | {:.2f}€ | P&L {}{:.2f}€ ({}{:.1f}%)".format(
+                            ticker, entry["shares"], cur_eur, sign, pnl_e, sign, pnl_p
+                        )
+                    )
         lines.append("")
 
     lines.append("Aggiornato: {}".format(timestamp))

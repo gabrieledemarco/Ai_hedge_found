@@ -150,16 +150,17 @@ def _generate_equity_comparison_chart(portfolios: dict) -> str:
             has_data = True
 
     if not has_data:
-        ax.text(0.5, 0.5, "No data yet", ha="center", va="center",
-                transform=ax.transAxes, color="#94a3b8")
+        ax.text(0.5, 0.5, "No data yet — in attesa della prima sessione di trading",
+                ha="center", va="center", transform=ax.transAxes, color="#94a3b8")
 
     ax.set_title("Strategy Performance Comparison", color="#f8fafc", fontweight="bold")
     ax.set_ylabel("EUR", color="#94a3b8")
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m/%d"))
-    legend = ax.legend(loc="upper left", fontsize=9, fancybox=False,
-                       framealpha=0.3, labelcolor="#e2e8f0")
-    legend.get_frame().set_facecolor("#1e293b")
-    legend.get_frame().set_edgecolor("#334155")
+    if has_data:
+        legend = ax.legend(loc="upper left", fontsize=9, fancybox=False,
+                           framealpha=0.3, labelcolor="#e2e8f0")
+        legend.get_frame().set_facecolor("#1e293b")
+        legend.get_frame().set_edgecolor("#334155")
     fig.patch.set_facecolor("#0f172a")
     _dark_ax(ax)
     return _fig_to_b64(fig)
