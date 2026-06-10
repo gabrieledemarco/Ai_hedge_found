@@ -457,81 +457,109 @@ def run_pipeline(session_label: str) -> float:
 # Telegram report (multi-strategy)
 # ---------------------------------------------------------------------------
 
+def _position_pnl_line(ticker: str, entry: dict, prices: dict) -> str:
+    """Format a single position as compact P&L line."""
+    cur_price = prices.get(ticker, entry["avg_price"])
+    currency = UNIVERSE.get(ticker, {}).get("currency", "EUR")
+    fx = 0.92 if currency == "USD" else (1.17 if currency == "GBP" else 1.0)
+    cur_eur = cur_price * fx
+    cost = entry["shares"] * entry["avg_price"]
+    equity = entry["shares"] * cur_eur
+    pnl_e = equity - cost
+    pnl_p = (pnl_e / cost * 100) if cost > 0 else 0
+    sign = "+" if pnl_e >= 0 else ""
+    return "  {}: {}x {}{:.1f}% ({}{:.0f}€)".format(
+        ticker, entry["shares"], sign, pnl_p, sign, pnl_e
+    )
+
+
 def build_telegram_report(
     session: str,
     strategy_results: dict,
     primary_portfolio: dict,
     prices: dict,
 ) -> str:
+    TELEGRAM_LIMIT = 4000  # leave 96 chars buffer below 4096
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     sep = "-" * 25
+
     lines = [
         "AI HEDGE FUND — {}".format(session.upper()),
         sep,
+        "CONFRONTO STRATEGIE:",
     ]
 
-    # Strategy comparison
-    lines.append("CONFRONTO STRATEGIE:")
+    # Performance summary — all 4 strategies
     for sname in STRATEGIES:
         result = strategy_results.get(sname)
         if result:
             initial = result["portfolio"]["metadata"].get("initial_capital", INITIAL_CAPITAL)
             total = result["total_value_eur"]
             ret_pct = (total - initial) / initial * 100 if initial > 0 else 0
+            n_pos = len(result["portfolio"].get("current_positions", {}))
+            cash = result["portfolio"]["metadata"].get("current_cash", 0)
             arrow = "+" if ret_pct >= 0 else ""
-            lines.append(f"  {sname:20s}: {total:.2f}EUR ({arrow}{ret_pct:.2f}%)")
+            lines.append(
+                "  {:<12s} {:.0f}€ ({}{:.1f}%) | {}pos {:.0f}€cash".format(
+                    sname, total, arrow, ret_pct, n_pos, cash
+                )
+            )
         else:
-            lines.append(f"  {sname:20s}: ERROR")
+            lines.append(f"  {sname:<12s} ERROR")
     lines.append("")
 
-    # Equal-weight detail: transactions + top positions P&L
-    ew_result = strategy_results.get("equal_weight")
-    if ew_result:
-        lines.append(sep)
-        if ew_result["transactions"]:
-            lines.append("TRANSAZIONI (equal_weight):")
-            for t in ew_result["transactions"]:
+    # Transactions — all strategies that had trades today
+    any_trades = False
+    trade_lines = []
+    for sname in STRATEGIES:
+        result = strategy_results.get(sname)
+        if result and result["transactions"]:
+            any_trades = True
+            trade_lines.append("TRADES {}:".format(sname.upper()))
+            for t in result["transactions"]:
                 if t["action"] == "BUY":
-                    lines.append(
-                        "  BUY {}x {} @ {:.2f}€ = {:.2f}€".format(
-                            t["shares"], t["ticker"], t["price_eur"], t["total_cost_eur"]
+                    trade_lines.append(
+                        "  BUY {}x {} @ {:.0f}€".format(
+                            t["shares"], t["ticker"], t["price_eur"]
                         )
                     )
                 else:
-                    lines.append(
-                        "  SELL {}x {} @ {:.2f}€ = +{:.2f}€".format(
-                            t["shares"], t["ticker"], t["price_eur"], t["total_proceeds_eur"]
+                    trade_lines.append(
+                        "  SELL {}x {} @ {:.0f}€".format(
+                            t["shares"], t["ticker"], t["price_eur"]
                         )
                     )
-        else:
-            lines.append("Nessuna transazione oggi.")
 
-        # Show P&L for open positions (only at "sera")
-        if session == "sera":
-            pos = ew_result["portfolio"].get("current_positions", {})
-            if pos:
-                lines.append("")
-                lines.append("POSIZIONI P&L (equal_weight):")
-                for ticker in sorted(pos.keys()):
-                    entry = pos[ticker]
-                    cur_price = prices.get(ticker, entry["avg_price"])
-                    currency = UNIVERSE.get(ticker, {}).get("currency", "EUR")
-                    fx = 0.92 if currency == "USD" else (1.17 if currency == "GBP" else 1.0)
-                    cur_eur = cur_price * fx
-                    equity = entry["shares"] * cur_eur
-                    cost = entry["shares"] * entry["avg_price"]
-                    pnl_e = equity - cost
-                    pnl_p = (pnl_e / cost * 100) if cost > 0 else 0
-                    sign = "+" if pnl_e >= 0 else ""
-                    lines.append(
-                        "  {}: {}x | {:.2f}€ | P&L {}{:.2f}€ ({}{:.1f}%)".format(
-                            ticker, entry["shares"], cur_eur, sign, pnl_e, sign, pnl_p
-                        )
-                    )
+    if any_trades:
+        lines.extend(trade_lines)
+    else:
+        lines.append("Nessuna transazione oggi.")
+    lines.append("")
+
+    # Positions P&L per strategy — only at "sera"
+    if session == "sera":
+        lines.append(sep)
+        lines.append("COMPOSIZIONE PORTAFOGLI:")
+        for sname in STRATEGIES:
+            result = strategy_results.get(sname)
+            if not result:
+                continue
+            pos = result["portfolio"].get("current_positions", {})
+            if not pos:
+                lines.append("  {}: solo cash".format(sname))
+                continue
+            lines.append("  {}:".format(sname.upper()))
+            for ticker in sorted(pos.keys()):
+                lines.append(_position_pnl_line(ticker, pos[ticker], prices))
         lines.append("")
 
     lines.append("Aggiornato: {}".format(timestamp))
-    return "\n".join(lines)
+
+    # Enforce Telegram 4096 char limit — truncate from the bottom if needed
+    text = "\n".join(lines)
+    if len(text) > TELEGRAM_LIMIT:
+        text = text[:TELEGRAM_LIMIT - 20] + "\n...[troncato]"
+    return text
 
 
 # ---------------------------------------------------------------------------
