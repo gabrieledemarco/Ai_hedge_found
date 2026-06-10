@@ -407,6 +407,7 @@ def run_pipeline(session_label: str) -> float:
         strategy_results,
         primary["portfolio"],
         prices,
+        all_prices_real=all_prices_real,
     )
     send_telegram_message(report, session=session_label, has_trades=has_any_trades)
 
@@ -473,28 +474,48 @@ def _position_pnl_line(ticker: str, entry: dict, prices: dict) -> str:
     )
 
 
+def _last_known_prices(strategy_results: dict) -> dict[str, float]:
+    """Extract last known real prices from iterations_log to use as fallback display."""
+    last = {}
+    for result in strategy_results.values():
+        if not result:
+            continue
+        logs = result["portfolio"].get("iterations_log", [])
+        for entry in reversed(logs):
+            pu = entry.get("prices_used", {})
+            for t, p in pu.items():
+                if t not in last and p not in (100.0, 150.0):
+                    last[t] = p
+    return last
+
+
 def build_telegram_report(
     session: str,
     strategy_results: dict,
     primary_portfolio: dict,
     prices: dict,
+    all_prices_real: bool = True,
 ) -> str:
-    TELEGRAM_LIMIT = 4000  # leave 96 chars buffer below 4096
+    TELEGRAM_LIMIT = 4000
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     sep = "-" * 25
 
-    lines = [
-        "AI HEDGE FUND — {}".format(session.upper()),
-        sep,
-        "CONFRONTO STRATEGIE:",
-    ]
+    lines = ["AI HEDGE FUND — {}".format(session.upper()), sep]
+
+    if not all_prices_real:
+        lines.append("⚠️  PREZZI NON DISPONIBILI (yfinance fallback)")
+        lines.append("     Trading sospeso. Valori calcolati con ultimo prezzo noto.")
+        lines.append("")
 
     # Performance summary — all 4 strategies
+    lines.append("CONFRONTO STRATEGIE:")
+    totals = {}
     for sname in STRATEGIES:
         result = strategy_results.get(sname)
         if result:
             initial = result["portfolio"]["metadata"].get("initial_capital", INITIAL_CAPITAL)
             total = result["total_value_eur"]
+            totals[sname] = total
             ret_pct = (total - initial) / initial * 100 if initial > 0 else 0
             n_pos = len(result["portfolio"].get("current_positions", {}))
             cash = result["portfolio"]["metadata"].get("current_cash", 0)
@@ -506,6 +527,13 @@ def build_telegram_report(
             )
         else:
             lines.append(f"  {sname:<12s} ERROR")
+
+    # Warn if strategies have identical values (signals not yet available)
+    unique_totals = set(round(v, 0) for v in totals.values())
+    if len(unique_totals) < len(totals):
+        lines.append("")
+        lines.append("ℹ️  Alcune strategie hanno valori identici: signals.json")
+        lines.append("   non ancora popolato. Esegui market_analysis workflow.")
     lines.append("")
 
     # Transactions — all strategies that had trades today
@@ -536,10 +564,14 @@ def build_telegram_report(
         lines.append("Nessuna transazione oggi.")
     lines.append("")
 
-    # Positions P&L per strategy — only at "sera"
+    # Positions composition per strategy — only at "sera"
     if session == "sera":
         lines.append(sep)
         lines.append("COMPOSIZIONE PORTAFOGLI:")
+
+        # Use last known real prices for P&L when current prices are fallback
+        display_prices = prices if all_prices_real else _last_known_prices(strategy_results)
+
         for sname in STRATEGIES:
             result = strategy_results.get(sname)
             if not result:
@@ -550,12 +582,19 @@ def build_telegram_report(
                 continue
             lines.append("  {}:".format(sname.upper()))
             for ticker in sorted(pos.keys()):
-                lines.append(_position_pnl_line(ticker, pos[ticker], prices))
+                if display_prices:
+                    lines.append(_position_pnl_line(ticker, pos[ticker], display_prices))
+                else:
+                    entry = pos[ticker]
+                    lines.append(
+                        "  {}: {}x | avg {:.2f}€ | P&L N/D".format(
+                            ticker, entry["shares"], entry["avg_price"]
+                        )
+                    )
         lines.append("")
 
     lines.append("Aggiornato: {}".format(timestamp))
 
-    # Enforce Telegram 4096 char limit — truncate from the bottom if needed
     text = "\n".join(lines)
     if len(text) > TELEGRAM_LIMIT:
         text = text[:TELEGRAM_LIMIT - 20] + "\n...[troncato]"
