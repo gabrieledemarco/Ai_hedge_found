@@ -22,6 +22,15 @@ UNIVERSE = {
 }
 
 INITIAL_CAPITAL = 3000.0
-REBALANCE_THRESHOLD = 0.05  # 5% deviation before rebalancing
+REBALANCE_THRESHOLD = 0.05
 
 STRATEGIES = ["equal_weight", "momentum", "fundamental", "sentiment"]
+
+STRATEGY_LABELS = {
+    "equal_weight": "Equal Weight",
+    "momentum": "Momentum",
+    "fundamental": "Fundamental",
+    "sentiment": "Sentiment",
+}
+
+FX_FALLBACK = {"USD": 0.92, "GBP": 1.17, "EUR": 1.0}
