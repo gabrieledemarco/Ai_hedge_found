@@ -447,6 +447,26 @@ def build_live_html(portfolios: dict[str, Any], live_prices: dict[str, float]) -
           </div>
         </div>"""
 
+    pos_data_json = json.dumps(
+        [
+            {
+                "ticker": t,
+                "shares": p["shares"],
+                "avg_price": p["avg_price"],
+                "currency": UNIVERSE.get(t, {}).get("currency", "EUR"),
+                "exchange": UNIVERSE.get(t, {}).get("exchange", ""),
+                "sector": UNIVERSE.get(t, {}).get("sector", ""),
+                "initial_price": live_prices.get(t, p["avg_price"]),
+                "initial_equity": pos_equity.get(t, 0),
+            }
+            for t, p in sorted(positions.items())
+        ]
+    )
+
+    initial_total = round(total_eur, 2)
+    initial_capital = metadata.get("initial_capital", 3000)
+    initial_cash = round(cash, 2)
+
     return f"""<!DOCTYPE html>
 <html lang="it">
 <head>
