@@ -2,13 +2,17 @@
   "strategy": "sentiment",
   "metadata": {
     "initial_capital": 3000.0,
-    "current_cash": 676.31,
-    "price_source": "yfinance"
+    "current_cash": 331.85,
+    "price_source": "fallback"
   },
   "current_positions": {
     "AAPL": {
       "shares": 1,
       "avg_price": 251.8083
+    },
+    "MSFT": {
+      "shares": 1,
+      "avg_price": 347.2587
     },
     "GOOGL": {
       "shares": 1,
@@ -577,82 +581,6 @@
       },
       "transactions": [],
       "reasoning": "ATTENZIONE: alcuni prezzi sono fallback. Trading disabilitato, solo report."
-    },
-    {
-      "timestamp": "2026-06-10T22:56:09.607148+00:00",
-      "session": "sera",
-      "total_value_eur": 2993.41,
-      "current_cash": 676.31,
-      "positions": {
-        "AAPL": {
-          "shares": 1,
-          "avg_price": 251.8083
-        },
-        "GOOGL": {
-          "shares": 1,
-          "avg_price": 311.2223
-        },
-        "AMZN": {
-          "shares": 1,
-          "avg_price": 210.2176
-        },
-        "TSLA": {
-          "shares": 1,
-          "avg_price": 336.73
-        },
-        "JPM": {
-          "shares": 1,
-          "avg_price": 269.2507
-        },
-        "NVDA": {
-          "shares": 1,
-          "avg_price": 173.9563
-        },
-        "JNJ": {
-          "shares": 1,
-          "avg_price": 204.8581
-        },
-        "V": {
-          "shares": 1,
-          "avg_price": 280.3767
-        },
-        "KO": {
-          "shares": 4,
-          "avg_price": 70.618
-        }
-      },
-      "prices_used": {
-        "AAPL": 291.58,
-        "MSFT": 397.36,
-        "GOOGL": 356.38,
-        "AMZN": 238.0,
-        "TSLA": 381.59,
-        "JPM": 309.14,
-        "NVDA": 200.42,
-        "JNJ": 238.49,
-        "V": 322.96,
-        "KO": 83.59,
-        "ULVR.L": 4401.5,
-        "HSBA.L": 1293.4,
-        "BP.L": 540.5,
-        "GSK.L": 1921.5,
-        "RIO.L": 7479.0,
-        "ENI.MI": 23.505,
-        "ISP.MI": 5.595,
-        "ENEL.MI": 9.607,
-        "LDO.MI": 52.32,
-        "MONC.MI": 55.36
-      },
-      "transactions": [
-        {
-          "action": "SELL",
-          "ticker": "MSFT",
-          "shares": 1,
-          "price_eur": 344.4634,
-          "total_proceeds_eur": 344.46
-        }
-      ],
-      "reasoning": "AAPL: HOLD (deviation 0.0187 < 0.05)\nMSFT: SELL 1 @ 344.46EUR (deviation 0.1151, weight 0.000)\nGOOGL: HOLD (deviation 0.0091 < 0.05)\nAMZN: HOLD (deviation 0.0449 < 0.05)\nTSLA: HOLD (deviation 0.0007 < 0.05)\nJPM: HOLD (deviation 0.0264 < 0.05)\nNVDA: HOLD (deviation 0.0433 < 0.05)\nJNJ: HOLD (deviation 0.0391 < 0.05)\nV: HOLD (deviation 0.0273 < 0.05)\nKO: HOLD (deviation 0.0163 < 0.05)\nULVR.L: HOLD (deviation 0.0000 < 0.05)\nHSBA.L: HOLD (deviation 0.0000 < 0.05)\nBP.L: HOLD (deviation 0.0000 < 0.05)\nGSK.L: HOLD (deviation 0.0000 < 0.05)\nRIO.L: HOLD (deviation 0.0000 < 0.05)\nENI.MI: HOLD (deviation 0.0000 < 0.05)\nISP.MI: HOLD (deviation 0.0000 < 0.05)\nENEL.MI: HOLD (deviation 0.0000 < 0.05)\nLDO.MI: HOLD (deviation 0.0000 < 0.05)\nMONC.MI: HOLD (deviation 0.0000 < 0.05)"
     }
   ]
 }
