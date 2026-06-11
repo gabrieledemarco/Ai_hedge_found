@@ -30,8 +30,7 @@ def get_live_prices(tickers: list[str], ttl: int = 60) -> dict[str, float]:
 
     for t in tickers:
         if t not in prices:
-            fallback = 150.0 if t.endswith(".L") or t.endswith(".MI") else 100.0
-            prices[t] = fallback
+            prices[t] = 0.0  # 0 signals missing data; never use a wrong nominal fallback
 
     _cache["prices"] = prices
     _cache["timestamp"] = now
