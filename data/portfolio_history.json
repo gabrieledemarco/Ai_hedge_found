@@ -3,7 +3,7 @@
     "currency": "EUR",
     "initial_capital": 3000.0,
     "current_cash": 266.57,
-    "price_source": "yfinance"
+    "price_source": "fallback"
   },
   "current_positions": {
     "AAPL": {
@@ -2229,6 +2229,90 @@
         }
       ],
       "reasoning": "AAPL: HOLD (deviation 0.0343 < 0.05)\nMSFT: SELL 1 @ 355.74EUR (deviation 0.0620, weight 0.050)\nGOOGL: SELL 1 @ 332.71EUR (deviation 0.0548, weight 0.050)\nAMZN: HOLD (deviation 0.0186 < 0.05)\nTSLA: SELL 1 @ 370.06EUR (deviation 0.0666, weight 0.050)\nJPM: HOLD (deviation 0.0425 < 0.05)\nNVDA: HOLD (deviation 0.0095 < 0.05)\nJNJ: HOLD (deviation 0.0195 < 0.05)\nV: HOLD (deviation 0.0434 < 0.05)\nKO: HOLD (deviation 0.0024 < 0.05)\nULVR.L: BUY skipped (1 share @ 5081.67EUR > cash 1100.53EUR)\nHSBA.L: BUY skipped (1 share @ 1590.54EUR > cash 1100.53EUR)\nBP.L: BUY 1 @ 619.28EUR (deviation 0.0500, weight 0.050)\nGSK.L: BUY skipped (1 share @ 2298.69EUR > cash 481.25EUR)\nRIO.L: BUY skipped (1 share @ 9053.39EUR > cash 481.25EUR)\nENI.MI: HOLD (deviation 0.0061 < 0.05)\nISP.MI: HOLD (deviation 0.0022 < 0.05)\nENEL.MI: HOLD (deviation 0.0037 < 0.05)\nLDO.MI: BUY 2 @ 53.48EUR (deviation 0.0500, weight 0.050)\nMONC.MI: BUY 2 @ 53.86EUR (deviation 0.0500, weight 0.050)"
+    },
+    {
+      "timestamp": "2026-06-12T22:05:13.380100+00:00",
+      "session": "sera",
+      "total_value_eur": 6233.43,
+      "current_cash": 266.57,
+      "positions": {
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 251.8083
+        },
+        "AMZN": {
+          "shares": 1,
+          "avg_price": 210.2176
+        },
+        "JPM": {
+          "shares": 1,
+          "avg_price": 269.2507
+        },
+        "NVDA": {
+          "shares": 1,
+          "avg_price": 173.9563
+        },
+        "JNJ": {
+          "shares": 1,
+          "avg_price": 204.8581
+        },
+        "V": {
+          "shares": 1,
+          "avg_price": 280.3767
+        },
+        "KO": {
+          "shares": 2,
+          "avg_price": 70.618
+        },
+        "ENI.MI": {
+          "shares": 6,
+          "avg_price": 23.125
+        },
+        "ISP.MI": {
+          "shares": 26,
+          "avg_price": 5.646
+        },
+        "ENEL.MI": {
+          "shares": 15,
+          "avg_price": 9.701
+        },
+        "BP.L": {
+          "shares": 1,
+          "avg_price": 619.2778
+        },
+        "LDO.MI": {
+          "shares": 2,
+          "avg_price": 53.48
+        },
+        "MONC.MI": {
+          "shares": 2,
+          "avg_price": 53.86
+        }
+      },
+      "prices_used": {
+        "AAPL": 100.0,
+        "MSFT": 100.0,
+        "GOOGL": 100.0,
+        "AMZN": 100.0,
+        "TSLA": 100.0,
+        "JPM": 100.0,
+        "NVDA": 100.0,
+        "JNJ": 100.0,
+        "V": 100.0,
+        "KO": 100.0,
+        "ULVR.L": 150.0,
+        "HSBA.L": 150.0,
+        "BP.L": 150.0,
+        "GSK.L": 150.0,
+        "RIO.L": 150.0,
+        "ENI.MI": 100.0,
+        "ISP.MI": 100.0,
+        "ENEL.MI": 100.0,
+        "LDO.MI": 100.0,
+        "MONC.MI": 100.0
+      },
+      "transactions": [],
+      "reasoning": "ATTENZIONE: alcuni prezzi sono fallback. Trading disabilitato, solo report."
     }
   ]
 }
