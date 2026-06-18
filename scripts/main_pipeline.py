@@ -150,8 +150,16 @@ def run_strategy_pipeline(
         price_local = prices.get(ticker, 0)
         currency = UNIVERSE[ticker]["currency"]
         price_eur = price_local * fx_rates.get(currency, 1.0)
-        shares = portfolio["current_positions"].get(ticker, {}).get("shares", 0)
-        pos_val_eur = price_eur * shares
+        pos = portfolio["current_positions"].get(ticker, {})
+        shares = pos.get("shares", 0)
+        # When prices are fallback (yfinance unavailable), use avg_price (cost basis
+        # already in EUR) to avoid artificial inflation from a generic 100 EUR fallback
+        # applied to cheap stocks bought in large lots (e.g. ISP.MI: 26 shares × 100 EUR
+        # = 2600 EUR instead of the real ~147 EUR).
+        if all_prices_real:
+            pos_val_eur = price_eur * shares
+        else:
+            pos_val_eur = pos.get("avg_price", price_eur) * shares
         position_values_eur[ticker] = pos_val_eur
         portfolio_value_eur += pos_val_eur
 
