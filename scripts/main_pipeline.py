@@ -44,28 +44,54 @@ STRATEGY_INSTANCES = {
 # ---------------------------------------------------------------------------
 
 def fetch_prices(tickers: list) -> tuple:
-    prices: dict = {}
-    all_real = True
-    for t in tickers:
+    """Fetch prices via a single yf.download() batch call with exponential backoff retry.
+
+    Using one batched request instead of 20 sequential Ticker().history() calls
+    dramatically reduces the chance of hitting Yahoo Finance rate limits on shared
+    GitHub Actions runners (same IP used by thousands of yfinance users).
+    """
+    import time
+
+    FALLBACKS = {t: (150.0 if t.endswith(".L") else 100.0) for t in tickers}
+
+    for attempt in range(3):
+        if attempt > 0:
+            wait = 2 ** attempt  # 2s, 4s
+            print(f"[INFO] Retry {attempt}/2 after {wait}s...")
+            time.sleep(wait)
         try:
-            tk = yf.Ticker(t)
-            hist = tk.history(period="1d")
-            if hist.empty:
-                hist = tk.history(period="5d")
-            if not hist.empty:
-                prices[t] = float(hist["Close"].iloc[-1])
-                print(f"  {t}: {prices[t]:.2f} {UNIVERSE[t]['currency']} (yfinance)")
-            else:
-                fallback = 150.0 if t.endswith(".L") else 100.0
-                print(f"[WARN] yfinance: no data for {t}, fallback {fallback}")
-                prices[t] = fallback
-                all_real = False
+            df = yf.download(
+                tickers,
+                period="5d",
+                auto_adjust=True,
+                progress=False,
+                threads=True,
+            )
+            if df.empty:
+                print(f"[WARN] yf.download returned empty DataFrame (attempt {attempt+1})")
+                continue
+
+            close = df["Close"] if "Close" in df.columns else df
+            prices: dict = {}
+            for t in tickers:
+                try:
+                    series = close[t] if len(tickers) > 1 else close
+                    price = float(series.dropna().iloc[-1])
+                    prices[t] = price
+                    print(f"  {t}: {price:.2f} {UNIVERSE[t]['currency']} (yfinance)")
+                except (KeyError, IndexError):
+                    fallback = FALLBACKS[t]
+                    print(f"[WARN] No data for {t} in batch, fallback {fallback}")
+                    prices[t] = fallback
+
+            all_real = all(prices.get(t) not in (100.0, 150.0) for t in tickers)
+            return prices, all_real
+
         except Exception as e:
-            fallback = 150.0 if t.endswith(".L") else 100.0
-            print(f"[WARN] yfinance failed for {t}: {e}, fallback {fallback}")
-            prices[t] = fallback
-            all_real = False
-    return prices, all_real
+            print(f"[WARN] yf.download attempt {attempt+1} failed: {e}")
+
+    print("[WARN] All fetch attempts failed. Using fallback prices for all tickers.")
+    return FALLBACKS, False
 
 
 def fetch_fx_rate(base: str, quote: str = "EUR") -> float:
