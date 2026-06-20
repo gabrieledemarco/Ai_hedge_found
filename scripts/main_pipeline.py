@@ -49,8 +49,11 @@ def fetch_prices(tickers: list) -> tuple:
     Using one batched request instead of 20 sequential Ticker().history() calls
     dramatically reduces the chance of hitting Yahoo Finance rate limits on shared
     GitHub Actions runners (same IP used by thousands of yfinance users).
+    period="5d" ensures the last available close is always returned regardless
+    of market hours or holidays.
     """
     import time
+    import pandas as pd
 
     FALLBACKS = {t: (150.0 if t.endswith(".L") else 100.0) for t in tickers}
 
@@ -65,27 +68,32 @@ def fetch_prices(tickers: list) -> tuple:
                 period="5d",
                 auto_adjust=True,
                 progress=False,
-                threads=True,
             )
             if df.empty:
                 print(f"[WARN] yf.download returned empty DataFrame (attempt {attempt+1})")
                 continue
 
-            close = df["Close"] if "Close" in df.columns else df
+            # Extract Close column — yf.download returns MultiIndex for multiple tickers;
+            # for a single ticker it returns a plain Series.
+            close = df["Close"]
+            if isinstance(close, pd.Series):
+                close = close.to_frame(name=tickers[0])
+
             prices: dict = {}
+            failed: set = set()
             for t in tickers:
                 try:
-                    series = close[t] if len(tickers) > 1 else close
-                    price = float(series.dropna().iloc[-1])
+                    price = float(close[t].dropna().iloc[-1])
                     prices[t] = price
                     print(f"  {t}: {price:.2f} {UNIVERSE[t]['currency']} (yfinance)")
                 except (KeyError, IndexError):
-                    fallback = FALLBACKS[t]
-                    print(f"[WARN] No data for {t} in batch, fallback {fallback}")
-                    prices[t] = fallback
+                    prices[t] = FALLBACKS[t]
+                    failed.add(t)
+                    print(f"[WARN] No close data for {t}, fallback {FALLBACKS[t]}")
 
-            all_real = all(prices.get(t) not in (100.0, 150.0) for t in tickers)
-            return prices, all_real
+            if failed:
+                print(f"[WARN] {len(failed)} tickers used fallback: {sorted(failed)}")
+            return prices, len(failed) == 0
 
         except Exception as e:
             print(f"[WARN] yf.download attempt {attempt+1} failed: {e}")
