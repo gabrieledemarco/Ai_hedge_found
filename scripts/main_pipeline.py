@@ -6,7 +6,6 @@ import json
 from datetime import datetime, timezone
 
 import requests
-import yfinance as yf
 
 # Ensure scripts/ directory is on the path so config and strategies are importable
 sys.path.insert(0, os.path.dirname(__file__))
@@ -32,6 +31,18 @@ from strategies import (
 AV_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "")
 TIINGO_KEY = os.environ.get("TIINGO_API_KEY", "")
 
+PRICE_CACHE_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "data", "price_cache.json"
+)
+
+HARDCODED_FALLBACKS = {t: (150.0 if t.endswith(".L") else 100.0) for t in []}
+
+YFINANCE_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+}
+
 STRATEGY_INSTANCES = {
     "equal_weight": EqualWeightStrategy(),
     "momentum": MomentumStrategy(),
@@ -43,6 +54,50 @@ STRATEGY_INSTANCES = {
 # ---------------------------------------------------------------------------
 # Price / FX helpers
 # ---------------------------------------------------------------------------
+
+
+def _save_price_cache(prices: dict) -> None:
+    """Persist successful prices to disk for fallback use on subsequent runs."""
+    import json
+
+    try:
+        os.makedirs(os.path.dirname(PRICE_CACHE_PATH), exist_ok=True)
+        with open(PRICE_CACHE_PATH, "w") as f:
+            json.dump(
+                {"prices": prices, "timestamp": datetime.now(timezone.utc).isoformat()},
+                f,
+            )
+    except Exception as e:
+        print(f"[WARN] Failed to save price cache: {e}")
+
+
+def _load_price_cache(tickers: list) -> dict | None:
+    """Load last known good prices from disk cache.
+
+    Returns {ticker: price} dict if cache exists, None otherwise.
+    Does NOT set all_real — cached prices are always treated as fallback.
+    """
+    import json
+
+    try:
+        with open(PRICE_CACHE_PATH) as f:
+            data = json.load(f)
+        cached = data.get("prices", {})
+        ts = data.get("timestamp", "unknown")
+        missing = [t for t in tickers if t not in cached]
+        if missing:
+            print(f"[WARN] Price cache missing {len(missing)} tickers: {missing}")
+        found = {t: cached[t] for t in tickers if t in cached}
+        if found:
+            print(f"[INFO] Loaded {len(found)} prices from cache ({ts})")
+            # Fill missing tickers with hardcoded fallback
+            for t in tickers:
+                if t not in found:
+                    found[t] = 150.0 if t.endswith(".L") else 100.0
+            return found
+    except (FileNotFoundError, json.JSONDecodeError, KeyError):
+        pass
+    return None
 
 
 def fetch_prices_via_tiingo(tickers: list) -> tuple:
@@ -68,14 +123,13 @@ def fetch_prices_via_tiingo(tickers: list) -> tuple:
     for t in tickers:
         mapped = ticker_map[t]
         url = f"https://api.tiingo.com/tiingo/daily/{mapped}/prices"
-        params = {
-            "token": TIINGO_KEY,
-            "resampleFreq": "daily",
-            "sort": "desc",
-            "limit": 1,
-        }
+        params = {"resampleFreq": "daily", "sort": "desc", "limit": 1}
+        headers = {"Authorization": f"Token {TIINGO_KEY}"}
         try:
-            resp = requests.get(url, params=params, timeout=15)
+            resp = requests.get(url, params=params, headers=headers, timeout=15)
+            if resp.status_code == 400:
+                print(f"[WARN] Tiingo 400 for {t}: {resp.text[:200]}")
+                return None, False
             resp.raise_for_status()
             data = resp.json()
             price = float(data[0]["adjClose"])
@@ -86,43 +140,65 @@ def fetch_prices_via_tiingo(tickers: list) -> tuple:
             return None, False
         time.sleep(0.3)
 
+    _save_price_cache(prices)
     return prices, True
 
 
-def fetch_prices(tickers: list) -> tuple:
-    """Fallback: download one ticker at a time via yfinance.
+def fetch_prices_via_yfinance(tickers: list) -> tuple:
+    """Download one ticker at a time via Yahoo Finance JSON API.
 
-    Individual requests avoid batch rate limits. Each ticker is wrapped in
-    its own try/except so a single failure doesn't block all prices.
+    Uses the underlying `query1.finance.yahoo.com` REST API directly with
+    browser User-Agent headers, bypassing the yfinance library rate limiting.
+
+    Each ticker is wrapped in its own try/except so a single failure
+    doesn't block all prices.
     """
     import time
 
-    FALLBACKS = {t: (150.0 if t.endswith(".L") else 100.0) for t in tickers}
+    session = requests.Session()
+    session.headers.update(YFINANCE_HEADERS)
 
     prices = {}
     n_failed = 0
     for t in tickers:
         try:
-            hist = yf.Ticker(t).history(period="5d", auto_adjust=True)
-            if hist.empty:
-                print(
-                    f"[WARN] yfinance returned empty for {t}, fallback {FALLBACKS[t]}"
+            url = f"https://query1.finance.yahoo.com/v8/finance/chart/{t}"
+            params = {"range": "5d", "interval": "1d"}
+            resp = session.get(url, params=params, timeout=15)
+            resp.raise_for_status()
+            data = resp.json()
+            meta = data.get("chart", {}).get("result", [{}])[0].get("meta", {})
+            price = float(meta.get("regularMarketPrice", 0))
+            if price == 0:
+                quotes = (
+                    data.get("chart", {})
+                    .get("result", [{}])[0]
+                    .get("indicators", {})
+                    .get("quote", [{}])[0]
+                    .get("close", [])
                 )
-                prices[t] = FALLBACKS[t]
+                price = float(quotes[-1]) if quotes else 0
+            if price == 0:
+                print(f"[WARN] Yahoo API returned 0 for {t}")
                 n_failed += 1
             else:
-                price = float(hist["Close"].dropna().iloc[-1])
                 prices[t] = price
-                print(f"  {t}: {price:.2f} {UNIVERSE[t]['currency']} (yfinance)")
+                print(f"  {t}: {price:.2f} {UNIVERSE[t]['currency']} (yahoo)")
         except Exception as e:
-            print(f"[WARN] yfinance failed for {t}: {e}, fallback {FALLBACKS[t]}")
-            prices[t] = FALLBACKS[t]
+            print(f"[WARN] Yahoo API failed for {t}: {e}")
             n_failed += 1
-        time.sleep(1.0)
+        time.sleep(1.5)
 
     all_real = n_failed == 0
     if n_failed > 0:
-        print(f"[WARN] {n_failed}/{len(tickers)} tickers on fallback prices.")
+        print(f"[WARN] {n_failed}/{len(tickers)} Yahoo requests failed.")
+        missing = [t for t in tickers if t not in prices]
+        if missing:
+            hard = {t: (150.0 if t.endswith(".L") else 100.0) for t in missing}
+            prices.update(hard)
+            print(f"[WARN] Using hardcoded fallback for {len(missing)} tickers.")
+    if prices and all_real:
+        _save_price_cache(prices)
     return prices, all_real
 
 
@@ -411,8 +487,27 @@ def run_pipeline(session_label: str) -> float:
     print("[INFO] Fetching prices...")
     prices, all_prices_real = fetch_prices_via_tiingo(tickers)
     if prices is None:
-        print("[INFO] Tiingo unavailable, falling back to yfinance...")
-        prices, all_prices_real = fetch_prices(tickers)
+        print("[INFO] Tiingo unavailable, falling back to Yahoo Finance API...")
+        prices, all_prices_real = fetch_prices_via_yfinance(tickers)
+    if not prices:
+        cached = _load_price_cache(tickers)
+        if cached:
+            print("[INFO] All APIs failed — using price cache as fallback (no trades).")
+            prices, all_prices_real = cached, False
+    elif not all_prices_real:
+        cached = _load_price_cache(tickers)
+        if cached:
+            filled = 0
+            for t in tickers:
+                if prices.get(t) in (100.0, 150.0) and cached.get(t) not in (
+                    100.0,
+                    150.0,
+                    None,
+                ):
+                    prices[t] = cached[t]
+                    filled += 1
+            if filled:
+                print(f"[INFO] Filled {filled} missing prices from cache.")
 
     # Fetch FX rates once
     fx_rates = {}
