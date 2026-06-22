@@ -64,8 +64,9 @@ jobs:
 
       - name: Fetch latest portfolio from remote
         run: |
-          git fetch origin main
-          git checkout origin/main -- data/portfolio_history.json data/portfolios/ data/signals.json docs/ || true
+          BRANCH="${{ github.ref_name }}"
+          git fetch origin "$BRANCH"
+          git checkout "origin/$BRANCH" -- data/portfolio_history.json data/portfolios/ data/signals.json docs/ || true
 
       - name: Run pipeline
         run: |
@@ -80,8 +81,9 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to portfolio — skipping commit"
           else
-            git fetch origin main
-            git reset --soft origin/main
+            BRANCH="${{ github.ref_name }}"
+            git fetch origin "$BRANCH"
+            git reset --soft "origin/$BRANCH"
             git commit -m "chore: portfolio update $(date -u '+%Y-%m-%d %H:%M UTC')"
-            git push
+            git push origin "HEAD:$BRANCH"
           fi
