@@ -2,8 +2,8 @@
   "metadata": {
     "currency": "EUR",
     "initial_capital": 3000.0,
-    "current_cash": 226.37,
-    "price_source": "fallback"
+    "current_cash": 545.55,
+    "price_source": "yfinance"
   },
   "current_positions": {
     "AAPL": {
@@ -54,13 +54,9 @@
       "shares": 2,
       "avg_price": 53.86
     },
-    "MSFT": {
+    "TSLA": {
       "shares": 1,
-      "avg_price": 329.1108
-    },
-    "GOOGL": {
-      "shares": 1,
-      "avg_price": 315.978
+      "avg_price": 368.4508
     }
   },
   "iterations_log": [
@@ -4036,6 +4032,112 @@
       },
       "transactions": [],
       "reasoning": "ATTENZIONE: alcuni prezzi sono fallback. Trading disabilitato, solo report."
+    },
+    {
+      "timestamp": "2026-06-22T13:18:36.759620+00:00",
+      "session": "sera",
+      "total_value_eur": 3204.55,
+      "current_cash": 545.55,
+      "positions": {
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 251.8083
+        },
+        "AMZN": {
+          "shares": 1,
+          "avg_price": 210.2176
+        },
+        "JPM": {
+          "shares": 1,
+          "avg_price": 269.2507
+        },
+        "NVDA": {
+          "shares": 1,
+          "avg_price": 173.9563
+        },
+        "JNJ": {
+          "shares": 1,
+          "avg_price": 204.8581
+        },
+        "V": {
+          "shares": 1,
+          "avg_price": 280.3767
+        },
+        "KO": {
+          "shares": 2,
+          "avg_price": 70.618
+        },
+        "ENI.MI": {
+          "shares": 6,
+          "avg_price": 23.125
+        },
+        "ISP.MI": {
+          "shares": 26,
+          "avg_price": 5.646
+        },
+        "ENEL.MI": {
+          "shares": 15,
+          "avg_price": 9.701
+        },
+        "LDO.MI": {
+          "shares": 2,
+          "avg_price": 53.48
+        },
+        "MONC.MI": {
+          "shares": 2,
+          "avg_price": 53.86
+        },
+        "TSLA": {
+          "shares": 1,
+          "avg_price": 368.4508
+        }
+      },
+      "prices_used": {
+        "AAPL": 298.01,
+        "MSFT": 379.4,
+        "GOOGL": 368.03,
+        "AMZN": 244.39,
+        "TSLA": 400.49,
+        "JPM": 325.22,
+        "NVDA": 210.69,
+        "JNJ": 228.39,
+        "V": 327.24,
+        "KO": 79.39,
+        "ULVR.L": 4360.0,
+        "HSBA.L": 1455.2,
+        "BP.L": 501.9,
+        "GSK.L": 1917.0,
+        "RIO.L": 7471.0,
+        "ENI.MI": 21.57,
+        "ISP.MI": 6.179,
+        "ENEL.MI": 9.829,
+        "LDO.MI": 50.47,
+        "MONC.MI": 51.4
+      },
+      "transactions": [
+        {
+          "action": "SELL",
+          "ticker": "MSFT",
+          "shares": 1,
+          "price_eur": 349.048,
+          "total_proceeds_eur": 349.05
+        },
+        {
+          "action": "SELL",
+          "ticker": "GOOGL",
+          "shares": 1,
+          "price_eur": 338.5876,
+          "total_proceeds_eur": 338.59
+        },
+        {
+          "action": "BUY",
+          "ticker": "TSLA",
+          "shares": 1,
+          "price_eur": 368.4508,
+          "total_cost_eur": 368.45
+        }
+      ],
+      "reasoning": "AAPL: HOLD (deviation 0.0356 < 0.05)\nMSFT: SELL 1 @ 349.05EUR (deviation 0.0589, weight 0.050)\nGOOGL: SELL 1 @ 338.59EUR (deviation 0.0557, weight 0.050)\nAMZN: HOLD (deviation 0.0202 < 0.05)\nTSLA: BUY 1 @ 368.45EUR (deviation 0.0500, weight 0.050)\nJPM: HOLD (deviation 0.0434 < 0.05)\nNVDA: HOLD (deviation 0.0105 < 0.05)\nJNJ: HOLD (deviation 0.0156 < 0.05)\nV: HOLD (deviation 0.0439 < 0.05)\nKO: HOLD (deviation 0.0044 < 0.05)\nULVR.L: BUY skipped (1 share @ 5050.85EUR > cash 545.55EUR)\nHSBA.L: BUY skipped (1 share @ 1685.78EUR > cash 545.55EUR)\nBP.L: BUY skipped (1 share @ 581.43EUR > cash 545.55EUR)\nGSK.L: BUY skipped (1 share @ 2220.75EUR > cash 545.55EUR)\nRIO.L: BUY skipped (1 share @ 8654.79EUR > cash 545.55EUR)\nENI.MI: HOLD (deviation 0.0096 < 0.05)\nISP.MI: HOLD (deviation 0.0001 < 0.05)\nENEL.MI: HOLD (deviation 0.0040 < 0.05)\nLDO.MI: HOLD (deviation 0.0185 < 0.05)\nMONC.MI: HOLD (deviation 0.0179 < 0.05)"
     }
   ]
 }
