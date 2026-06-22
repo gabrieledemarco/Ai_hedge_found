@@ -29,13 +29,11 @@ from strategies import (
 )
 
 AV_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "")
-TIINGO_KEY = os.environ.get("TIINGO_API_KEY", "")
+FINNHUB_KEY = os.environ.get("FINNHUB_API_KEY", "")
 
 PRICE_CACHE_PATH = os.path.join(
     os.path.dirname(__file__), "..", "data", "price_cache.json"
 )
-
-HARDCODED_FALLBACKS = {t: (150.0 if t.endswith(".L") else 100.0) for t in []}
 
 YFINANCE_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -58,8 +56,6 @@ STRATEGY_INSTANCES = {
 
 def _save_price_cache(prices: dict) -> None:
     """Persist successful prices to disk for fallback use on subsequent runs."""
-    import json
-
     try:
         os.makedirs(os.path.dirname(PRICE_CACHE_PATH), exist_ok=True)
         with open(PRICE_CACHE_PATH, "w") as f:
@@ -77,8 +73,6 @@ def _load_price_cache(tickers: list) -> dict | None:
     Returns {ticker: price} dict if cache exists, None otherwise.
     Does NOT set all_real — cached prices are always treated as fallback.
     """
-    import json
-
     try:
         with open(PRICE_CACHE_PATH) as f:
             data = json.load(f)
@@ -100,48 +94,89 @@ def _load_price_cache(tickers: list) -> dict | None:
     return None
 
 
-def fetch_prices_via_tiingo(tickers: list) -> tuple:
-    """Fetch prices via Tiingo API (primary source, one ticker at a time).
+def fetch_prices_via_finnhub(tickers: list) -> tuple:
+    """Fetch prices via Finnhub (US) + Yahoo Finance API (international).
 
-    Tiingo free tier: 500 requests/min — 0.3s between calls is safe.
-    Uses root ticker (strip .L, .MI suffixes) for international stocks.
+    Finnhub free tier: 60 req/min → 0.5s delay for US tickers.
+    International tickers (.L, .MI) are not available on Finnhub free tier,
+    so they fall back to the Yahoo Finance JSON API with browser headers.
 
-    Returns (prices_dict, True) on success, (None, False) if Tiingo unavailable.
+    Returns (prices_dict, True) on success, (None, False) if Finnhub key missing.
     """
     import time
 
-    if not TIINGO_KEY:
-        print("[INFO] TIINGO_API_KEY not set — skipping Tiingo")
+    if not FINNHUB_KEY:
+        print("[INFO] FINNHUB_API_KEY not set — skipping Finnhub")
         return None, False
 
-    ticker_map = {}
-    for t in tickers:
-        root = t.replace(".L", "").replace(".MI", "")
-        ticker_map[t] = root
+    yahoo_session = requests.Session()
+    yahoo_session.headers.update(YFINANCE_HEADERS)
 
     prices = {}
-    for t in tickers:
-        mapped = ticker_map[t]
-        url = f"https://api.tiingo.com/tiingo/daily/{mapped}/prices"
-        params = {"resampleFreq": "daily", "sort": "desc", "limit": 1}
-        headers = {"Authorization": f"Token {TIINGO_KEY}"}
-        try:
-            resp = requests.get(url, params=params, headers=headers, timeout=15)
-            if resp.status_code == 400:
-                print(f"[WARN] Tiingo 400 for {t}: {resp.text[:200]}")
-                return None, False
-            resp.raise_for_status()
-            data = resp.json()
-            price = float(data[0]["adjClose"])
-            prices[t] = price
-            print(f"  {t}: {price:.2f} {UNIVERSE[t]['currency']} (tiingo)")
-        except Exception as e:
-            print(f"[WARN] Tiingo failed for {t}: {e}")
-            return None, False
-        time.sleep(0.3)
+    n_failed = 0
 
-    _save_price_cache(prices)
-    return prices, True
+    for t in tickers:
+        is_international = t.endswith(".L") or t.endswith(".MI")
+        price = None
+
+        if not is_international:
+            # US tickers → Finnhub (fast, reliable)
+            try:
+                url = f"https://finnhub.io/api/v1/quote?symbol={t}&token={FINNHUB_KEY}"
+                resp = requests.get(url, timeout=10)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    c = data.get("c")
+                    if c and c > 0:
+                        price = float(c)
+                        print(f"  {t}: {price:.2f} {UNIVERSE[t]['currency']} (finnhub)")
+            except Exception as e:
+                print(f"[WARN] Finnhub failed for {t}: {e}")
+
+        if price is None:
+            # International tickers (or Finnhub failed) → Yahoo API
+            try:
+                url = f"https://query1.finance.yahoo.com/v8/finance/chart/{t}"
+                params = {"range": "5d", "interval": "1d"}
+                resp = yahoo_session.get(url, params=params, timeout=15)
+                resp.raise_for_status()
+                data = resp.json()
+                meta = data.get("chart", {}).get("result", [{}])[0].get("meta", {})
+                p = float(meta.get("regularMarketPrice", 0))
+                if p == 0:
+                    quotes = (
+                        data.get("chart", {})
+                        .get("result", [{}])[0]
+                        .get("indicators", {})
+                        .get("quote", [{}])[0]
+                        .get("close", [])
+                    )
+                    p = float(quotes[-1]) if quotes else 0
+                if p > 0:
+                    price = p
+                    print(f"  {t}: {price:.2f} {UNIVERSE[t]['currency']} (yahoo)")
+                else:
+                    print(f"[WARN] Yahoo returned 0 for {t}")
+            except Exception as e:
+                print(f"[WARN] Yahoo failed for {t}: {e}")
+
+        if price is not None:
+            prices[t] = price
+        else:
+            n_failed += 1
+
+        time.sleep(0.5 if not is_international else 1.5)
+
+    all_real = n_failed == 0
+    if n_failed > 0:
+        print(f"[WARN] {n_failed}/{len(tickers)} tickers failed.")
+        for t in tickers:
+            if t not in prices:
+                prices[t] = 150.0 if t.endswith(".L") else 100.0
+                print(f"[WARN] Hardcoded fallback for {t}: {prices[t]}")
+    if prices and all_real:
+        _save_price_cache(prices)
+    return prices, all_real
 
 
 def fetch_prices_via_yfinance(tickers: list) -> tuple:
@@ -233,7 +268,7 @@ def convert_to_eur(amount: float, currency: str, fx_rates: dict | None = None) -
 
 def validate_env() -> bool:
     checks = [
-        ("TIINGO_API_KEY", TIINGO_KEY, "Prezzi azionari (Tiingo)"),
+        ("FINNHUB_API_KEY", FINNHUB_KEY, "Prezzi azionari (Finnhub + Yahoo fallback)"),
         ("ALPHA_VANTAGE_KEY", AV_KEY, "Tassi FX (Alpha Vantage)"),
         ("TELEGRAM_TOKEN", os.environ.get("TELEGRAM_TOKEN", ""), "Bot Telegram"),
         ("TELEGRAM_CHAT_ID", os.environ.get("TELEGRAM_CHAT_ID", ""), "Chat Telegram"),
@@ -485,9 +520,9 @@ def run_pipeline(session_label: str) -> float:
 
     # Fetch prices once (shared across all strategies)
     print("[INFO] Fetching prices...")
-    prices, all_prices_real = fetch_prices_via_tiingo(tickers)
+    prices, all_prices_real = fetch_prices_via_finnhub(tickers)
     if prices is None:
-        print("[INFO] Tiingo unavailable, falling back to Yahoo Finance API...")
+        print("[INFO] Finnhub unavailable, falling back to Yahoo Finance API...")
         prices, all_prices_real = fetch_prices_via_yfinance(tickers)
     if not prices:
         cached = _load_price_cache(tickers)
