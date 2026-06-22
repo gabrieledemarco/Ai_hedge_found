@@ -93,13 +93,13 @@ def fetch_prices(tickers: list) -> tuple:
 
             if failed:
                 print(f"[WARN] {len(failed)} tickers used fallback: {sorted(failed)}")
-            return prices, len(failed) == 0
+            return prices, failed
 
         except Exception as e:
             print(f"[WARN] yf.download attempt {attempt+1} failed: {e}")
 
     print("[WARN] All fetch attempts failed. Using fallback prices for all tickers.")
-    return FALLBACKS, False
+    return FALLBACKS, set(tickers)
 
 
 def fetch_fx_rate(base: str, quote: str = "EUR") -> float:
@@ -167,11 +167,15 @@ def run_strategy_pipeline(
     prices: dict,
     fx_rates: dict,
     signals: dict,
-    all_prices_real: bool,
+    failed_tickers: set,
 ) -> dict:
     """
     Run the trading pipeline for one strategy.
     Returns {total_value_eur, cash_eur, transactions, reasoning_parts, portfolio}.
+
+    failed_tickers: set of tickers whose price fetch failed and are using fallback values.
+    Trading is skipped for those specific tickers; others proceed normally.
+    All trading is suspended only when ALL tickers failed.
     """
     strategy = STRATEGY_INSTANCES[strategy_name]
     portfolio = load_portfolio_for_strategy(strategy_name)
@@ -186,23 +190,24 @@ def run_strategy_pipeline(
         price_eur = price_local * fx_rates.get(currency, 1.0)
         pos = portfolio["current_positions"].get(ticker, {})
         shares = pos.get("shares", 0)
-        # When prices are fallback (yfinance unavailable), use avg_price (cost basis
-        # already in EUR) to avoid artificial inflation from a generic 100 EUR fallback
+        # For tickers with fallback price (yfinance unavailable), use avg_price (cost
+        # basis already in EUR) to avoid inflation from a generic 100 EUR fallback
         # applied to cheap stocks bought in large lots (e.g. ISP.MI: 26 shares × 100 EUR
         # = 2600 EUR instead of the real ~147 EUR).
-        if all_prices_real:
-            pos_val_eur = price_eur * shares
-        else:
+        if ticker in failed_tickers:
             pos_val_eur = pos.get("avg_price", price_eur) * shares
+        else:
+            pos_val_eur = price_eur * shares
         position_values_eur[ticker] = pos_val_eur
         portfolio_value_eur += pos_val_eur
 
     cash_eur = portfolio["metadata"]["current_cash"]
     portfolio_value_eur += cash_eur
 
-    if not all_prices_real:
+    all_failed = len(failed_tickers) >= len(tickers)
+    if all_failed:
         msg = (
-            "ATTENZIONE: alcuni prezzi sono fallback. "
+            "ATTENZIONE: tutti i prezzi sono fallback. "
             "Trading disabilitato, solo report."
         )
         portfolio["metadata"]["price_source"] = "fallback"
@@ -218,7 +223,7 @@ def run_strategy_pipeline(
             "has_trades": False,
         }
 
-    portfolio["metadata"]["price_source"] = "yfinance"
+    portfolio["metadata"]["price_source"] = "yfinance" if not failed_tickers else "partial"
 
     # --- Compute target weights from strategy ---
     weights = strategy.compute_weights(UNIVERSE, prices, signals)
@@ -226,6 +231,12 @@ def run_strategy_pipeline(
     transactions = []
     reasoning_parts = []
     has_trades = False
+
+    if failed_tickers:
+        reasoning_parts.append(
+            f"ATTENZIONE: prezzi non disponibili per {sorted(failed_tickers)}. "
+            "Trading sospeso per questi titoli."
+        )
 
     for ticker in tickers:
         target_weight = weights.get(ticker, 0.0)
@@ -241,6 +252,11 @@ def run_strategy_pipeline(
         currency = UNIVERSE[ticker]["currency"]
         price_eur = price_local * fx_rates.get(currency, 1.0)
         diff_eur = target_eur - current_eur
+
+        # Skip trading for tickers whose price fetch failed
+        if ticker in failed_tickers:
+            reasoning_parts.append(f"{ticker}: SKIP (prezzo non disponibile)")
+            continue
 
         if weight_deviation < REBALANCE_THRESHOLD:
             reasoning_parts.append(
@@ -366,7 +382,7 @@ def run_pipeline(session_label: str) -> float:
 
     # Fetch prices once (shared across all strategies)
     print("[INFO] Fetching prices...")
-    prices, all_prices_real = fetch_prices(tickers)
+    prices, failed_tickers = fetch_prices(tickers)
 
     # Fetch FX rates once
     fx_rates = {}
@@ -388,7 +404,7 @@ def run_pipeline(session_label: str) -> float:
         print(f"\n--- Strategy: {strategy_name} ---")
         try:
             result = run_strategy_pipeline(
-                strategy_name, session_label, prices, fx_rates, signals, all_prices_real
+                strategy_name, session_label, prices, fx_rates, signals, failed_tickers
             )
             strategy_results[strategy_name] = result
             print(
@@ -449,7 +465,7 @@ def run_pipeline(session_label: str) -> float:
         strategy_results,
         primary["portfolio"],
         prices,
-        all_prices_real=all_prices_real,
+        failed_tickers=failed_tickers,
     )
     send_telegram_message(report, session=session_label, has_trades=has_any_trades)
 
@@ -536,17 +552,26 @@ def build_telegram_report(
     strategy_results: dict,
     primary_portfolio: dict,
     prices: dict,
-    all_prices_real: bool = True,
+    failed_tickers: set = None,
 ) -> str:
     TELEGRAM_LIMIT = 4000
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     sep = "-" * 25
+    if failed_tickers is None:
+        failed_tickers = set()
+    tickers_total = len(prices)
+    all_failed = len(failed_tickers) >= tickers_total
 
     lines = ["AI HEDGE FUND — {}".format(session.upper()), sep]
 
-    if not all_prices_real:
+    if all_failed:
         lines.append("⚠️  PREZZI NON DISPONIBILI (yfinance fallback)")
         lines.append("     Trading sospeso. Valori calcolati con ultimo prezzo noto.")
+        lines.append("")
+    elif failed_tickers:
+        failed_list = ", ".join(sorted(failed_tickers))
+        lines.append(f"⚠️  Prezzi non disponibili per: {failed_list}")
+        lines.append("     Trading sospeso per questi titoli.")
         lines.append("")
 
     # Performance summary — all 4 strategies
@@ -611,8 +636,15 @@ def build_telegram_report(
         lines.append(sep)
         lines.append("COMPOSIZIONE PORTAFOGLI:")
 
-        # Use last known real prices for P&L when current prices are fallback
-        display_prices = prices if all_prices_real else _last_known_prices(strategy_results)
+        # For failed tickers, substitute last known real price so P&L display is meaningful
+        if failed_tickers:
+            last_known = _last_known_prices(strategy_results)
+            display_prices = dict(prices)
+            for t in failed_tickers:
+                if t in last_known:
+                    display_prices[t] = last_known[t]
+        else:
+            display_prices = prices
 
         for sname in STRATEGIES:
             result = strategy_results.get(sname)
