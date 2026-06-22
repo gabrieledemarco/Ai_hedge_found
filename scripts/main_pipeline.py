@@ -30,6 +30,7 @@ from strategies import (
 )
 
 AV_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "")
+TIINGO_KEY = os.environ.get("TIINGO_API_KEY", "")
 
 STRATEGY_INSTANCES = {
     "equal_weight": EqualWeightStrategy(),
@@ -43,55 +44,86 @@ STRATEGY_INSTANCES = {
 # Price / FX helpers
 # ---------------------------------------------------------------------------
 
-def fetch_prices(tickers: list) -> tuple:
-    """Fetch prices via a single yf.download() batch call with exponential backoff retry.
 
-    Using one batched request instead of 20 sequential Ticker().history() calls
-    dramatically reduces the chance of hitting Yahoo Finance rate limits on shared
-    GitHub Actions runners (same IP used by thousands of yfinance users).
+def fetch_prices_via_tiingo(tickers: list) -> tuple:
+    """Fetch prices via Tiingo API (primary source, one ticker at a time).
+
+    Tiingo free tier: 500 requests/min — 0.3s between calls is safe.
+    Uses root ticker (strip .L, .MI suffixes) for international stocks.
+
+    Returns (prices_dict, True) on success, (None, False) if Tiingo unavailable.
+    """
+    import time
+
+    if not TIINGO_KEY:
+        print("[INFO] TIINGO_API_KEY not set — skipping Tiingo")
+        return None, False
+
+    ticker_map = {}
+    for t in tickers:
+        root = t.replace(".L", "").replace(".MI", "")
+        ticker_map[t] = root
+
+    prices = {}
+    for t in tickers:
+        mapped = ticker_map[t]
+        url = f"https://api.tiingo.com/tiingo/daily/{mapped}/prices"
+        params = {
+            "token": TIINGO_KEY,
+            "resampleFreq": "daily",
+            "sort": "desc",
+            "limit": 1,
+        }
+        try:
+            resp = requests.get(url, params=params, timeout=15)
+            resp.raise_for_status()
+            data = resp.json()
+            price = float(data[0]["adjClose"])
+            prices[t] = price
+            print(f"  {t}: {price:.2f} {UNIVERSE[t]['currency']} (tiingo)")
+        except Exception as e:
+            print(f"[WARN] Tiingo failed for {t}: {e}")
+            return None, False
+        time.sleep(0.3)
+
+    return prices, True
+
+
+def fetch_prices(tickers: list) -> tuple:
+    """Fallback: download one ticker at a time via yfinance.
+
+    Individual requests avoid batch rate limits. Each ticker is wrapped in
+    its own try/except so a single failure doesn't block all prices.
     """
     import time
 
     FALLBACKS = {t: (150.0 if t.endswith(".L") else 100.0) for t in tickers}
 
-    for attempt in range(3):
-        if attempt > 0:
-            wait = 2 ** attempt  # 2s, 4s
-            print(f"[INFO] Retry {attempt}/2 after {wait}s...")
-            time.sleep(wait)
+    prices = {}
+    n_failed = 0
+    for t in tickers:
         try:
-            df = yf.download(
-                tickers,
-                period="5d",
-                auto_adjust=True,
-                progress=False,
-                threads=True,
-            )
-            if df.empty:
-                print(f"[WARN] yf.download returned empty DataFrame (attempt {attempt+1})")
-                continue
-
-            close = df["Close"] if "Close" in df.columns else df
-            prices: dict = {}
-            for t in tickers:
-                try:
-                    series = close[t] if len(tickers) > 1 else close
-                    price = float(series.dropna().iloc[-1])
-                    prices[t] = price
-                    print(f"  {t}: {price:.2f} {UNIVERSE[t]['currency']} (yfinance)")
-                except (KeyError, IndexError):
-                    fallback = FALLBACKS[t]
-                    print(f"[WARN] No data for {t} in batch, fallback {fallback}")
-                    prices[t] = fallback
-
-            all_real = all(prices.get(t) not in (100.0, 150.0) for t in tickers)
-            return prices, all_real
-
+            hist = yf.Ticker(t).history(period="5d", auto_adjust=True)
+            if hist.empty:
+                print(
+                    f"[WARN] yfinance returned empty for {t}, fallback {FALLBACKS[t]}"
+                )
+                prices[t] = FALLBACKS[t]
+                n_failed += 1
+            else:
+                price = float(hist["Close"].dropna().iloc[-1])
+                prices[t] = price
+                print(f"  {t}: {price:.2f} {UNIVERSE[t]['currency']} (yfinance)")
         except Exception as e:
-            print(f"[WARN] yf.download attempt {attempt+1} failed: {e}")
+            print(f"[WARN] yfinance failed for {t}: {e}, fallback {FALLBACKS[t]}")
+            prices[t] = FALLBACKS[t]
+            n_failed += 1
+        time.sleep(1.0)
 
-    print("[WARN] All fetch attempts failed. Using fallback prices for all tickers.")
-    return FALLBACKS, False
+    all_real = n_failed == 0
+    if n_failed > 0:
+        print(f"[WARN] {n_failed}/{len(tickers)} tickers on fallback prices.")
+    return prices, all_real
 
 
 def fetch_fx_rate(base: str, quote: str = "EUR") -> float:
@@ -117,7 +149,7 @@ def fetch_fx_rate(base: str, quote: str = "EUR") -> float:
     return fallback_rates.get(base, 1.0)
 
 
-def convert_to_eur(amount: float, currency: str, fx_rates: dict = None) -> float:
+def convert_to_eur(amount: float, currency: str, fx_rates: dict | None = None) -> float:
     if fx_rates and currency in fx_rates:
         return amount * fx_rates[currency]
     return amount * fetch_fx_rate(currency, "EUR")
@@ -125,6 +157,7 @@ def convert_to_eur(amount: float, currency: str, fx_rates: dict = None) -> float
 
 def validate_env() -> bool:
     checks = [
+        ("TIINGO_API_KEY", TIINGO_KEY, "Prezzi azionari (Tiingo)"),
         ("ALPHA_VANTAGE_KEY", AV_KEY, "Tassi FX (Alpha Vantage)"),
         ("TELEGRAM_TOKEN", os.environ.get("TELEGRAM_TOKEN", ""), "Bot Telegram"),
         ("TELEGRAM_CHAT_ID", os.environ.get("TELEGRAM_CHAT_ID", ""), "Chat Telegram"),
@@ -135,7 +168,9 @@ def validate_env() -> bool:
             print(f"[WARN] {name} non impostata — {label} userà dati di fallback")
             all_ok = False
     if not all_ok:
-        print("[WARN] Imposta i GitHub Secrets: Settings → Secrets and variables → Actions")
+        print(
+            "[WARN] Imposta i GitHub Secrets: Settings → Secrets and variables → Actions"
+        )
     return all_ok
 
 
@@ -152,6 +187,7 @@ def load_signals() -> dict:
 # ---------------------------------------------------------------------------
 # Single-strategy pipeline
 # ---------------------------------------------------------------------------
+
 
 def run_strategy_pipeline(
     strategy_name: str,
@@ -199,7 +235,13 @@ def run_strategy_pipeline(
         )
         portfolio["metadata"]["price_source"] = "fallback"
         log_iteration_for_strategy(
-            strategy_name, portfolio, session_label, portfolio_value_eur, [], prices, msg
+            strategy_name,
+            portfolio,
+            session_label,
+            portfolio_value_eur,
+            [],
+            prices,
+            msg,
         )
         return {
             "total_value_eur": portfolio_value_eur,
@@ -263,7 +305,9 @@ def run_strategy_pipeline(
             total_cost = entry["avg_price"] * entry["shares"] + cost
             portfolio["current_positions"][ticker] = {
                 "shares": total_shares,
-                "avg_price": round(total_cost / total_shares, 4) if total_shares > 0 else 0,
+                "avg_price": round(total_cost / total_shares, 4)
+                if total_shares > 0
+                else 0,
             }
             cash_eur -= cost
             portfolio["metadata"]["current_cash"] = round(cash_eur, 2)
@@ -331,7 +375,13 @@ def run_strategy_pipeline(
 
     reasoning = "\n".join(reasoning_parts)
     log_iteration_for_strategy(
-        strategy_name, portfolio, session_label, total_value_eur, transactions, prices, reasoning
+        strategy_name,
+        portfolio,
+        session_label,
+        total_value_eur,
+        transactions,
+        prices,
+        reasoning,
     )
 
     return {
@@ -348,6 +398,7 @@ def run_strategy_pipeline(
 # Multi-strategy orchestrator
 # ---------------------------------------------------------------------------
 
+
 def run_pipeline(session_label: str) -> float:
     print(
         f"=== AI Hedge Fund Multi-Strategy Pipeline | "
@@ -358,7 +409,10 @@ def run_pipeline(session_label: str) -> float:
 
     # Fetch prices once (shared across all strategies)
     print("[INFO] Fetching prices...")
-    prices, all_prices_real = fetch_prices(tickers)
+    prices, all_prices_real = fetch_prices_via_tiingo(tickers)
+    if prices is None:
+        print("[INFO] Tiingo unavailable, falling back to yfinance...")
+        prices, all_prices_real = fetch_prices(tickers)
 
     # Fetch FX rates once
     fx_rates = {}
@@ -398,7 +452,9 @@ def run_pipeline(session_label: str) -> float:
         if legacy_result:
             eq_portfolio = legacy_result["portfolio"]
             legacy_portfolio["current_positions"] = eq_portfolio["current_positions"]
-            legacy_portfolio["metadata"]["current_cash"] = eq_portfolio["metadata"]["current_cash"]
+            legacy_portfolio["metadata"]["current_cash"] = eq_portfolio["metadata"][
+                "current_cash"
+            ]
             legacy_portfolio["metadata"]["price_source"] = eq_portfolio["metadata"].get(
                 "price_source", "yfinance"
             )
@@ -423,17 +479,23 @@ def run_pipeline(session_label: str) -> float:
 
     total_value_eur = primary["total_value_eur"]
     cash_eur = primary["cash_eur"]
-    has_any_trades = any(
-        r and r["has_trades"] for r in strategy_results.values()
-    )
+    has_any_trades = any(r and r["has_trades"] for r in strategy_results.values())
 
     # --- Print summary ---
     print("\n=== STRATEGY SUMMARY ===")
     for sname, result in strategy_results.items():
         if result:
-            initial = result["portfolio"]["metadata"].get("initial_capital", INITIAL_CAPITAL)
-            ret_pct = (result["total_value_eur"] - initial) / initial * 100 if initial > 0 else 0
-            print(f"  {sname:20s}: {result['total_value_eur']:.2f} EUR ({ret_pct:+.2f}%)")
+            initial = result["portfolio"]["metadata"].get(
+                "initial_capital", INITIAL_CAPITAL
+            )
+            ret_pct = (
+                (result["total_value_eur"] - initial) / initial * 100
+                if initial > 0
+                else 0
+            )
+            print(
+                f"  {sname:20s}: {result['total_value_eur']:.2f} EUR ({ret_pct:+.2f}%)"
+            )
 
     # --- Telegram report ---
     report = build_telegram_report(
@@ -484,13 +546,16 @@ def run_pipeline(session_label: str) -> float:
     except Exception as e:
         print(f"[WARN] Dashboard HTML generation failed: {e}")
 
-    print(f"\n[DONE] Session {session_label} completed. Primary total: {total_value_eur:.2f} EUR")
+    print(
+        f"\n[DONE] Session {session_label} completed. Primary total: {total_value_eur:.2f} EUR"
+    )
     return total_value_eur
 
 
 # ---------------------------------------------------------------------------
 # Telegram report (multi-strategy)
 # ---------------------------------------------------------------------------
+
 
 def _position_pnl_line(ticker: str, entry: dict, prices: dict) -> str:
     """Format a single position as compact P&L line."""
@@ -547,7 +612,9 @@ def build_telegram_report(
     for sname in STRATEGIES:
         result = strategy_results.get(sname)
         if result:
-            initial = result["portfolio"]["metadata"].get("initial_capital", INITIAL_CAPITAL)
+            initial = result["portfolio"]["metadata"].get(
+                "initial_capital", INITIAL_CAPITAL
+            )
             total = result["total_value_eur"]
             totals[sname] = total
             ret_pct = (total - initial) / initial * 100 if initial > 0 else 0
@@ -604,7 +671,9 @@ def build_telegram_report(
         lines.append("COMPOSIZIONE PORTAFOGLI:")
 
         # Use last known real prices for P&L when current prices are fallback
-        display_prices = prices if all_prices_real else _last_known_prices(strategy_results)
+        display_prices = (
+            prices if all_prices_real else _last_known_prices(strategy_results)
+        )
 
         for sname in STRATEGIES:
             result = strategy_results.get(sname)
@@ -617,7 +686,9 @@ def build_telegram_report(
             lines.append("  {}:".format(sname.upper()))
             for ticker in sorted(pos.keys()):
                 if display_prices:
-                    lines.append(_position_pnl_line(ticker, pos[ticker], display_prices))
+                    lines.append(
+                        _position_pnl_line(ticker, pos[ticker], display_prices)
+                    )
                 else:
                     entry = pos[ticker]
                     lines.append(
@@ -631,7 +702,7 @@ def build_telegram_report(
 
     text = "\n".join(lines)
     if len(text) > TELEGRAM_LIMIT:
-        text = text[:TELEGRAM_LIMIT - 20] + "\n...[troncato]"
+        text = text[: TELEGRAM_LIMIT - 20] + "\n...[troncato]"
     return text
 
 
@@ -640,7 +711,9 @@ def build_telegram_report(
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="AI Hedge Fund Multi-Strategy Pipeline")
+    parser = argparse.ArgumentParser(
+        description="AI Hedge Fund Multi-Strategy Pipeline"
+    )
     parser.add_argument(
         "--hour", type=int, required=True, help="Esecuzione hour in UTC (7, 15, 21)"
     )
