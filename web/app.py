@@ -14,6 +14,7 @@ app = Flask(__name__)
 
 
 @app.route("/")
+@app.route("/dashboard")
 def dashboard():
     tickers = list(UNIVERSE.keys())
     live_prices = get_live_prices(tickers, ttl=60)
