@@ -6,12 +6,12 @@ import json
 from datetime import datetime, timezone
 
 import requests
-import yfinance as yf
 
 # Ensure scripts/ directory is on the path so config and strategies are importable
 sys.path.insert(0, os.path.dirname(__file__))
 
 from config import UNIVERSE, STRATEGIES, INITIAL_CAPITAL, REBALANCE_THRESHOLD
+from fetch_prices import get_prices
 from portfolio_io import (
     load_portfolio,
     log_iteration,
@@ -30,6 +30,7 @@ from strategies import (
 )
 
 AV_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "")
+TIINGO_KEY = os.environ.get("TIINGO_API_KEY", "")
 
 STRATEGY_INSTANCES = {
     "equal_weight": EqualWeightStrategy(),
@@ -37,35 +38,6 @@ STRATEGY_INSTANCES = {
     "fundamental": FundamentalStrategy(),
     "sentiment": SentimentStrategy(),
 }
-
-
-# ---------------------------------------------------------------------------
-# Price / FX helpers
-# ---------------------------------------------------------------------------
-
-def fetch_prices(tickers: list) -> tuple:
-    prices: dict = {}
-    all_real = True
-    for t in tickers:
-        try:
-            tk = yf.Ticker(t)
-            hist = tk.history(period="1d")
-            if hist.empty:
-                hist = tk.history(period="5d")
-            if not hist.empty:
-                prices[t] = float(hist["Close"].iloc[-1])
-                print(f"  {t}: {prices[t]:.2f} {UNIVERSE[t]['currency']} (yfinance)")
-            else:
-                fallback = 150.0 if t.endswith(".L") else 100.0
-                print(f"[WARN] yfinance: no data for {t}, fallback {fallback}")
-                prices[t] = fallback
-                all_real = False
-        except Exception as e:
-            fallback = 150.0 if t.endswith(".L") else 100.0
-            print(f"[WARN] yfinance failed for {t}: {e}, fallback {fallback}")
-            prices[t] = fallback
-            all_real = False
-    return prices, all_real
 
 
 def fetch_fx_rate(base: str, quote: str = "EUR") -> float:
@@ -91,7 +63,7 @@ def fetch_fx_rate(base: str, quote: str = "EUR") -> float:
     return fallback_rates.get(base, 1.0)
 
 
-def convert_to_eur(amount: float, currency: str, fx_rates: dict = None) -> float:
+def convert_to_eur(amount: float, currency: str, fx_rates: dict | None = None) -> float:
     if fx_rates and currency in fx_rates:
         return amount * fx_rates[currency]
     return amount * fetch_fx_rate(currency, "EUR")
@@ -99,6 +71,7 @@ def convert_to_eur(amount: float, currency: str, fx_rates: dict = None) -> float
 
 def validate_env() -> bool:
     checks = [
+        ("TIINGO_API_KEY", TIINGO_KEY, "Prezzi azionari (Tiingo)"),
         ("ALPHA_VANTAGE_KEY", AV_KEY, "Tassi FX (Alpha Vantage)"),
         ("TELEGRAM_TOKEN", os.environ.get("TELEGRAM_TOKEN", ""), "Bot Telegram"),
         ("TELEGRAM_CHAT_ID", os.environ.get("TELEGRAM_CHAT_ID", ""), "Chat Telegram"),
@@ -109,7 +82,9 @@ def validate_env() -> bool:
             print(f"[WARN] {name} non impostata — {label} userà dati di fallback")
             all_ok = False
     if not all_ok:
-        print("[WARN] Imposta i GitHub Secrets: Settings → Secrets and variables → Actions")
+        print(
+            "[WARN] Imposta i GitHub Secrets: Settings → Secrets and variables → Actions"
+        )
     return all_ok
 
 
@@ -127,17 +102,22 @@ def load_signals() -> dict:
 # Single-strategy pipeline
 # ---------------------------------------------------------------------------
 
+
 def run_strategy_pipeline(
     strategy_name: str,
     session_label: str,
     prices: dict,
     fx_rates: dict,
     signals: dict,
-    all_prices_real: bool,
+    failed_tickers: set,
 ) -> dict:
     """
     Run the trading pipeline for one strategy.
     Returns {total_value_eur, cash_eur, transactions, reasoning_parts, portfolio}.
+
+    failed_tickers: set of tickers whose price fetch failed (using fallback values).
+    Trading is skipped only for those specific tickers; all others trade normally.
+    All trading is suspended only when ALL tickers failed.
     """
     strategy = STRATEGY_INSTANCES[strategy_name]
     portfolio = load_portfolio_for_strategy(strategy_name)
@@ -150,22 +130,35 @@ def run_strategy_pipeline(
         price_local = prices.get(ticker, 0)
         currency = UNIVERSE[ticker]["currency"]
         price_eur = price_local * fx_rates.get(currency, 1.0)
-        shares = portfolio["current_positions"].get(ticker, {}).get("shares", 0)
-        pos_val_eur = price_eur * shares
+        pos = portfolio["current_positions"].get(ticker, {})
+        shares = pos.get("shares", 0)
+        # For tickers with fallback price, use avg_price (cost basis in EUR) to avoid
+        # inflation from a generic 100 EUR fallback on cheap stocks in large lots.
+        if ticker in failed_tickers:
+            pos_val_eur = pos.get("avg_price", price_eur) * shares
+        else:
+            pos_val_eur = price_eur * shares
         position_values_eur[ticker] = pos_val_eur
         portfolio_value_eur += pos_val_eur
 
     cash_eur = portfolio["metadata"]["current_cash"]
     portfolio_value_eur += cash_eur
 
-    if not all_prices_real:
+    all_failed = len(failed_tickers) >= len(tickers)
+    if all_failed:
         msg = (
-            "ATTENZIONE: alcuni prezzi sono fallback. "
+            "ATTENZIONE: tutti i prezzi sono fallback. "
             "Trading disabilitato, solo report."
         )
         portfolio["metadata"]["price_source"] = "fallback"
         log_iteration_for_strategy(
-            strategy_name, portfolio, session_label, portfolio_value_eur, [], prices, msg
+            strategy_name,
+            portfolio,
+            session_label,
+            portfolio_value_eur,
+            [],
+            prices,
+            msg,
         )
         return {
             "total_value_eur": portfolio_value_eur,
@@ -176,7 +169,8 @@ def run_strategy_pipeline(
             "has_trades": False,
         }
 
-    portfolio["metadata"]["price_source"] = "yfinance"
+    n_real = len(tickers) - len(failed_tickers)
+    portfolio["metadata"]["price_source"] = f"live({n_real}/{len(tickers)})"
 
     # --- Compute target weights from strategy ---
     weights = strategy.compute_weights(UNIVERSE, prices, signals)
@@ -185,7 +179,17 @@ def run_strategy_pipeline(
     reasoning_parts = []
     has_trades = False
 
+    if failed_tickers:
+        reasoning_parts.append(
+            f"ATTENZIONE: prezzi non disponibili per {sorted(failed_tickers)}. "
+            "Trading sospeso per questi titoli."
+        )
+
     for ticker in tickers:
+        # Skip trading for tickers whose price fetch failed
+        if ticker in failed_tickers:
+            reasoning_parts.append(f"{ticker}: SKIP (prezzo non disponibile)")
+            continue
         target_weight = weights.get(ticker, 0.0)
         target_eur = portfolio_value_eur * target_weight
         current_eur = position_values_eur.get(ticker, 0.0)
@@ -229,7 +233,9 @@ def run_strategy_pipeline(
             total_cost = entry["avg_price"] * entry["shares"] + cost
             portfolio["current_positions"][ticker] = {
                 "shares": total_shares,
-                "avg_price": round(total_cost / total_shares, 4) if total_shares > 0 else 0,
+                "avg_price": round(total_cost / total_shares, 4)
+                if total_shares > 0
+                else 0,
             }
             cash_eur -= cost
             portfolio["metadata"]["current_cash"] = round(cash_eur, 2)
@@ -297,7 +303,13 @@ def run_strategy_pipeline(
 
     reasoning = "\n".join(reasoning_parts)
     log_iteration_for_strategy(
-        strategy_name, portfolio, session_label, total_value_eur, transactions, prices, reasoning
+        strategy_name,
+        portfolio,
+        session_label,
+        total_value_eur,
+        transactions,
+        prices,
+        reasoning,
     )
 
     return {
@@ -314,6 +326,7 @@ def run_strategy_pipeline(
 # Multi-strategy orchestrator
 # ---------------------------------------------------------------------------
 
+
 def run_pipeline(session_label: str) -> float:
     print(
         f"=== AI Hedge Fund Multi-Strategy Pipeline | "
@@ -322,9 +335,8 @@ def run_pipeline(session_label: str) -> float:
     validate_env()
     tickers = list(UNIVERSE.keys())
 
-    # Fetch prices once (shared across all strategies)
-    print("[INFO] Fetching prices...")
-    prices, all_prices_real = fetch_prices(tickers)
+    # Fetch prices: Tiingo → yfinance bulk → Alpha Vantage (gap-fill)
+    prices, failed_tickers = get_prices(tickers)
 
     # Fetch FX rates once
     fx_rates = {}
@@ -346,7 +358,7 @@ def run_pipeline(session_label: str) -> float:
         print(f"\n--- Strategy: {strategy_name} ---")
         try:
             result = run_strategy_pipeline(
-                strategy_name, session_label, prices, fx_rates, signals, all_prices_real
+                strategy_name, session_label, prices, fx_rates, signals, failed_tickers
             )
             strategy_results[strategy_name] = result
             print(
@@ -364,7 +376,9 @@ def run_pipeline(session_label: str) -> float:
         if legacy_result:
             eq_portfolio = legacy_result["portfolio"]
             legacy_portfolio["current_positions"] = eq_portfolio["current_positions"]
-            legacy_portfolio["metadata"]["current_cash"] = eq_portfolio["metadata"]["current_cash"]
+            legacy_portfolio["metadata"]["current_cash"] = eq_portfolio["metadata"][
+                "current_cash"
+            ]
             legacy_portfolio["metadata"]["price_source"] = eq_portfolio["metadata"].get(
                 "price_source", "yfinance"
             )
@@ -389,17 +403,23 @@ def run_pipeline(session_label: str) -> float:
 
     total_value_eur = primary["total_value_eur"]
     cash_eur = primary["cash_eur"]
-    has_any_trades = any(
-        r and r["has_trades"] for r in strategy_results.values()
-    )
+    has_any_trades = any(r and r["has_trades"] for r in strategy_results.values())
 
     # --- Print summary ---
     print("\n=== STRATEGY SUMMARY ===")
     for sname, result in strategy_results.items():
         if result:
-            initial = result["portfolio"]["metadata"].get("initial_capital", INITIAL_CAPITAL)
-            ret_pct = (result["total_value_eur"] - initial) / initial * 100 if initial > 0 else 0
-            print(f"  {sname:20s}: {result['total_value_eur']:.2f} EUR ({ret_pct:+.2f}%)")
+            initial = result["portfolio"]["metadata"].get(
+                "initial_capital", INITIAL_CAPITAL
+            )
+            ret_pct = (
+                (result["total_value_eur"] - initial) / initial * 100
+                if initial > 0
+                else 0
+            )
+            print(
+                f"  {sname:20s}: {result['total_value_eur']:.2f} EUR ({ret_pct:+.2f}%)"
+            )
 
     # --- Telegram report ---
     report = build_telegram_report(
@@ -407,7 +427,7 @@ def run_pipeline(session_label: str) -> float:
         strategy_results,
         primary["portfolio"],
         prices,
-        all_prices_real=all_prices_real,
+        failed_tickers=failed_tickers,
     )
     send_telegram_message(report, session=session_label, has_trades=has_any_trades)
 
@@ -450,13 +470,16 @@ def run_pipeline(session_label: str) -> float:
     except Exception as e:
         print(f"[WARN] Dashboard HTML generation failed: {e}")
 
-    print(f"\n[DONE] Session {session_label} completed. Primary total: {total_value_eur:.2f} EUR")
+    print(
+        f"\n[DONE] Session {session_label} completed. Primary total: {total_value_eur:.2f} EUR"
+    )
     return total_value_eur
 
 
 # ---------------------------------------------------------------------------
 # Telegram report (multi-strategy)
 # ---------------------------------------------------------------------------
+
 
 def _position_pnl_line(ticker: str, entry: dict, prices: dict) -> str:
     """Format a single position as compact P&L line."""
@@ -494,17 +517,25 @@ def build_telegram_report(
     strategy_results: dict,
     primary_portfolio: dict,
     prices: dict,
-    all_prices_real: bool = True,
+    failed_tickers: set = None,
 ) -> str:
     TELEGRAM_LIMIT = 4000
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     sep = "-" * 25
+    if failed_tickers is None:
+        failed_tickers = set()
+    all_failed = len(failed_tickers) >= len(prices)
 
     lines = ["AI HEDGE FUND — {}".format(session.upper()), sep]
 
-    if not all_prices_real:
-        lines.append("⚠️  PREZZI NON DISPONIBILI (yfinance fallback)")
+    if all_failed:
+        lines.append("⚠️  PREZZI NON DISPONIBILI (fallback totale)")
         lines.append("     Trading sospeso. Valori calcolati con ultimo prezzo noto.")
+        lines.append("")
+    elif failed_tickers:
+        failed_list = ", ".join(sorted(failed_tickers))
+        lines.append(f"⚠️  Prezzi non disponibili per: {failed_list}")
+        lines.append("     Trading sospeso per questi titoli.")
         lines.append("")
 
     # Performance summary — all 4 strategies
@@ -513,7 +544,9 @@ def build_telegram_report(
     for sname in STRATEGIES:
         result = strategy_results.get(sname)
         if result:
-            initial = result["portfolio"]["metadata"].get("initial_capital", INITIAL_CAPITAL)
+            initial = result["portfolio"]["metadata"].get(
+                "initial_capital", INITIAL_CAPITAL
+            )
             total = result["total_value_eur"]
             totals[sname] = total
             ret_pct = (total - initial) / initial * 100 if initial > 0 else 0
@@ -569,8 +602,15 @@ def build_telegram_report(
         lines.append(sep)
         lines.append("COMPOSIZIONE PORTAFOGLI:")
 
-        # Use last known real prices for P&L when current prices are fallback
-        display_prices = prices if all_prices_real else _last_known_prices(strategy_results)
+        # For failed tickers use last known real price; keep real prices for others
+        if failed_tickers:
+            last_known = _last_known_prices(strategy_results)
+            display_prices = dict(prices)
+            for t in failed_tickers:
+                if t in last_known:
+                    display_prices[t] = last_known[t]
+        else:
+            display_prices = prices
 
         for sname in STRATEGIES:
             result = strategy_results.get(sname)
@@ -583,7 +623,9 @@ def build_telegram_report(
             lines.append("  {}:".format(sname.upper()))
             for ticker in sorted(pos.keys()):
                 if display_prices:
-                    lines.append(_position_pnl_line(ticker, pos[ticker], display_prices))
+                    lines.append(
+                        _position_pnl_line(ticker, pos[ticker], display_prices)
+                    )
                 else:
                     entry = pos[ticker]
                     lines.append(
@@ -597,7 +639,7 @@ def build_telegram_report(
 
     text = "\n".join(lines)
     if len(text) > TELEGRAM_LIMIT:
-        text = text[:TELEGRAM_LIMIT - 20] + "\n...[troncato]"
+        text = text[: TELEGRAM_LIMIT - 20] + "\n...[troncato]"
     return text
 
 
@@ -606,7 +648,9 @@ def build_telegram_report(
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="AI Hedge Fund Multi-Strategy Pipeline")
+    parser = argparse.ArgumentParser(
+        description="AI Hedge Fund Multi-Strategy Pipeline"
+    )
     parser.add_argument(
         "--hour", type=int, required=True, help="Esecuzione hour in UTC (7, 15, 21)"
     )
