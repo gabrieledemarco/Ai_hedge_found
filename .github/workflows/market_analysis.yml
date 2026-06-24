@@ -56,11 +56,15 @@ jobs:
         run: python scripts/fetch_sentiment.py
         working-directory: ${{ github.workspace }}
 
+      - name: Run TradingView screener
+        run: python scripts/tradingview_screener.py
+        working-directory: ${{ github.workspace }}
+
       - name: Commit signals
         run: |
           git config user.name "Market Analysis Bot"
           git config user.email "bot@paper-trading.local"
-          git add data/signals.json
+          git add data/signals.json data/tv_screener.json
           if git diff --cached --quiet; then
             echo "No signal changes"
           else
