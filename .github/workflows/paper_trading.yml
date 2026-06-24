@@ -67,7 +67,7 @@ jobs:
         run: |
           BRANCH="${{ github.ref_name }}"
           git fetch origin "$BRANCH"
-          git checkout "origin/$BRANCH" -- data/portfolio_history.json data/portfolios/ data/signals.json data/investing_ids.json docs/ || true
+          git checkout "origin/$BRANCH" -- data/portfolio_history.json data/portfolios/ data/signals.json data/investing_ids.json data/prices_cache.json docs/ || true
 
       - name: Run pipeline
         run: |
@@ -78,7 +78,7 @@ jobs:
         run: |
           git config user.name "Paper Trading Bot"
           git config user.email "bot@paper-trading.local"
-          git add data/portfolio_history.json data/portfolios/ data/signals.json data/investing_ids.json docs/index.html
+          git add data/portfolio_history.json data/portfolios/ data/signals.json data/investing_ids.json data/prices_cache.json docs/index.html
           if git diff --cached --quiet; then
             echo "No changes to portfolio — skipping commit"
           else
