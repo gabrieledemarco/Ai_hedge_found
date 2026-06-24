@@ -192,6 +192,16 @@
       },
       "transactions": [],
       "reasoning": "ATTENZIONE: tutti i prezzi sono fallback. Trading disabilitato, solo report."
+    },
+    {
+      "timestamp": "2026-06-24T05:31:49.299129+00:00",
+      "session": "sera",
+      "total_value_eur": 3000.0,
+      "current_cash": 3000.0,
+      "positions": {},
+      "prices_used": {},
+      "transactions": [],
+      "reasoning": "ATTENZIONE: tutti i prezzi sono fallback. Trading disabilitato, solo report."
     }
   ]
 }
