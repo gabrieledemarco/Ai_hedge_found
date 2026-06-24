@@ -31,11 +31,11 @@ _AV_SYMBOL = {
     "BP.L":    "BP.LON",
     "GSK.L":   "GSK.LON",
     "RIO.L":   "RIO.LON",
-    "ENI.MI":  "ENI.BIT",
-    "ISP.MI":  "ISP.BIT",
-    "ENEL.MI": "ENEL.BIT",
-    "LDO.MI":  "LDO.BIT",
-    "MONC.MI": "MONC.BIT",
+    "ENI.MI":  "ENI.MIL",
+    "ISP.MI":  "ISP.MIL",
+    "ENEL.MI": "ENEL.MIL",
+    "LDO.MI":  "LDO.MIL",
+    "MONC.MI": "MONC.MIL",
 }
 
 
