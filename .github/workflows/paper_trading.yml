@@ -65,7 +65,7 @@ jobs:
       - name: Fetch latest portfolio from remote
         run: |
           git fetch origin main
-          git checkout origin/main -- data/portfolio_history.json data/portfolios/ data/signals.json docs/ || true
+          git checkout origin/main -- data/portfolio_history.json data/portfolios/ data/signals.json data/investing_ids.json docs/ || true
 
       - name: Run pipeline
         run: |
@@ -76,7 +76,7 @@ jobs:
         run: |
           git config user.name "Paper Trading Bot"
           git config user.email "bot@paper-trading.local"
-          git add data/portfolio_history.json data/portfolios/ data/signals.json docs/index.html
+          git add data/portfolio_history.json data/portfolios/ data/signals.json data/investing_ids.json docs/index.html
           if git diff --cached --quiet; then
             echo "No changes to portfolio — skipping commit"
           else

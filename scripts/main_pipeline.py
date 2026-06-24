@@ -335,8 +335,8 @@ def run_pipeline(session_label: str) -> float:
     validate_env()
     tickers = list(UNIVERSE.keys())
 
-    # Fetch prices: Tiingo → yfinance bulk → Alpha Vantage (gap-fill)
-    prices, failed_tickers = get_prices(tickers)
+    # Fetch prices: investing.com (investiny) → yfinance bulk fallback
+    prices, failed_tickers = get_prices(tickers, UNIVERSE)
 
     # Fetch FX rates once
     fx_rates = {}

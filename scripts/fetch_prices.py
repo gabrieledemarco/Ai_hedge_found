@@ -1,91 +1,162 @@
 """
-Multi-source price fetcher with 3-level fallback:
+Price fetcher using investing.com data via the investiny library.
+investiny is the maintained successor to the discontinued investpy library.
 
-  1. Tiingo   — primary (fixed endpoint: startDate only, no invalid params)
-  2. yfinance — single bulk request for all tickers (1 HTTP call vs 20, far less rate-limited)
-  3. Alpha Vantage GLOBAL_QUOTE — gap-fill for individual tickers that both above miss
+Flow:
+  1. investing.com (investiny) — primary source for all 20 tickers
+  2. yfinance bulk download   — fallback for tickers investiny misses
+                                 (single HTTP request, less rate-limited than individual calls)
 
-Tiingo ticker mapping:
-  FTSE: ULVR.L → ulvr  (no .L suffix, lowercase)
-  BIT:  ENI.MI → eni   (no .MI suffix, lowercase — coverage limited on Tiingo free tier)
-  US:   AAPL   → aapl
-
-Alpha Vantage symbol mapping:
-  FTSE: ULVR.L → ULVR.LON
-  BIT:  ENI.MI → ENI.MIL
-  US:   AAPL   → AAPL
+investing.com ID resolution:
+  - IDs are cached in data/investing_ids.json (committed to repo)
+  - On cache miss, investiny.search_assets() resolves the ID automatically
+  - Cache is updated and committed by the pipeline
 """
 
+import json
 import os
 import time
 from datetime import date, timedelta
 
-import requests
+try:
+    from investiny import historical_data, search_assets
+    _INVESTINY_OK = True
+except ImportError:
+    _INVESTINY_OK = False
+    print("[WARN] investiny not installed — install with: pip install investiny")
+
 import yfinance as yf
 
-AV_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "")
-TIINGO_KEY = os.environ.get("TIINGO_API_KEY", "")
+# Persistent cache: maps our ticker symbol → investing.com numeric ID
+_CACHE_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "investing_ids.json")
 
-# How many tickers Alpha Vantage can fill per session before hitting the daily cap.
-# Free tier = 25 req/day; 3 sessions/day → budget 8 per session (with margin).
-_AV_PER_SESSION_BUDGET = 8
+# investing.com exchange names as used by investiny search
+_EXCHANGE_MAP = {
+    "NASDAQ": "NASDAQ",
+    "NYSE": "NYSE",
+    "FTSE": "LSE",
+    "BIT": "Borsa Italiana",
+}
+
+# Company names for investiny.search_assets() lookup (avoids ticker-format issues)
+_COMPANY_NAMES = {
+    "AAPL":    "Apple",
+    "MSFT":    "Microsoft",
+    "GOOGL":   "Alphabet",
+    "AMZN":    "Amazon",
+    "TSLA":    "Tesla",
+    "JPM":     "JPMorgan Chase",
+    "NVDA":    "NVIDIA",
+    "JNJ":     "Johnson Johnson",
+    "V":       "Visa",
+    "KO":      "Coca-Cola",
+    "ULVR.L":  "Unilever",
+    "HSBA.L":  "HSBC Holdings",
+    "BP.L":    "BP",
+    "GSK.L":   "GSK",
+    "RIO.L":   "Rio Tinto",
+    "ENI.MI":  "Eni",
+    "ISP.MI":  "Intesa Sanpaolo",
+    "ENEL.MI": "Enel",
+    "LDO.MI":  "Leonardo",
+    "MONC.MI": "Moncler",
+}
 
 
-def _tiingo_ticker(t: str) -> str:
-    return t.replace(".L", "").replace(".MI", "").lower()
+# ── ID cache helpers ──────────────────────────────────────────────────────────
+
+def _load_cache() -> dict:
+    try:
+        with open(_CACHE_PATH) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
 
 
-def _av_symbol(t: str) -> str:
-    if t.endswith(".L"):
-        return t[:-2] + ".LON"
-    if t.endswith(".MI"):
-        return t[:-3] + ".MIL"
-    return t
+def _save_cache(cache: dict) -> None:
+    os.makedirs(os.path.dirname(_CACHE_PATH), exist_ok=True)
+    with open(_CACHE_PATH, "w") as f:
+        json.dump(cache, f, indent=2, sort_keys=True)
 
 
-# ── Level 1: Tiingo ───────────────────────────────────────────────────────────
+def _resolve_id(ticker: str, exchange_key: str, cache: dict) -> int | None:
+    """Return cached investing.com ID or search for it via investiny."""
+    if ticker in cache:
+        return int(cache[ticker])
 
-def _fetch_tiingo(tickers: list[str]) -> tuple[dict[str, float], set[str]]:
-    if not TIINGO_KEY:
-        print("[INFO] TIINGO_API_KEY not set — skipping Tiingo")
+    company = _COMPANY_NAMES.get(ticker, ticker.replace(".L", "").replace(".MI", ""))
+    exchange = _EXCHANGE_MAP.get(exchange_key, exchange_key)
+
+    try:
+        results = search_assets(query=company, limit=5, type="stock", exchange=exchange)
+        if results:
+            investing_id = int(results[0]["id"])
+            cache[ticker] = investing_id
+            print(f"  [cache] {ticker} → investing.com ID {investing_id}")
+            return investing_id
+    except Exception as e:
+        print(f"[WARN] investiny search failed for {ticker}: {e}")
+
+    return None
+
+
+# ── Level 1: investing.com via investiny ──────────────────────────────────────
+
+def _fetch_investing(tickers: list[str], universe: dict) -> tuple[dict[str, float], set[str]]:
+    if not _INVESTINY_OK:
         return {}, set(tickers)
 
-    start_date = (date.today() - timedelta(days=7)).strftime("%Y-%m-%d")
+    cache = _load_cache()
     prices: dict[str, float] = {}
     failed: set[str] = set()
+    cache_updated = False
 
-    for t in tickers:
-        url = f"https://api.tiingo.com/tiingo/daily/{_tiingo_ticker(t)}/prices"
-        params = {"token": TIINGO_KEY, "startDate": start_date}
+    from_date = (date.today() - timedelta(days=7)).strftime("%m/%d/%Y")
+    to_date = date.today().strftime("%m/%d/%Y")
+
+    for ticker in tickers:
+        exchange_key = universe.get(ticker, {}).get("exchange", "")
+        prev_len = len(cache)
+
+        investing_id = _resolve_id(ticker, exchange_key, cache)
+        if len(cache) > prev_len:
+            cache_updated = True
+
+        if investing_id is None:
+            print(f"[WARN] investiny: no ID for {ticker}")
+            failed.add(ticker)
+            continue
+
         try:
-            resp = requests.get(url, params=params, timeout=15)
-            if resp.status_code == 401:
-                print("[WARN] Tiingo 401 — API key invalid, skipping Tiingo entirely")
-                return {}, set(tickers)
-            resp.raise_for_status()
-            data = resp.json()
-            if data and isinstance(data, list) and data[-1].get("adjClose") is not None:
-                price = float(data[-1]["adjClose"])
-                prices[t] = price
-                print(f"  {t}: {price:.4f} (tiingo)")
+            data = historical_data(
+                investing_id=investing_id,
+                from_date=from_date,
+                to_date=to_date,
+            )
+            closes = [v for v in (data.get("close") or []) if v is not None]
+            if closes:
+                price = float(closes[-1])
+                prices[ticker] = price
+                print(f"  {ticker}: {price:.4f} (investing.com)")
             else:
-                print(f"[WARN] Tiingo: no adjClose for {t}")
-                failed.add(t)
-        except requests.HTTPError as e:
-            print(f"[WARN] Tiingo HTTP error for {t}: {e}")
-            failed.add(t)
+                print(f"[WARN] investiny: empty data for {ticker}")
+                failed.add(ticker)
         except Exception as e:
-            print(f"[WARN] Tiingo failed for {t}: {e}")
-            failed.add(t)
-        time.sleep(0.15)
+            print(f"[WARN] investiny failed for {ticker}: {e}")
+            failed.add(ticker)
+
+        time.sleep(0.5)
+
+    if cache_updated:
+        _save_cache(cache)
 
     return prices, failed
 
 
-# ── Level 2: yfinance bulk ────────────────────────────────────────────────────
+# ── Level 2: yfinance bulk (single request for all tickers) ──────────────────
 
 def _fetch_yfinance_bulk(tickers: list[str]) -> tuple[dict[str, float], set[str]]:
-    """Single yf.download() request for all tickers — 1 HTTP call, much less rate-limited."""
+    """One yf.download() call for all tickers — 1 HTTP request, avoids rate limiting."""
     if not tickers:
         return {}, set()
 
@@ -101,17 +172,15 @@ def _fetch_yfinance_bulk(tickers: list[str]) -> tuple[dict[str, float], set[str]
             threads=False,
         )
         if raw.empty:
-            print("[WARN] yfinance bulk: empty response")
             return {}, set(tickers)
 
-        # Multi-ticker: Close is a DataFrame with ticker columns
-        # Single-ticker: Close is a Series
         close = raw["Close"] if "Close" in raw.columns else raw
+
         if len(tickers) == 1:
-            series = close.dropna() if hasattr(close, "dropna") else close
+            series = close.dropna()
             if not series.empty:
                 prices[tickers[0]] = float(series.iloc[-1])
-                print(f"  {tickers[0]}: {prices[tickers[0]]:.4f} (yfinance-bulk)")
+                print(f"  {tickers[0]}: {prices[tickers[0]]:.4f} (yfinance-bulk fallback)")
             else:
                 failed.add(tickers[0])
         else:
@@ -120,108 +189,53 @@ def _fetch_yfinance_bulk(tickers: list[str]) -> tuple[dict[str, float], set[str]
                     series = close[t].dropna()
                     if not series.empty:
                         prices[t] = float(series.iloc[-1])
-                        print(f"  {t}: {prices[t]:.4f} (yfinance-bulk)")
+                        print(f"  {t}: {prices[t]:.4f} (yfinance-bulk fallback)")
                     else:
                         failed.add(t)
                 except (KeyError, IndexError):
                     failed.add(t)
+
     except Exception as e:
-        print(f"[WARN] yfinance bulk download failed: {e}")
+        print(f"[WARN] yfinance bulk failed: {e}")
         failed = set(tickers)
-
-    return prices, failed
-
-
-# ── Level 3: Alpha Vantage GLOBAL_QUOTE (gap-fill only) ──────────────────────
-
-def _fetch_av_quote(tickers: list[str]) -> tuple[dict[str, float], set[str]]:
-    """Per-ticker AV quotes. 5 req/min → 13s between calls. Use only for small gaps."""
-    if not AV_KEY or not tickers:
-        return {}, set(tickers)
-
-    prices: dict[str, float] = {}
-    failed: set[str] = set()
-
-    for i, t in enumerate(tickers):
-        params = {
-            "function": "GLOBAL_QUOTE",
-            "symbol": _av_symbol(t),
-            "apikey": AV_KEY,
-        }
-        try:
-            resp = requests.get(
-                "https://www.alphavantage.co/query", params=params, timeout=20
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            if "Note" in data or "Information" in data:
-                print(f"[WARN] Alpha Vantage rate limit hit after {i}/{len(tickers)} tickers")
-                failed.update(tickers[i:])
-                break
-            price_str = data.get("Global Quote", {}).get("05. price", "")
-            if price_str:
-                prices[t] = float(price_str)
-                print(f"  {t}: {prices[t]:.4f} (alpha_vantage)")
-            else:
-                print(f"[WARN] Alpha Vantage: no quote for {t} ({_av_symbol(t)})")
-                failed.add(t)
-        except Exception as e:
-            print(f"[WARN] Alpha Vantage failed for {t}: {e}")
-            failed.add(t)
-        if i < len(tickers) - 1:
-            time.sleep(13)  # Stay under 5/min limit
 
     return prices, failed
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
-def get_prices(tickers: list[str]) -> tuple[dict[str, float], set[str]]:
-    """Fetch prices with 3-level fallback. Returns (prices, failed_set).
+def get_prices(tickers: list[str], universe: dict | None = None) -> tuple[dict[str, float], set[str]]:
+    """Fetch prices: investing.com primary, yfinance bulk fallback.
 
-    failed_set: tickers for which no price was obtained (should skip trading).
+    Returns (prices_dict, failed_set).
+    failed_set: tickers with no price — pipeline skips trading for these.
     """
+    if universe is None:
+        universe = {}
+
     all_prices: dict[str, float] = {}
     remaining = list(tickers)
 
-    # Level 1: Tiingo (fixed endpoint — no resampleFreq/sort/limit params)
-    print("[INFO] Fetching prices via Tiingo...")
-    t1_prices, t1_failed = _fetch_tiingo(remaining)
-    all_prices.update(t1_prices)
-    remaining = sorted(t1_failed)
+    # Level 1: investing.com
+    print("[INFO] Fetching prices via investing.com (investiny)...")
+    inv_prices, inv_failed = _fetch_investing(remaining, universe)
+    all_prices.update(inv_prices)
+    remaining = sorted(inv_failed)
 
     if not remaining:
-        print(f"[INFO] All {len(tickers)} prices from Tiingo.")
+        print(f"[INFO] All {len(tickers)} prices from investing.com.")
         return all_prices, set()
 
-    print(f"[INFO] Tiingo missed {len(remaining)} tickers, trying yfinance bulk...")
-
-    # Level 2: yfinance single bulk request
+    # Level 2: yfinance bulk for whatever investiny missed
+    print(f"[INFO] investiny missed {len(remaining)} tickers — yfinance bulk fallback...")
     yf_prices, yf_failed = _fetch_yfinance_bulk(remaining)
     all_prices.update(yf_prices)
     remaining = sorted(yf_failed)
-
-    if not remaining:
-        print(f"[INFO] All prices resolved (Tiingo + yfinance-bulk).")
-        return all_prices, set()
-
-    # Level 3: Alpha Vantage gap-fill (budget-limited)
-    budget = min(len(remaining), _AV_PER_SESSION_BUDGET)
-    if AV_KEY and budget > 0:
-        to_fill = remaining[:budget]
-        skipped = remaining[budget:]
-        print(f"[INFO] AV gap-fill for {len(to_fill)} tickers (budget {_AV_PER_SESSION_BUDGET}/session)...")
-        av_prices, av_failed = _fetch_av_quote(to_fill)
-        all_prices.update(av_prices)
-        remaining = sorted(av_failed) + skipped
-    else:
-        if not AV_KEY:
-            print("[INFO] ALPHA_VANTAGE_KEY not set — skipping AV gap-fill")
 
     failed_final = set(remaining)
     if failed_final:
         print(f"[WARN] {len(failed_final)}/{len(tickers)} prices unavailable: {sorted(failed_final)}")
     else:
-        print(f"[INFO] All {len(tickers)} prices fetched successfully.")
+        print(f"[INFO] All {len(tickers)} prices resolved.")
 
     return all_prices, failed_final
