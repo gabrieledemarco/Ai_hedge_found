@@ -434,19 +434,30 @@ def run_pipeline(session_label: str) -> float:
     )
     send_telegram_message(report, session=session_label, has_trades=has_any_trades)
 
-    # --- Chart (equal_weight primary) ---
+    # --- Chart (equity overlay all strategies + P&L bars for primary) ---
     try:
-        chart_path = generate_dashboard(primary["portfolio"], UNIVERSE, total_value_eur)
-        pos_summary = " | ".join(
-            "{}:{}x".format(t, p["shares"])
-            for t, p in sorted(primary["portfolio"]["current_positions"].items())
+        all_portfolios = {
+            sname: result["portfolio"]
+            for sname, result in strategy_results.items()
+            if result
+        }
+        chart_path = generate_dashboard(
+            all_portfolios, primary["portfolio"], UNIVERSE, prices, total_value_eur
+        )
+        ret_pct = (total_value_eur - INITIAL_CAPITAL) / INITIAL_CAPITAL * 100
+        arrow = "+" if ret_pct >= 0 else ""
+        strategy_line = " | ".join(
+            "{}: {:.0f}€".format(s, r["total_value_eur"])
+            for s, r in strategy_results.items()
+            if r
         )
         photo_caption = (
-            "{} - Portfolio (EW): {:.2f}EUR - {} posizioni\n{}\nCash: {:.2f}EUR".format(
+            "{} | EW: {:.0f}€ ({}{:.1f}%)\n{}\nCash: {:.0f}€".format(
                 session_label.upper(),
                 total_value_eur,
-                len(primary["portfolio"]["current_positions"]),
-                pos_summary[:400],
+                arrow,
+                ret_pct,
+                strategy_line,
                 cash_eur,
             )
         )
@@ -485,18 +496,18 @@ def run_pipeline(session_label: str) -> float:
 
 
 def _position_pnl_line(ticker: str, entry: dict, prices: dict) -> str:
-    """Format a single position as compact P&L line."""
+    """Format a position with buy price, current price and unrealized P&L."""
     cur_price = prices.get(ticker, entry["avg_price"])
     currency = UNIVERSE.get(ticker, {}).get("currency", "EUR")
     fx = 0.92 if currency == "USD" else (1.17 if currency == "GBP" else 1.0)
     cur_eur = cur_price * fx
-    cost = entry["shares"] * entry["avg_price"]
-    equity = entry["shares"] * cur_eur
-    pnl_e = equity - cost
-    pnl_p = (pnl_e / cost * 100) if cost > 0 else 0
-    sign = "+" if pnl_e >= 0 else ""
-    return "  {}: {}x {}{:.1f}% ({}{:.0f}€)".format(
-        ticker, entry["shares"], sign, pnl_p, sign, pnl_e
+    avg_eur = entry["avg_price"]
+    shares = entry["shares"]
+    pnl_eur = shares * (cur_eur - avg_eur)
+    pnl_pct = (pnl_eur / (shares * avg_eur) * 100) if avg_eur > 0 else 0
+    sign = "+" if pnl_eur >= 0 else ""
+    return "  {}: {}x | {:.0f}€→{:.0f}€ | {}{:.1f}% ({}{:.0f}€)".format(
+        ticker, shares, avg_eur, cur_eur, sign, pnl_pct, sign, pnl_eur
     )
 
 
@@ -542,10 +553,17 @@ def build_telegram_report(
         lines.append("")
 
     # Performance summary — all 4 strategies
-    lines.append("CONFRONTO STRATEGIE:")
+    _SHORT_LABEL = {
+        "equal_weight": "EqW",
+        "momentum":     "Mom",
+        "fundamental":  "Fun",
+        "sentiment":    "Sen",
+    }
+    lines.append("📈 CONFRONTO STRATEGIE")
     totals = {}
     for sname in STRATEGIES:
         result = strategy_results.get(sname)
+        short = _SHORT_LABEL.get(sname, sname[:3].upper())
         if result:
             initial = result["portfolio"]["metadata"].get(
                 "initial_capital", INITIAL_CAPITAL
@@ -557,12 +575,12 @@ def build_telegram_report(
             cash = result["portfolio"]["metadata"].get("current_cash", 0)
             arrow = "+" if ret_pct >= 0 else ""
             lines.append(
-                "  {:<12s} {:.0f}€ ({}{:.1f}%) | {}pos {:.0f}€cash".format(
-                    sname, total, arrow, ret_pct, n_pos, cash
+                "  {} {:.0f}€ ({}{:.1f}%) {}pos {:.0f}€cash".format(
+                    short, total, arrow, ret_pct, n_pos, cash
                 )
             )
         else:
-            lines.append(f"  {sname:<12s} ERROR")
+            lines.append(f"  {short} ERROR")
 
     # Warn if strategies have identical values (signals not yet available)
     unique_totals = set(round(v, 0) for v in totals.values())
@@ -600,43 +618,48 @@ def build_telegram_report(
         lines.append("Nessuna transazione oggi.")
     lines.append("")
 
-    # Positions composition per strategy — only at "sera"
-    if session == "sera":
-        lines.append(sep)
-        lines.append("COMPOSIZIONE PORTAFOGLI:")
+    # Positions with buy price, current price and unrealized P&L — all sessions
+    _STRATEGY_LABEL = {
+        "equal_weight": "Equal Weight",
+        "momentum":     "Momentum",
+        "fundamental":  "Fundamental",
+        "sentiment":    "Sentiment",
+    }
 
-        # For failed tickers use last known real price; keep real prices for others
-        if failed_tickers:
-            last_known = _last_known_prices(strategy_results)
-            display_prices = dict(prices)
-            for t in failed_tickers:
-                if t in last_known:
-                    display_prices[t] = last_known[t]
-        else:
-            display_prices = prices
+    lines.append(sep)
+    lines.append("📊 PORTAFOGLI (buy€ → cur€ | P&L)")
 
-        for sname in STRATEGIES:
-            result = strategy_results.get(sname)
-            if not result:
-                continue
-            pos = result["portfolio"].get("current_positions", {})
-            if not pos:
-                lines.append("  {}: solo cash".format(sname))
-                continue
-            lines.append("  {}:".format(sname.upper()))
-            for ticker in sorted(pos.keys()):
-                if display_prices:
-                    lines.append(
-                        _position_pnl_line(ticker, pos[ticker], display_prices)
-                    )
-                else:
-                    entry = pos[ticker]
-                    lines.append(
-                        "  {}: {}x | avg {:.2f}€ | P&L N/D".format(
-                            ticker, entry["shares"], entry["avg_price"]
-                        )
-                    )
+    # For failed tickers use last known real price
+    if failed_tickers:
+        last_known = _last_known_prices(strategy_results)
+        display_prices = dict(prices)
+        for t in failed_tickers:
+            if t in last_known:
+                display_prices[t] = last_known[t]
+    else:
+        display_prices = prices
+
+    for sname in STRATEGIES:
+        result = strategy_results.get(sname)
+        if not result:
+            continue
+        pos = result["portfolio"].get("current_positions", {})
+        initial = result["portfolio"]["metadata"].get("initial_capital", INITIAL_CAPITAL)
+        total = result.get("total_value_eur", initial)
+        ret_pct = (total - initial) / initial * 100 if initial > 0 else 0
+        arrow = "+" if ret_pct >= 0 else ""
+        cash = result["portfolio"]["metadata"].get("current_cash", 0)
+        label = _STRATEGY_LABEL.get(sname, sname.replace("_", " ").title())
         lines.append("")
+        lines.append("▪ {} — {:.0f}€ ({}{:.1f}%) | cash {:.0f}€".format(
+            label, total, arrow, ret_pct, cash
+        ))
+        if not pos:
+            lines.append("  solo cash")
+        else:
+            for ticker in sorted(pos.keys()):
+                lines.append(_position_pnl_line(ticker, pos[ticker], display_prices))
+    lines.append("")
 
     lines.append("Aggiornato: {}".format(timestamp))
 
