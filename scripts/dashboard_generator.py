@@ -353,7 +353,7 @@ def _build_portfolio_tabs(portfolios: dict) -> str:
             info = UNIVERSE.get(ticker, {})
             cur_price_local = last_prices.get(ticker, p["avg_price"])
             ccy = info.get("currency", "EUR")
-            fx = {"USD": 0.92, "GBP": 1.17, "EUR": 1.0}.get(ccy, 1.0)
+            fx = {"USD": 0.92, "GBP": 1.17, "GBp": 0.0117, "EUR": 1.0}.get(ccy, 1.0)
             cur_price_eur = cur_price_local * fx
             eq = p["shares"] * cur_price_eur
             cost = p["shares"] * p["avg_price"]

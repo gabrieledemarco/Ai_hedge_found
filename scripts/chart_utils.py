@@ -132,7 +132,7 @@ def _plot_pnl_bars(
         entry = positions[ticker]
         cur_price = prices.get(ticker, entry["avg_price"])
         currency = tickers.get(ticker, {}).get("currency", "EUR")
-        fx = 0.92 if currency == "USD" else (1.17 if currency == "GBP" else 1.0)
+        fx = 0.0117 if currency == "GBp" else (0.92 if currency == "USD" else (1.17 if currency == "GBP" else 1.0))
         cur_eur = cur_price * fx
         pnl = entry["shares"] * (cur_eur - entry["avg_price"])
         labels.append(ticker)
