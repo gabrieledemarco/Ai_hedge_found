@@ -553,10 +553,17 @@ def build_telegram_report(
         lines.append("")
 
     # Performance summary — all 4 strategies
-    lines.append("CONFRONTO STRATEGIE:")
+    _SHORT_LABEL = {
+        "equal_weight": "EqW",
+        "momentum":     "Mom",
+        "fundamental":  "Fun",
+        "sentiment":    "Sen",
+    }
+    lines.append("📈 CONFRONTO STRATEGIE")
     totals = {}
     for sname in STRATEGIES:
         result = strategy_results.get(sname)
+        short = _SHORT_LABEL.get(sname, sname[:3].upper())
         if result:
             initial = result["portfolio"]["metadata"].get(
                 "initial_capital", INITIAL_CAPITAL
@@ -568,12 +575,12 @@ def build_telegram_report(
             cash = result["portfolio"]["metadata"].get("current_cash", 0)
             arrow = "+" if ret_pct >= 0 else ""
             lines.append(
-                "  {:<12s} {:.0f}€ ({}{:.1f}%) | {}pos {:.0f}€cash".format(
-                    sname, total, arrow, ret_pct, n_pos, cash
+                "  {} {:.0f}€ ({}{:.1f}%) {}pos {:.0f}€cash".format(
+                    short, total, arrow, ret_pct, n_pos, cash
                 )
             )
         else:
-            lines.append(f"  {sname:<12s} ERROR")
+            lines.append(f"  {short} ERROR")
 
     # Warn if strategies have identical values (signals not yet available)
     unique_totals = set(round(v, 0) for v in totals.values())
@@ -612,8 +619,15 @@ def build_telegram_report(
     lines.append("")
 
     # Positions with buy price, current price and unrealized P&L — all sessions
+    _STRATEGY_LABEL = {
+        "equal_weight": "Equal Weight",
+        "momentum":     "Momentum",
+        "fundamental":  "Fundamental",
+        "sentiment":    "Sentiment",
+    }
+
     lines.append(sep)
-    lines.append("POSIZIONI (buy€ → cur€ | P&L):")
+    lines.append("📊 PORTAFOGLI (buy€ → cur€ | P&L)")
 
     # For failed tickers use last known real price
     if failed_tickers:
@@ -635,11 +649,11 @@ def build_telegram_report(
         ret_pct = (total - initial) / initial * 100 if initial > 0 else 0
         arrow = "+" if ret_pct >= 0 else ""
         cash = result["portfolio"]["metadata"].get("current_cash", 0)
-        lines.append(
-            "{} ({:.0f}€ {}{:.1f}% | cash {:.0f}€):".format(
-                sname.upper(), total, arrow, ret_pct, cash
-            )
-        )
+        label = _STRATEGY_LABEL.get(sname, sname.replace("_", " ").title())
+        lines.append("")
+        lines.append("▪ {} — {:.0f}€ ({}{:.1f}%) | cash {:.0f}€".format(
+            label, total, arrow, ret_pct, cash
+        ))
         if not pos:
             lines.append("  solo cash")
         else:
