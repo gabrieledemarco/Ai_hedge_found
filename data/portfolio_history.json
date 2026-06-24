@@ -2,10 +2,51 @@
   "metadata": {
     "currency": "EUR",
     "initial_capital": 3000.0,
-    "current_cash": 3000.0,
-    "price_source": "fallback"
+    "current_cash": 457.06,
+    "price_source": "investing.com(15/20)"
   },
-  "current_positions": {},
+  "current_positions": {
+    "AAPL": {
+      "shares": 1,
+      "avg_price": 258.7385
+    },
+    "MSFT": {
+      "shares": 1,
+      "avg_price": 328.7553
+    },
+    "GOOGL": {
+      "shares": 1,
+      "avg_price": 304.3057
+    },
+    "AMZN": {
+      "shares": 1,
+      "avg_price": 205.8215
+    },
+    "TSLA": {
+      "shares": 1,
+      "avg_price": 335.4985
+    },
+    "JPM": {
+      "shares": 1,
+      "avg_price": 293.7645
+    },
+    "NVDA": {
+      "shares": 1,
+      "avg_price": 175.8684
+    },
+    "JNJ": {
+      "shares": 1,
+      "avg_price": 210.191
+    },
+    "V": {
+      "shares": 1,
+      "avg_price": 288.7884
+    },
+    "KO": {
+      "shares": 2,
+      "avg_price": 70.6058
+    }
+  },
   "iterations_log": [
     {
       "timestamp": "2026-06-22T17:20:34.725583+00:00",
@@ -212,6 +253,144 @@
       "prices_used": {},
       "transactions": [],
       "reasoning": "ATTENZIONE: tutti i prezzi sono fallback. Trading disabilitato, solo report."
+    },
+    {
+      "timestamp": "2026-06-24T06:17:15.489892+00:00",
+      "session": "mattina",
+      "total_value_eur": 3000.0,
+      "current_cash": 457.06,
+      "positions": {
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 258.7385
+        },
+        "MSFT": {
+          "shares": 1,
+          "avg_price": 328.7553
+        },
+        "GOOGL": {
+          "shares": 1,
+          "avg_price": 304.3057
+        },
+        "AMZN": {
+          "shares": 1,
+          "avg_price": 205.8215
+        },
+        "TSLA": {
+          "shares": 1,
+          "avg_price": 335.4985
+        },
+        "JPM": {
+          "shares": 1,
+          "avg_price": 293.7645
+        },
+        "NVDA": {
+          "shares": 1,
+          "avg_price": 175.8684
+        },
+        "JNJ": {
+          "shares": 1,
+          "avg_price": 210.191
+        },
+        "V": {
+          "shares": 1,
+          "avg_price": 288.7884
+        },
+        "KO": {
+          "shares": 2,
+          "avg_price": 70.6058
+        }
+      },
+      "prices_used": {
+        "AAPL": 294.3,
+        "MSFT": 373.94,
+        "GOOGL": 346.13,
+        "AMZN": 234.11,
+        "TSLA": 381.61,
+        "JPM": 334.14,
+        "NVDA": 200.04,
+        "JNJ": 239.08,
+        "V": 328.48,
+        "KO": 80.31,
+        "ULVR.L": 4453.5,
+        "HSBA.L": 1445.8,
+        "BP.L": 498.65,
+        "GSK.L": 1957.5,
+        "RIO.L": 7264.0
+      },
+      "transactions": [
+        {
+          "action": "BUY",
+          "ticker": "AAPL",
+          "shares": 1,
+          "price_eur": 258.7385,
+          "total_cost_eur": 258.74
+        },
+        {
+          "action": "BUY",
+          "ticker": "MSFT",
+          "shares": 1,
+          "price_eur": 328.7553,
+          "total_cost_eur": 328.76
+        },
+        {
+          "action": "BUY",
+          "ticker": "GOOGL",
+          "shares": 1,
+          "price_eur": 304.3057,
+          "total_cost_eur": 304.31
+        },
+        {
+          "action": "BUY",
+          "ticker": "AMZN",
+          "shares": 1,
+          "price_eur": 205.8215,
+          "total_cost_eur": 205.82
+        },
+        {
+          "action": "BUY",
+          "ticker": "TSLA",
+          "shares": 1,
+          "price_eur": 335.4985,
+          "total_cost_eur": 335.5
+        },
+        {
+          "action": "BUY",
+          "ticker": "JPM",
+          "shares": 1,
+          "price_eur": 293.7645,
+          "total_cost_eur": 293.76
+        },
+        {
+          "action": "BUY",
+          "ticker": "NVDA",
+          "shares": 1,
+          "price_eur": 175.8684,
+          "total_cost_eur": 175.87
+        },
+        {
+          "action": "BUY",
+          "ticker": "JNJ",
+          "shares": 1,
+          "price_eur": 210.191,
+          "total_cost_eur": 210.19
+        },
+        {
+          "action": "BUY",
+          "ticker": "V",
+          "shares": 1,
+          "price_eur": 288.7884,
+          "total_cost_eur": 288.79
+        },
+        {
+          "action": "BUY",
+          "ticker": "KO",
+          "shares": 2,
+          "price_eur": 70.6058,
+          "total_cost_eur": 141.21
+        }
+      ],
+      "reasoning": "ATTENZIONE: prezzi non disponibili per ['ENEL.MI', 'ENI.MI', 'ISP.MI', 'LDO.MI', 'MONC.MI']. Trading sospeso per questi titoli.\nAAPL: BUY 1 @ 258.74EUR (deviation 0.0500, weight 0.050)\nMSFT: BUY 1 @ 328.76EUR (deviation 0.0500, weight 0.050)\nGOOGL: BUY 1 @ 304.31EUR (deviation 0.0500, weight 0.050)\nAMZN: BUY 1 @ 205.82EUR (deviation 0.0500, weight 0.050)\nTSLA: BUY 1 @ 335.50EUR (deviation 0.0500, weight 0.050)\nJPM: BUY 1 @ 293.76EUR (deviation 0.0500, weight 0.050)\nNVDA: BUY 1 @ 175.87EUR (deviation 0.0500, weight 0.050)\nJNJ: BUY 1 @ 210.19EUR (deviation 0.0500, weight 0.050)\nV: BUY 1 @ 288.79EUR (deviation 0.0500, weight 0.050)\nKO: BUY 2 @ 70.61EUR (deviation 0.0500, weight 0.050)\nULVR.L: BUY skipped (1 share @ 5210.59EUR > cash 457.06EUR)\nHSBA.L: BUY skipped (1 share @ 1691.59EUR > cash 457.06EUR)\nBP.L: BUY skipped (1 share @ 583.42EUR > cash 457.06EUR)\nGSK.L: BUY skipped (1 share @ 2290.27EUR > cash 457.06EUR)\nRIO.L: BUY skipped (1 share @ 8498.88EUR > cash 457.06EUR)\nENI.MI: SKIP (prezzo non disponibile)\nISP.MI: SKIP (prezzo non disponibile)\nENEL.MI: SKIP (prezzo non disponibile)\nLDO.MI: SKIP (prezzo non disponibile)\nMONC.MI: SKIP (prezzo non disponibile)"
     }
   ]
 }
