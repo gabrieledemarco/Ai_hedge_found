@@ -6,12 +6,12 @@ import json
 from datetime import datetime, timezone
 
 import requests
-import yfinance as yf
 
 # Ensure scripts/ directory is on the path so config and strategies are importable
 sys.path.insert(0, os.path.dirname(__file__))
 
 from config import UNIVERSE, STRATEGIES, INITIAL_CAPITAL, REBALANCE_THRESHOLD
+from fetch_prices import get_prices
 from portfolio_io import (
     load_portfolio,
     log_iteration,
@@ -30,7 +30,6 @@ from strategies import (
 )
 
 AV_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "")
-TIINGO_KEY = os.environ.get("TIINGO_API_KEY", "")
 
 STRATEGY_INSTANCES = {
     "equal_weight": EqualWeightStrategy(),
@@ -41,86 +40,8 @@ STRATEGY_INSTANCES = {
 
 
 # ---------------------------------------------------------------------------
-# Price / FX helpers
+# FX helpers
 # ---------------------------------------------------------------------------
-
-
-def fetch_prices_via_tiingo(tickers: list) -> tuple:
-    """Fetch prices via Tiingo API (primary source, one ticker at a time).
-
-    Tiingo free tier: 500 requests/min — 0.3s between calls is safe.
-    Uses root ticker (strip .L, .MI suffixes) for international stocks.
-
-    Returns (prices_dict, True) on success, (None, False) if Tiingo unavailable.
-    """
-    import time
-
-    if not TIINGO_KEY:
-        print("[INFO] TIINGO_API_KEY not set — skipping Tiingo")
-        return None, False
-
-    ticker_map = {}
-    for t in tickers:
-        root = t.replace(".L", "").replace(".MI", "")
-        ticker_map[t] = root
-
-    prices = {}
-    for t in tickers:
-        mapped = ticker_map[t]
-        url = f"https://api.tiingo.com/tiingo/daily/{mapped}/prices"
-        params = {
-            "token": TIINGO_KEY,
-            "resampleFreq": "daily",
-            "sort": "desc",
-            "limit": 1,
-        }
-        try:
-            resp = requests.get(url, params=params, timeout=15)
-            resp.raise_for_status()
-            data = resp.json()
-            price = float(data[0]["adjClose"])
-            prices[t] = price
-            print(f"  {t}: {price:.2f} {UNIVERSE[t]['currency']} (tiingo)")
-        except Exception as e:
-            print(f"[WARN] Tiingo failed for {t}: {e}")
-            return None, False
-        time.sleep(0.3)
-
-    return prices, True
-
-
-def fetch_prices(tickers: list) -> tuple:
-    """Fallback: download one ticker at a time via yfinance.
-
-    Individual requests avoid batch rate limits. Each ticker is wrapped in
-    its own try/except so a single failure doesn't block all prices.
-    """
-    import time
-
-    FALLBACKS = {t: (150.0 if t.endswith(".L") else 100.0) for t in tickers}
-
-    prices: dict = {}
-    failed: set = set()
-    for t in tickers:
-        try:
-            hist = yf.Ticker(t).history(period="5d", auto_adjust=True)
-            if hist.empty:
-                print(f"[WARN] yfinance returned empty for {t}, fallback {FALLBACKS[t]}")
-                prices[t] = FALLBACKS[t]
-                failed.add(t)
-            else:
-                price = float(hist["Close"].dropna().iloc[-1])
-                prices[t] = price
-                print(f"  {t}: {price:.2f} {UNIVERSE[t]['currency']} (yfinance)")
-        except Exception as e:
-            print(f"[WARN] yfinance failed for {t}: {e}, fallback {FALLBACKS[t]}")
-            prices[t] = FALLBACKS[t]
-            failed.add(t)
-        time.sleep(1.0)
-
-    if failed:
-        print(f"[WARN] {len(failed)}/{len(tickers)} tickers on fallback: {sorted(failed)}")
-    return prices, failed
 
 
 def fetch_fx_rate(base: str, quote: str = "EUR") -> float:
@@ -154,7 +75,6 @@ def convert_to_eur(amount: float, currency: str, fx_rates: dict | None = None) -
 
 def validate_env() -> bool:
     checks = [
-        ("TIINGO_API_KEY", TIINGO_KEY, "Prezzi azionari (Tiingo)"),
         ("ALPHA_VANTAGE_KEY", AV_KEY, "Tassi FX (Alpha Vantage)"),
         ("TELEGRAM_TOKEN", os.environ.get("TELEGRAM_TOKEN", ""), "Bot Telegram"),
         ("TELEGRAM_CHAT_ID", os.environ.get("TELEGRAM_CHAT_ID", ""), "Chat Telegram"),
@@ -252,7 +172,8 @@ def run_strategy_pipeline(
             "has_trades": False,
         }
 
-    portfolio["metadata"]["price_source"] = "yfinance" if failed_tickers else "tiingo"
+    n_real = len(tickers) - len(failed_tickers)
+    portfolio["metadata"]["price_source"] = f"investing.com({n_real}/{len(tickers)})"
 
     # --- Compute target weights from strategy ---
     weights = strategy.compute_weights(UNIVERSE, prices, signals)
@@ -417,14 +338,8 @@ def run_pipeline(session_label: str) -> float:
     validate_env()
     tickers = list(UNIVERSE.keys())
 
-    # Fetch prices once (shared across all strategies)
-    print("[INFO] Fetching prices...")
-    prices, tiingo_ok = fetch_prices_via_tiingo(tickers)
-    if prices is None:
-        print("[INFO] Tiingo unavailable, falling back to yfinance...")
-        prices, failed_tickers = fetch_prices(tickers)
-    else:
-        failed_tickers: set = set()  # Tiingo returned all prices
+    # Fetch prices: investing.com (investiny) → yfinance bulk fallback
+    prices, failed_tickers = get_prices(tickers, UNIVERSE)
 
     # Fetch FX rates once
     fx_rates = {}
