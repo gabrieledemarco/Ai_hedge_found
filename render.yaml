@@ -1,4 +1,5 @@
 services:
+  # ── Live dashboard (existing web service) ──────────────────────────────
   - type: web
     name: paper-trading-live
     runtime: python
@@ -11,3 +12,37 @@ services:
         sync: false
       - key: ALPHA_VANTAGE_KEY
         sync: false
+
+  # ── Trading scheduler + IB Gateway (Docker worker) ────────────────────
+  # Replaces GitHub Actions cron when deployed on Render.
+  # GitHub Actions continues to work independently as a fallback.
+  - type: worker
+    name: trading-scheduler
+    runtime: docker
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      # Required: price data APIs
+      - key: TIINGO_API_KEY
+        sync: false
+      - key: ALPHA_VANTAGE_KEY
+        sync: false
+      # Required: Telegram notifications
+      - key: TELEGRAM_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      # IB Client Portal Gateway — set these to enable live demo trading
+      # Leave blank to run in simulation mode (identical to GitHub Actions)
+      - key: IB_ACCOUNT
+        sync: false          # IB paper account ID, e.g. DU1234567
+      - key: IB_USERNAME
+        sync: false          # IB login username (for auto-login)
+      - key: IB_PASSWORD
+        sync: false          # IB login password (for auto-login)
+      - key: IB_GATEWAY_URL
+        value: https://localhost:5000
+      # Flask health endpoint port
+      - key: PORT
+        value: "8080"

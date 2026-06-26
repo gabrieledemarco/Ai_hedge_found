@@ -21,6 +21,7 @@ from portfolio_io import (
 from telegram_utils import send_telegram_message, send_telegram_photo
 from chart_utils import generate_dashboard
 from dashboard_generator import build_html
+from ib_broker import get_broker
 
 from strategies import (
     EqualWeightStrategy,
@@ -108,6 +109,23 @@ def load_signals() -> dict:
 # ---------------------------------------------------------------------------
 
 
+def _ib_execute(broker, ticker: str, action: str, quantity: int) -> bool:
+    """
+    Submit a BUY or SELL order to IB and return True if accepted.
+    Never raises — falls back to simulation on any failure.
+    """
+    exchange_tag = UNIVERSE.get(ticker, {}).get("exchange", "NASDAQ")
+    try:
+        result = broker.place_order(ticker, action, quantity, exchange_tag)
+        if "error" in result:
+            print(f"[IB] {action} {ticker} rejected: {result['error']} — using simulation")
+            return False
+        return True
+    except Exception as e:
+        print(f"[IB] {action} {ticker} exception: {e} — using simulation")
+        return False
+
+
 def run_strategy_pipeline(
     strategy_name: str,
     session_label: str,
@@ -115,6 +133,7 @@ def run_strategy_pipeline(
     fx_rates: dict,
     signals: dict,
     failed_tickers: set,
+    broker=None,
 ) -> dict:
     """
     Run the trading pipeline for one strategy.
@@ -230,6 +249,11 @@ def run_strategy_pipeline(
                 continue
             needed_shares = max(1, math.floor(diff_eur / price_eur))
             shares_to_trade = min(needed_shares, max_shares)
+
+            # Submit to IB if available; simulation proceeds regardless
+            if broker and broker.is_available():
+                _ib_execute(broker, ticker, "BUY", shares_to_trade)
+
             cost = shares_to_trade * price_eur
             entry = portfolio["current_positions"].get(
                 ticker, {"shares": 0, "avg_price": 0.0}
@@ -274,6 +298,11 @@ def run_strategy_pipeline(
             if shares_to_sell <= 0:
                 reasoning_parts.append(f"{ticker}: SELL skipped (lot < 1 share)")
                 continue
+
+            # Submit to IB if available; simulation proceeds regardless
+            if broker and broker.is_available():
+                _ib_execute(broker, ticker, "SELL", shares_to_sell)
+
             proceeds = shares_to_sell * price_eur
             portfolio["current_positions"][ticker]["shares"] -= shares_to_sell
             if portfolio["current_positions"][ticker]["shares"] <= 0:
@@ -357,13 +386,21 @@ def run_pipeline(session_label: str) -> float:
     signals = load_signals()
     print(f"[INFO] Signals loaded — keys: {list(signals.keys())}")
 
+    # --- IB Broker (optional) ---
+    broker = get_broker()
+    if broker.is_available():
+        print(f"[IB] Connected to IB Gateway — account: {broker.account}")
+    else:
+        print("[IB] Gateway not available — running in simulation mode")
+
     # --- Run each strategy ---
     strategy_results = {}
     for strategy_name in STRATEGIES:
         print(f"\n--- Strategy: {strategy_name} ---")
         try:
             result = run_strategy_pipeline(
-                strategy_name, session_label, prices, fx_rates, signals, failed_tickers
+                strategy_name, session_label, prices, fx_rates, signals, failed_tickers,
+                broker=broker if broker.is_available() else None,
             )
             strategy_results[strategy_name] = result
             print(
