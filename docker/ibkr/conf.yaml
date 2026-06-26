@@ -1,0 +1,18 @@
+# IB Client Portal Gateway configuration
+# Docs: https://interactivebrokers.github.io/cpwebapi/
+
+listenPort: 5000
+listenSsl: true
+proxyRemoteSsl: true
+useIPv6: false
+
+# Allow connections from localhost (Python scheduler) and Render internal network
+allowedOrigins:
+  - "https://localhost:5000"
+  - "http://localhost:8080"
+
+# Session settings
+sessionTimeout: 7200        # 2 hours; scheduler tickles every 60s to stay alive
+
+# Paper trading mode — change to "live" only when ready
+paperTrading: true
