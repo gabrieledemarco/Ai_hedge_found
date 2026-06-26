@@ -9,11 +9,11 @@ UNIVERSE = {
     "JNJ":     {"exchange": "NYSE",   "currency": "USD", "sector": "Healthcare"},
     "V":       {"exchange": "NYSE",   "currency": "USD", "sector": "Financial"},
     "KO":      {"exchange": "NYSE",   "currency": "USD", "sector": "Consumer"},
-    "ULVR.L":  {"exchange": "FTSE",   "currency": "GBP", "sector": "Consumer"},
-    "HSBA.L":  {"exchange": "FTSE",   "currency": "GBP", "sector": "Financial"},
-    "BP.L":    {"exchange": "FTSE",   "currency": "GBP", "sector": "Energy"},
-    "GSK.L":   {"exchange": "FTSE",   "currency": "GBP", "sector": "Healthcare"},
-    "RIO.L":   {"exchange": "FTSE",   "currency": "GBP", "sector": "Materials"},
+    "ULVR.L":  {"exchange": "FTSE",   "currency": "GBp", "sector": "Consumer"},
+    "HSBA.L":  {"exchange": "FTSE",   "currency": "GBp", "sector": "Financial"},
+    "BP.L":    {"exchange": "FTSE",   "currency": "GBp", "sector": "Energy"},
+    "GSK.L":   {"exchange": "FTSE",   "currency": "GBp", "sector": "Healthcare"},
+    "RIO.L":   {"exchange": "FTSE",   "currency": "GBp", "sector": "Materials"},
     "ENI.MI":  {"exchange": "BIT",    "currency": "EUR", "sector": "Energy"},
     "ISP.MI":  {"exchange": "BIT",    "currency": "EUR", "sector": "Financial"},
     "ENEL.MI": {"exchange": "BIT",    "currency": "EUR", "sector": "Utilities"},
@@ -33,4 +33,4 @@ STRATEGY_LABELS = {
     "sentiment": "Sentiment",
 }
 
-FX_FALLBACK = {"USD": 0.92, "GBP": 1.17, "EUR": 1.0}
+FX_FALLBACK = {"USD": 0.92, "GBP": 1.17, "GBp": 0.0117, "EUR": 1.0}

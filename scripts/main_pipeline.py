@@ -45,6 +45,8 @@ STRATEGY_INSTANCES = {
 
 
 def fetch_fx_rate(base: str, quote: str = "EUR") -> float:
+    if base == "GBp":
+        return fetch_fx_rate("GBP", quote) / 100
     if base == quote:
         return 1.0
     url = "https://www.alphavantage.co/query"
@@ -63,7 +65,7 @@ def fetch_fx_rate(base: str, quote: str = "EUR") -> float:
             return float(data[key]["5. Exchange Rate"])
     except (requests.RequestException, KeyError, ValueError, TypeError) as e:
         print(f"[WARN] FX fetch failed {base}->{quote}: {e}. Using fallback.")
-    fallback_rates = {"USD": 0.92, "GBP": 1.17}
+    fallback_rates = {"USD": 0.92, "GBP": 1.17, "GBp": 0.0117}
     return fallback_rates.get(base, 1.0)
 
 
@@ -499,7 +501,7 @@ def _position_pnl_line(ticker: str, entry: dict, prices: dict) -> str:
     """Format a position with buy price, current price and unrealized P&L."""
     cur_price = prices.get(ticker, entry["avg_price"])
     currency = UNIVERSE.get(ticker, {}).get("currency", "EUR")
-    fx = 0.92 if currency == "USD" else (1.17 if currency == "GBP" else 1.0)
+    fx = 0.0117 if currency == "GBp" else (0.92 if currency == "USD" else (1.17 if currency == "GBP" else 1.0))
     cur_eur = cur_price * fx
     avg_eur = entry["avg_price"]
     shares = entry["shares"]

@@ -60,7 +60,7 @@ def _plot_equity_overlay(ax: plt.Axes, portfolios: dict[str, dict]) -> None:
     ax.grid(True, alpha=0.3)
 
 
-def _plot_allocation(ax: plt.Axes, portfolio: dict, tickers: list[dict]) -> None:
+def _plot_allocation(ax: plt.Axes, portfolio: dict, tickers: list[dict], prices: dict) -> None:
     positions = portfolio.get("current_positions", {})
     if not positions:
         ax.text(
@@ -73,8 +73,13 @@ def _plot_allocation(ax: plt.Axes, portfolio: dict, tickers: list[dict]) -> None
     for ticker, info in tickers.items():
         shares = positions.get(ticker, {}).get("shares", 0)
         if shares > 0:
-            labels.append(ticker)
-            sizes.append(shares)
+            currency = info.get("currency", "EUR")
+            fx = 0.0117 if currency == "GBp" else (0.92 if currency == "USD" else (1.17 if currency == "GBP" else 1.0))
+            cur_price = prices.get(ticker, positions[ticker].get("avg_price", 0))
+            eur_value = shares * cur_price * fx
+            if eur_value > 0:
+                labels.append(ticker)
+                sizes.append(eur_value)
 
     if not sizes:
         ax.text(
@@ -93,14 +98,8 @@ def _plot_allocation(ax: plt.Axes, portfolio: dict, tickers: list[dict]) -> None
     )
     for t in autotexts:
         t.set_fontsize(7)
-    ax.set_title("Allocation (shares)", fontweight="bold", fontsize=11)
+    ax.set_title("Allocation (EUR value)", fontweight="bold", fontsize=11)
 
-    sector_groups: dict[str, int] = {}
-    for ticker, info in tickers.items():
-        shares = positions.get(ticker, {}).get("shares", 0)
-        if shares > 0:
-            sector = info.get("sector", "Other")
-            sector_groups[sector] = sector_groups.get(sector, 0) + shares
     legend_labels = [
         f"{t}"
         for t, info in tickers.items()
@@ -132,7 +131,7 @@ def _plot_pnl_bars(
         entry = positions[ticker]
         cur_price = prices.get(ticker, entry["avg_price"])
         currency = tickers.get(ticker, {}).get("currency", "EUR")
-        fx = 0.92 if currency == "USD" else (1.17 if currency == "GBP" else 1.0)
+        fx = 0.0117 if currency == "GBp" else (0.92 if currency == "USD" else (1.17 if currency == "GBP" else 1.0))
         cur_eur = cur_price * fx
         pnl = entry["shares"] * (cur_eur - entry["avg_price"])
         labels.append(ticker)
@@ -168,7 +167,7 @@ def generate_dashboard(
     ax3 = fig.add_subplot(gs[1, 1])
 
     _plot_equity_overlay(ax1, portfolios)
-    _plot_allocation(ax2, primary_portfolio, tickers)
+    _plot_allocation(ax2, primary_portfolio, tickers, prices)
     _plot_pnl_bars(ax3, primary_portfolio, tickers, prices)
 
     fig.suptitle(
