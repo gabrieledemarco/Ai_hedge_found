@@ -398,6 +398,131 @@ def _build_portfolio_tabs(portfolios: dict) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Trade history helpers
+# ---------------------------------------------------------------------------
+
+def _extract_completed_trades(portfolios: dict) -> list:
+    """Match BUY/SELL pairs per strategy+ticker (FIFO) to build closed-trade list."""
+    completed = []
+
+    for sname, portfolio in portfolios.items():
+        buy_queues: dict[str, list] = {}
+
+        for entry in portfolio.get("iterations_log", []):
+            try:
+                ts = datetime.fromisoformat(entry["timestamp"])
+            except (ValueError, KeyError):
+                continue
+
+            for txn in entry.get("transactions", []):
+                ticker = txn.get("ticker")
+                shares = txn.get("shares", 0)
+                price_eur = txn.get("price_eur", 0)
+                action = txn.get("action")
+
+                if action == "BUY":
+                    buy_queues.setdefault(ticker, []).append(
+                        {"timestamp": ts, "shares": shares, "price_eur": price_eur}
+                    )
+
+                elif action == "SELL":
+                    remaining = shares
+                    queue = buy_queues.get(ticker, [])
+                    while remaining > 0 and queue:
+                        lot = queue[0]
+                        matched = min(remaining, lot["shares"])
+                        pnl_eur = matched * (price_eur - lot["price_eur"])
+                        pnl_pct = (
+                            (price_eur / lot["price_eur"] - 1) * 100
+                            if lot["price_eur"] > 0 else 0
+                        )
+                        completed.append({
+                            "strategy": sname,
+                            "ticker": ticker,
+                            "shares": matched,
+                            "date_in": lot["timestamp"],
+                            "date_out": ts,
+                            "entry_eur": lot["price_eur"],
+                            "exit_eur": price_eur,
+                            "pnl_eur": pnl_eur,
+                            "pnl_pct": pnl_pct,
+                        })
+                        lot["shares"] -= matched
+                        remaining -= matched
+                        if lot["shares"] <= 0:
+                            queue.pop(0)
+
+    completed.sort(key=lambda x: x["date_out"], reverse=True)
+    return completed
+
+
+def _build_trade_history_section(portfolios: dict) -> str:
+    """HTML table of all completed roundtrip trades across all strategies."""
+    trades = _extract_completed_trades(portfolios)
+
+    if not trades:
+        return '<p style="color:#64748b;padding:12px">Nessun trade concluso.</p>'
+
+    total_pnl = sum(t["pnl_eur"] for t in trades)
+    winning = [t for t in trades if t["pnl_eur"] > 0]
+    losing = [t for t in trades if t["pnl_eur"] < 0]
+    win_rate = len(winning) / len(trades) * 100 if trades else 0
+    total_sign = "+" if total_pnl >= 0 else ""
+    total_cls = "pos" if total_pnl >= 0 else "neg"
+
+    _SCOL = {
+        "equal_weight": "#22c55e", "momentum": "#3b82f6",
+        "fundamental": "#f59e0b", "sentiment": "#a855f7",
+    }
+    _SLBL = {
+        "equal_weight": "EqW", "momentum": "Mom",
+        "fundamental": "Fun", "sentiment": "Sen",
+    }
+
+    rows = ""
+    for t in trades:
+        pnl_cls = "pos" if t["pnl_eur"] >= 0 else "neg"
+        sign = "+" if t["pnl_eur"] >= 0 else ""
+        sc = _SCOL.get(t["strategy"], "#94a3b8")
+        sl = _SLBL.get(t["strategy"], t["strategy"])
+        date_in = t["date_in"].strftime("%m/%d %H:%M")
+        date_out = t["date_out"].strftime("%m/%d %H:%M")
+        rows += f"""<tr>
+          <td><span style="background:{sc}22;color:{sc};padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700">{sl}</span></td>
+          <td><strong>{t['ticker']}</strong></td>
+          <td style="color:#94a3b8;font-size:11px">{date_in}</td>
+          <td style="color:#94a3b8;font-size:11px">{date_out}</td>
+          <td style="text-align:right">{t['shares']}</td>
+          <td style="text-align:right">{t['entry_eur']:.2f}</td>
+          <td style="text-align:right">{t['exit_eur']:.2f}</td>
+          <td class="{pnl_cls}" style="text-align:right;font-weight:600">{sign}{t['pnl_eur']:.2f}</td>
+          <td class="{pnl_cls}" style="text-align:right">{sign}{t['pnl_pct']:.2f}%</td>
+        </tr>"""
+
+    return f"""
+    <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:13px;color:#94a3b8;margin-bottom:14px;">
+      <span>Trades: <strong style="color:#f8fafc">{len(trades)}</strong></span>
+      <span>Win rate: <strong style="color:#22c55e">{win_rate:.0f}%</strong></span>
+      <span>Vincenti: <strong class="pos">{len(winning)}</strong></span>
+      <span>Perdenti: <strong class="neg">{len(losing)}</strong></span>
+      <span>P&amp;L totale: <strong class="{total_cls}">{total_sign}{total_pnl:.2f} €</strong></span>
+    </div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr>
+        <th>Strategia</th><th>Ticker</th><th>Data Entrata</th><th>Data Uscita</th>
+        <th style="text-align:right">Q.tà</th>
+        <th style="text-align:right">Prezzo In (€)</th>
+        <th style="text-align:right">Prezzo Out (€)</th>
+        <th style="text-align:right">P&amp;L €</th>
+        <th style="text-align:right">P&amp;L %</th>
+      </tr></thead>
+      <tbody>{rows}</tbody>
+    </table>
+    </div>"""
+
+
+# ---------------------------------------------------------------------------
 # Main HTML builder
 # ---------------------------------------------------------------------------
 
@@ -427,6 +552,7 @@ def build_html(portfolios: dict, signals: dict = None) -> str:
     comparison_chart = _generate_equity_comparison_chart(portfolios)
     screener_html = _build_screener_table(signals)
     portfolio_tabs_html = _build_portfolio_tabs(portfolios)
+    trade_history_html = _build_trade_history_section(portfolios)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -511,6 +637,11 @@ tr:hover td {{ background:#1e293b; }}
 
   <div class="section-title">Portfolio Details</div>
   {portfolio_tabs_html}
+
+  <div class="section-title">Completed Trades</div>
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;overflow:hidden;padding:20px;margin-bottom:28px;">
+    {trade_history_html}
+  </div>
 
 </div>
 
