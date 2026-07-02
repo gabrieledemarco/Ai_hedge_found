@@ -326,14 +326,21 @@ def run_strategy_pipeline(
         else:
             reasoning_parts.append(f"{ticker}: HOLD (on target)")
 
-    # Recalculate total after trades
+    # Recalculate total after trades.
+    # For tickers whose price fetch failed entirely (not in prices dict),
+    # use avg_price (stored in EUR) as proxy to avoid phantom losses.
     cash_eur = portfolio["metadata"]["current_cash"]
-    total_value_eur = cash_eur + sum(
-        prices.get(t, 0)
-        * fx_rates.get(UNIVERSE[t]["currency"], 1.0)
-        * portfolio["current_positions"].get(t, {}).get("shares", 0)
-        for t in tickers
-    )
+    total_value_eur = cash_eur
+    for t in tickers:
+        pos = portfolio["current_positions"].get(t, {})
+        shares = pos.get("shares", 0)
+        if shares <= 0:
+            continue
+        if t in failed_tickers:
+            total_value_eur += pos.get("avg_price", 0) * shares
+        else:
+            price_eur = prices.get(t, 0) * fx_rates.get(UNIVERSE[t]["currency"], 1.0)
+            total_value_eur += price_eur * shares
 
     reasoning = "\n".join(reasoning_parts)
     log_iteration_for_strategy(
