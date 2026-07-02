@@ -1,14 +1,16 @@
 """
-Price fetcher — Tiingo (US stocks), Alpha Vantage (European stocks), yfinance fallback.
+Price fetcher — IB Gateway (primary when available), Tiingo, Alpha Vantage, yfinance.
 
-investing.com, Stooq, and Yahoo Finance all block or return empty data from
-GitHub Actions IP ranges. API-key-based services bypass IP filtering.
+Fallback chain:
+  Level 0: IB Client Portal Gateway — when IB_ACCOUNT + IB_GATEWAY_URL are set and
+           the session is authenticated. Covers all markets (US, LSE, Borsa Italiana)
+           with a single authenticated session; no rate limits on historical bars.
+  Level 1: Tiingo — US stocks (NASDAQ/NYSE), 1000 req/day free.
+  Level 2: Alpha Vantage — European stocks + US fallback, 25 req/day (5 req/min).
+  Level 3: yfinance bulk — last resort; often blocked from GitHub Actions IPs.
 
-TIINGO_API_KEY   — 1000 req/day free, US stocks only
-ALPHA_VANTAGE_KEY — 25 req/day free, global coverage (5 req/min rate limit)
-
-Day-level price cache (data/prices_cache.json) ensures Alpha Vantage stays
-within its 25 req/day limit when the pipeline runs multiple times per day.
+Day-level price cache (data/prices_cache.json) persists prices across pipeline runs
+within the same calendar day, reducing external API calls.
 """
 
 import json
@@ -56,6 +58,30 @@ def _save_day_cache(prices: dict) -> None:
     os.makedirs(os.path.dirname(_PRICES_CACHE_PATH), exist_ok=True)
     with open(_PRICES_CACHE_PATH, "w") as f:
         json.dump({"date": str(date.today()), "prices": prices}, f, indent=2, sort_keys=True)
+
+
+# ── Level 0: IB Client Portal Gateway ────────────────────────────────────────
+
+def _fetch_ib(
+    tickers: list[str], universe: dict
+) -> tuple[dict[str, float], set[str]]:
+    """Fetch prices via IB Client Portal Gateway (when available and authenticated)."""
+    try:
+        from ib_broker import get_broker  # imported here to avoid hard dependency
+    except ImportError:
+        return {}, set(tickers)
+
+    broker = get_broker()
+    if not broker.is_available():
+        return {}, set(tickers)
+
+    print("[INFO] IB Gateway is authenticated — fetching prices via IB...")
+    tickers_exchange = [
+        (t, universe.get(t, {}).get("exchange", "NASDAQ")) for t in tickers
+    ]
+    prices = broker.get_market_prices(tickers_exchange)
+    failed = {t for t in tickers if t not in prices}
+    return prices, failed
 
 
 # ── Level 1: Tiingo (US stocks) ───────────────────────────────────────────────
@@ -189,10 +215,11 @@ def _fetch_yfinance_bulk(tickers: list[str]) -> tuple[dict[str, float], set[str]
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def get_prices(tickers: list[str], universe: dict | None = None) -> tuple[dict[str, float], set[str]]:
-    """Fetch closing prices with API-key-based sources and day-level caching.
+    """Fetch closing prices for all tickers with day-level caching.
 
-    Fallback chain: Tiingo (US) → Alpha Vantage (European + US fallback) → yfinance bulk.
-    Day-level cache avoids exceeding Alpha Vantage's 25 req/day free-tier limit.
+    Fallback chain: IB Gateway → Tiingo (US) → Alpha Vantage (EU/US) → yfinance bulk.
+    IB Gateway is used when IB_ACCOUNT is set and the session is authenticated;
+    it covers all markets with no per-ticker rate limits.
     Returns (prices_dict, failed_set).
     """
     if universe is None:
@@ -213,7 +240,18 @@ def get_prices(tickers: list[str], universe: dict | None = None) -> tuple[dict[s
     if not missing:
         return all_prices, set()
 
-    # Split by exchange
+    # Level 0: IB Gateway — covers all markets when authenticated
+    ib_prices, ib_failed = _fetch_ib(missing, universe)
+    all_prices.update(ib_prices)
+    missing = sorted(ib_failed)
+
+    if not missing:
+        updated_cache = {**cached, **{t: p for t, p in all_prices.items()}}
+        _save_day_cache(updated_cache)
+        print(f"[INFO] All {len(tickers)} prices resolved via IB Gateway.")
+        return all_prices, set()
+
+    # Split remaining by exchange for Tiingo/AV fallback
     us_tickers = [
         t for t in missing
         if universe.get(t, {}).get("exchange") in ("NASDAQ", "NYSE")

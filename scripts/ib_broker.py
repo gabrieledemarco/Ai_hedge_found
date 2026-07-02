@@ -186,6 +186,54 @@ class IBBroker:
             return {"error": str(e)}
 
     # ------------------------------------------------------------------
+    # Market data
+    # ------------------------------------------------------------------
+
+    def get_price_history(self, ticker: str, exchange_tag: str) -> float | None:
+        """
+        Fetch the latest closing price via IB's marketdata/history endpoint.
+        Returns the close price in the instrument's native currency
+        (USD for NASDAQ/NYSE, GBp for LSE, EUR for BVME), or None on failure.
+        """
+        conid = self._get_conid(ticker, exchange_tag)
+        if not conid:
+            return None
+        try:
+            data = self._get(
+                "/v1/api/iserver/marketdata/history",
+                params={
+                    "conid": conid,
+                    "period": "1w",   # fetch 1 week so we always get at least one bar
+                    "bar": "1d",
+                    "outsideRth": True,
+                },
+            )
+            bars = data.get("data", [])
+            if not bars:
+                print(f"[IB] no history bars for {ticker} (conid={conid})")
+                return None
+            close = float(bars[-1].get("c", 0))
+            return close if close > 0 else None
+        except Exception as e:
+            print(f"[IB] price history failed for {ticker}: {e}")
+            return None
+
+    def get_market_prices(
+        self, tickers_exchange: list[tuple[str, str]]
+    ) -> dict[str, float]:
+        """
+        Fetch closing prices for a list of (ticker, exchange_tag) pairs.
+        Returns {ticker: price_in_native_currency} for successfully fetched tickers.
+        """
+        prices: dict[str, float] = {}
+        for ticker, exchange_tag in tickers_exchange:
+            price = self.get_price_history(ticker, exchange_tag)
+            if price is not None:
+                prices[ticker] = price
+                print(f"  {ticker}: {price:.4f} (ib_gateway)")
+        return prices
+
+    # ------------------------------------------------------------------
     # Position query
     # ------------------------------------------------------------------
 
