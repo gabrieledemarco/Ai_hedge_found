@@ -265,7 +265,7 @@
     {
       "timestamp": "2026-06-24T06:17:15.489104+00:00",
       "session": "mattina",
-      "total_value_eur": 3000.0,
+      "total_value_eur": 2507.81,
       "current_cash": 577.89,
       "positions": {
         "MSFT": {
@@ -450,7 +450,7 @@
     {
       "timestamp": "2026-06-24T09:51:57.942135+00:00",
       "session": "sera",
-      "total_value_eur": 3028.9,
+      "total_value_eur": 2523.36,
       "current_cash": 810.12,
       "positions": {
         "AMZN": {
@@ -534,7 +534,7 @@
     {
       "timestamp": "2026-06-24T11:38:12.230727+00:00",
       "session": "sera",
-      "total_value_eur": 3028.91,
+      "total_value_eur": 3100.95,
       "current_cash": 574.36,
       "positions": {
         "AMZN": {
@@ -869,7 +869,7 @@
     {
       "timestamp": "2026-06-26T17:08:03.462054+00:00",
       "session": "sera",
-      "total_value_eur": 2983.99,
+      "total_value_eur": 3058.38,
       "current_cash": 629.01,
       "positions": {
         "AMZN": {
@@ -1049,7 +1049,7 @@
     {
       "timestamp": "2026-06-29T11:25:59.176670+00:00",
       "session": "sera",
-      "total_value_eur": 2989.98,
+      "total_value_eur": 3078.74,
       "current_cash": 382.6,
       "positions": {
         "AMZN": {
@@ -1336,7 +1336,7 @@
     {
       "timestamp": "2026-06-30T10:02:49.056152+00:00",
       "session": "sera",
-      "total_value_eur": 2209.53,
+      "total_value_eur": 3135.49,
       "current_cash": 21.34,
       "positions": {
         "AMZN": {
@@ -1427,7 +1427,7 @@
     {
       "timestamp": "2026-06-30T17:17:26.894268+00:00",
       "session": "sera",
-      "total_value_eur": 2206.19,
+      "total_value_eur": 3117.31,
       "current_cash": 382.05,
       "positions": {
         "AMZN": {
@@ -1514,7 +1514,7 @@
     {
       "timestamp": "2026-06-30T21:54:06.350329+00:00",
       "session": "sera",
-      "total_value_eur": 2298.14,
+      "total_value_eur": 3117.31,
       "current_cash": 3.16,
       "positions": {
         "AMZN": {
@@ -1605,7 +1605,7 @@
     {
       "timestamp": "2026-07-01T10:14:17.647226+00:00",
       "session": "sera",
-      "total_value_eur": 2313.66,
+      "total_value_eur": 3132.84,
       "current_cash": 718.89,
       "positions": {
         "AMZN": {
@@ -1695,7 +1695,7 @@
     {
       "timestamp": "2026-07-01T17:25:06.587711+00:00",
       "session": "sera",
-      "total_value_eur": 2241.29,
+      "total_value_eur": 3163.33,
       "current_cash": 77.42,
       "positions": {
         "AMZN": {
@@ -1793,7 +1793,7 @@
     {
       "timestamp": "2026-07-01T21:57:55.851512+00:00",
       "session": "sera",
-      "total_value_eur": 2344.15,
+      "total_value_eur": 3163.33,
       "current_cash": 749.38,
       "positions": {
         "AMZN": {

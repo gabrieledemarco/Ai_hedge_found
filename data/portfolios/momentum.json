@@ -257,7 +257,7 @@
     {
       "timestamp": "2026-06-24T06:17:15.487331+00:00",
       "session": "mattina",
-      "total_value_eur": 3000.0,
+      "total_value_eur": 3124.66,
       "current_cash": 315.84,
       "positions": {
         "AAPL": {
@@ -462,7 +462,7 @@
     {
       "timestamp": "2026-06-24T09:51:57.939884+00:00",
       "session": "sera",
-      "total_value_eur": 3006.14,
+      "total_value_eur": 3086.05,
       "current_cash": 1192.29,
       "positions": {
         "AAPL": {
@@ -539,7 +539,7 @@
     {
       "timestamp": "2026-06-24T11:38:12.228005+00:00",
       "session": "sera",
-      "total_value_eur": 3006.16,
+      "total_value_eur": 3086.05,
       "current_cash": 892.8,
       "positions": {
         "AAPL": {
@@ -781,7 +781,7 @@
     {
       "timestamp": "2026-06-26T17:08:03.458505+00:00",
       "session": "sera",
-      "total_value_eur": 2927.84,
+      "total_value_eur": 3054.89,
       "current_cash": 293.27,
       "positions": {
         "AAPL": {
@@ -925,7 +925,7 @@
     {
       "timestamp": "2026-06-29T11:25:59.172537+00:00",
       "session": "sera",
-      "total_value_eur": 2966.74,
+      "total_value_eur": 3098.84,
       "current_cash": 293.27,
       "positions": {
         "AAPL": {
@@ -1141,7 +1141,7 @@
     {
       "timestamp": "2026-06-30T10:02:49.051397+00:00",
       "session": "sera",
-      "total_value_eur": 3022.26,
+      "total_value_eur": 3155.45,
       "current_cash": 293.27,
       "positions": {
         "AAPL": {
@@ -1208,7 +1208,7 @@
     {
       "timestamp": "2026-06-30T17:17:26.889339+00:00",
       "session": "sera",
-      "total_value_eur": 3018.1,
+      "total_value_eur": 3155.45,
       "current_cash": 293.27,
       "positions": {
         "AAPL": {
@@ -1409,7 +1409,7 @@
     {
       "timestamp": "2026-07-01T17:25:06.582189+00:00",
       "session": "sera",
-      "total_value_eur": 3040.66,
+      "total_value_eur": 3171.26,
       "current_cash": 293.27,
       "positions": {
         "AAPL": {
