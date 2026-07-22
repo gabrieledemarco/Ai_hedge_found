@@ -1,72 +1,72 @@
 {
   "sentiment": {
     "AAPL": {
-      "score": 0.1169,
-      "av_score": 0.1171,
-      "finbert_score": 0.1165,
+      "score": 0.1466,
+      "av_score": 0.1389,
+      "finbert_score": 0.1645,
       "label": "Bullish",
       "num_articles": 50
     },
     "MSFT": {
-      "score": 0.2537,
-      "av_score": 0.1595,
-      "finbert_score": 0.4736,
-      "label": "Bullish",
+      "score": 0.1305,
+      "av_score": 0.0956,
+      "finbert_score": 0.2118,
+      "label": "Neutral",
       "num_articles": 50
     },
     "GOOGL": {
-      "score": 0.0609,
-      "av_score": 0.1659,
-      "finbert_score": -0.1841,
+      "score": 0.0624,
+      "av_score": 0.1482,
+      "finbert_score": -0.1377,
       "label": "Bullish",
       "num_articles": 50
     },
     "AMZN": {
-      "score": 0.1652,
-      "av_score": 0.1606,
-      "finbert_score": 0.1758,
+      "score": 0.1281,
+      "av_score": 0.1582,
+      "finbert_score": 0.0579,
       "label": "Bullish",
       "num_articles": 50
     },
     "TSLA": {
-      "score": 0.019,
-      "av_score": 0.0319,
-      "finbert_score": -0.011,
+      "score": 0.0336,
+      "av_score": 0.0984,
+      "finbert_score": -0.1176,
       "label": "Neutral",
       "num_articles": 50
     },
     "JPM": {
-      "score": 0.1231,
-      "av_score": 0.1688,
-      "finbert_score": 0.0163,
+      "score": 0.0658,
+      "av_score": 0.1531,
+      "finbert_score": -0.1379,
       "label": "Bullish",
       "num_articles": 50
     },
     "NVDA": {
-      "score": 0.3727,
-      "av_score": 0.2571,
-      "finbert_score": 0.6423,
+      "score": 0.1723,
+      "av_score": 0.2547,
+      "finbert_score": -0.02,
       "label": "Bullish",
       "num_articles": 50
     },
     "JNJ": {
-      "score": 0.2215,
-      "av_score": 0.1651,
-      "finbert_score": 0.3532,
+      "score": 0.235,
+      "av_score": 0.2007,
+      "finbert_score": 0.3152,
       "label": "Bullish",
       "num_articles": 50
     },
     "V": {
-      "score": 0.1184,
-      "av_score": 0.1716,
-      "finbert_score": -0.0057,
+      "score": 0.2458,
+      "av_score": 0.2004,
+      "finbert_score": 0.3516,
       "label": "Bullish",
       "num_articles": 50
     },
     "KO": {
-      "score": -0.063,
-      "av_score": 0.0179,
-      "finbert_score": -0.2518,
+      "score": 0.0539,
+      "av_score": 0.0773,
+      "finbert_score": -0.0007,
       "label": "Neutral",
       "num_articles": 50
     },
@@ -143,268 +143,268 @@
   },
   "fundamentals": {
     "AAPL": {
-      "pe_ratio": 40.469643,
-      "pb_ratio": 44.984848,
+      "pe_ratio": 39.534378,
+      "pb_ratio": 45.14325,
       "roe": 1.4147099,
       "debt_to_equity": 79.548,
-      "market_cap": 4796743417856,
+      "market_cap": 4813633880064,
       "revenue_growth": 0.166,
-      "f_score": 0.5059
+      "f_score": 0.5094
     },
     "MSFT": {
-      "pe_ratio": 23.470829,
-      "pb_ratio": 7.212471,
+      "pe_ratio": 23.703814,
+      "pb_ratio": 7.1310754,
       "roe": 0.34013999,
       "debt_to_equity": 30.271,
-      "market_cap": 2988385239040,
+      "market_cap": 2954659889152,
       "revenue_growth": 0.183,
-      "f_score": 0.6618
+      "f_score": 0.6606
     },
     "GOOGL": {
-      "pe_ratio": 26.445528,
-      "pb_ratio": 8.907982,
+      "pe_ratio": 26.890007,
+      "pb_ratio": 8.785494,
       "roe": 0.38884997,
       "debt_to_equity": 20.026,
-      "market_cap": 4295183564800,
+      "market_cap": 4236123045888,
       "revenue_growth": 0.218,
-      "f_score": 0.6204
+      "f_score": 0.6172
     },
     "AMZN": {
-      "pe_ratio": 29.584618,
-      "pb_ratio": 6.083518,
+      "pe_ratio": 29.933493,
+      "pb_ratio": 6.024141,
       "roe": 0.24285,
       "debt_to_equity": 53.3,
-      "market_cap": 2689169883136,
+      "market_cap": 2662922452992,
       "revenue_growth": 0.166,
-      "f_score": 0.5313
+      "f_score": 0.5285
     },
     "TSLA": {
-      "pe_ratio": 345.39252,
-      "pb_ratio": 16.877655,
+      "pe_ratio": 344.4818,
+      "pb_ratio": 16.915764,
       "roe": 0.04901,
       "debt_to_equity": 18.738,
-      "market_cap": 1388002803712,
+      "market_cap": 1423156445184,
       "revenue_growth": 0.158,
-      "f_score": 0.2945
+      "f_score": 0.294
     },
     "JPM": {
-      "pe_ratio": 14.619068,
-      "pb_ratio": 2.5477605,
+      "pe_ratio": 14.5115595,
+      "pb_ratio": 2.5955777,
       "roe": 0.17789,
       "debt_to_equity": null,
-      "market_cap": 900784259072,
+      "market_cap": null,
       "revenue_growth": 0.304,
-      "f_score": 0.7788
+      "f_score": 0.7806
     },
     "NVDA": {
-      "pe_ratio": 31.035114,
-      "pb_ratio": 25.189592,
+      "pe_ratio": 31.171427,
+      "pb_ratio": 25.686493,
       "roe": 1.14288,
       "debt_to_equity": 6.555,
-      "market_cap": 4923644706816,
+      "market_cap": 5020770631680,
       "revenue_growth": 0.852,
-      "f_score": 0.6136
+      "f_score": 0.6115
     },
     "JNJ": {
-      "pe_ratio": 29.341984,
-      "pb_ratio": 7.3757224,
+      "pe_ratio": 28.90542,
+      "pb_ratio": 7.428783,
       "roe": null,
       "debt_to_equity": 67.73,
-      "market_cap": 598963716096,
+      "market_cap": 603272642560,
       "revenue_growth": 0.066,
-      "f_score": 0.5083
+      "f_score": 0.5156
     },
     "V": {
-      "pe_ratio": 31.245235,
-      "pb_ratio": 19.341808,
+      "pe_ratio": 31.432863,
+      "pb_ratio": null,
       "roe": 0.60349,
       "debt_to_equity": 67.233,
-      "market_cap": 685711753216,
+      "market_cap": null,
       "revenue_growth": 0.171,
-      "f_score": 0.6409
+      "f_score": 0.6498
     },
     "KO": {
-      "pe_ratio": 25.6625,
-      "pb_ratio": 10.506654,
+      "pe_ratio": 25.858044,
+      "pb_ratio": 10.487462,
       "roe": 0.43372002,
       "debt_to_equity": 124.943,
-      "market_cap": 353319878656,
+      "market_cap": null,
       "revenue_growth": 0.121,
-      "f_score": 0.5075
+      "f_score": 0.6156
     },
     "ULVR.L": {
-      "pe_ratio": 20.576233,
-      "pb_ratio": 7.575908,
+      "pe_ratio": 20.174107,
+      "pb_ratio": 7.4619045,
       "roe": 0.30955,
       "debt_to_equity": 160.789,
-      "market_cap": 98799558656,
+      "market_cap": 97303085056,
       "revenue_growth": null,
-      "f_score": 0.7109
+      "f_score": 0.7142
     },
     "HSBA.L": {
-      "pe_ratio": 16.136955,
-      "pb_ratio": 1.9556792,
+      "pe_ratio": 16.41739,
+      "pb_ratio": 1.9896659,
       "roe": 0.11611,
       "debt_to_equity": null,
-      "market_cap": 254582292480,
+      "market_cap": 259006562304,
       "revenue_growth": 0.033,
-      "f_score": 0.6299
+      "f_score": 0.6253
     },
     "BP.L": {
-      "pe_ratio": 32.59375,
-      "pb_ratio": 1.9426416,
+      "pe_ratio": 33.556255,
+      "pb_ratio": 1.9956441,
       "roe": 0.05842,
       "debt_to_equity": 96.384,
-      "market_cap": 80575823872,
+      "market_cap": 82955247616,
       "revenue_growth": 0.116,
-      "f_score": 0.4997
+      "f_score": 0.4916
     },
     "GSK.L": {
-      "pe_ratio": 13.190141,
-      "pb_ratio": 4.217519,
+      "pe_ratio": 13.2887335,
+      "pb_ratio": 4.249043,
       "roe": 0.40905997,
       "debt_to_equity": 109.7,
-      "market_cap": 75024801792,
+      "market_cap": 75585585152,
       "revenue_growth": 0.015,
-      "f_score": 0.7875
+      "f_score": 0.7852
     },
     "RIO.L": {
-      "pe_ratio": 14.520608,
-      "pb_ratio": 2.3407404,
+      "pe_ratio": 14.724511,
+      "pb_ratio": 2.3736103,
       "roe": 0.16399999,
       "debt_to_equity": 35.432,
-      "market_cap": 108861325312,
+      "market_cap": 110390001664,
       "revenue_growth": 0.146,
-      "f_score": 0.7426
+      "f_score": 0.7387
     },
     "ENI.MI": {
-      "pe_ratio": 21.82,
-      "pb_ratio": 1.3065085,
+      "pe_ratio": 22.22,
+      "pb_ratio": 1.3304592,
       "roe": 0.059109997,
       "debt_to_equity": 67.357,
-      "market_cap": 63423287296,
+      "market_cap": 64585949184,
       "revenue_growth": -0.126,
-      "f_score": 0.3764
+      "f_score": 0.3731
     },
     "ISP.MI": {
-      "pe_ratio": 11.79074,
-      "pb_ratio": 1.6135327,
+      "pe_ratio": 11.833333,
+      "pb_ratio": 1.6193613,
       "roe": 0.14007,
       "debt_to_equity": null,
-      "market_cap": 112030015488,
+      "market_cap": 112200048640,
       "revenue_growth": 0.06,
-      "f_score": 0.7503
+      "f_score": 0.7496
     },
     "ENEL.MI": {
-      "pe_ratio": 26.192106,
-      "pb_ratio": 4.08412,
+      "pe_ratio": 26.00263,
+      "pb_ratio": 4.054575,
       "roe": 0.10637999,
       "debt_to_equity": 139.941,
-      "market_cap": 98766241792,
+      "market_cap": 98051760128,
       "revenue_growth": -0.067,
-      "f_score": 0.3787
+      "f_score": 0.3808
     },
     "LDO.MI": {
-      "pe_ratio": 22.919643,
-      "pb_ratio": 3.0315914,
+      "pe_ratio": 22.901785,
+      "pb_ratio": 3.0292294,
       "roe": 0.13074,
       "debt_to_equity": 41.68,
-      "market_cap": 29617321984,
+      "market_cap": 29594245120,
       "revenue_growth": 0.069,
-      "f_score": 0.6865
+      "f_score": 0.6868
     },
     "MONC.MI": {
-      "pe_ratio": 22.277056,
-      "pb_ratio": 3.6305912,
+      "pe_ratio": 21.82684,
+      "pb_ratio": 3.5572174,
       "roe": 0.16854,
       "debt_to_equity": 29.312,
-      "market_cap": 13996396544,
+      "market_cap": 13713530880,
       "revenue_growth": 0.015,
-      "f_score": 0.7473
+      "f_score": 0.7555
     }
   },
   "momentum": {
     "AAPL": {
-      "return_3m": 0.1972,
-      "return_1m": 0.0959
+      "return_3m": 0.2325,
+      "return_1m": 0.1035
     },
     "MSFT": {
-      "return_3m": -0.0357,
-      "return_1m": 0.0603
+      "return_3m": -0.0602,
+      "return_1m": 0.0828
     },
     "GOOGL": {
-      "return_3m": 0.0438,
-      "return_1m": -0.0436
+      "return_3m": 0.0453,
+      "return_1m": -0.0072
     },
     "AMZN": {
-      "return_3m": 0.0069,
-      "return_1m": 0.0229
+      "return_3m": -0.0094,
+      "return_1m": 0.0634
     },
     "TSLA": {
-      "return_3m": -0.0584,
-      "return_1m": -0.0772
+      "return_3m": -0.0194,
+      "return_1m": -0.0645
     },
     "JPM": {
-      "return_3m": 0.0738,
-      "return_1m": 0.0467
+      "return_3m": 0.1079,
+      "return_1m": 0.0462
     },
     "NVDA": {
-      "return_3m": 0.0072,
-      "return_1m": -0.0352
+      "return_3m": 0.0383,
+      "return_1m": -0.0065
     },
     "JNJ": {
-      "return_3m": 0.0848,
-      "return_1m": 0.0895
+      "return_3m": 0.1145,
+      "return_1m": 0.0835
     },
     "V": {
-      "return_3m": 0.1509,
-      "return_1m": 0.1019
+      "return_3m": 0.1504,
+      "return_1m": 0.0895
     },
     "KO": {
-      "return_3m": 0.095,
-      "return_1m": 0.0344
+      "return_3m": 0.1044,
+      "return_1m": 0.0307
     },
     "ULVR.L": {
-      "return_3m": 0.0877,
-      "return_1m": 0.0446
+      "return_3m": 0.0768,
+      "return_1m": 0.0148
     },
     "HSBA.L": {
-      "return_3m": 0.0956,
-      "return_1m": 0.0225
+      "return_3m": 0.1252,
+      "return_1m": 0.0447
     },
     "BP.L": {
-      "return_3m": -0.0744,
-      "return_1m": 0.0424
+      "return_3m": -0.0617,
+      "return_1m": 0.0769
     },
     "GSK.L": {
-      "return_3m": -0.0998,
-      "return_1m": -0.0263
+      "return_3m": -0.0905,
+      "return_1m": -0.036
     },
     "RIO.L": {
-      "return_3m": -0.082,
-      "return_1m": -0.1093
+      "return_3m": -0.0898,
+      "return_1m": -0.0655
     },
     "ENI.MI": {
-      "return_3m": -0.0378,
-      "return_1m": 0.0114
+      "return_3m": -0.0313,
+      "return_1m": 0.034
     },
     "ISP.MI": {
-      "return_3m": 0.1498,
-      "return_1m": 0.0213
+      "return_3m": 0.164,
+      "return_1m": 0.0422
     },
     "ENEL.MI": {
-      "return_3m": 0.0335,
-      "return_1m": 0.0318
+      "return_3m": 0.0259,
+      "return_1m": 0.0243
     },
     "LDO.MI": {
-      "return_3m": -0.0534,
-      "return_1m": 0.0248
+      "return_3m": -0.0445,
+      "return_1m": 0.0173
     },
     "MONC.MI": {
-      "return_3m": -0.0544,
-      "return_1m": 0.0047
+      "return_3m": -0.0532,
+      "return_1m": -0.009
     }
   },
-  "sentiment_updated": "2026-07-21T07:59:10.011446+00:00",
-  "fundamentals_updated": "2026-07-21T07:54:51.922889+00:00"
+  "sentiment_updated": "2026-07-22T07:59:12.549749+00:00",
+  "fundamentals_updated": "2026-07-22T07:54:52.819464+00:00"
 }
