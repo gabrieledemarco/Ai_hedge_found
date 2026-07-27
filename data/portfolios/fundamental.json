@@ -2,8 +2,8 @@
   "strategy": "fundamental",
   "metadata": {
     "initial_capital": 3000.0,
-    "current_cash": 190.86,
-    "price_source": "investing.com(15/20)"
+    "current_cash": 350.01,
+    "price_source": "investing.com(20/20)"
   },
   "current_positions": {
     "JNJ": {
@@ -37,10 +37,6 @@
     "ENEL.MI": {
       "shares": 32,
       "avg_price": 9.9026
-    },
-    "LDO.MI": {
-      "shares": 3,
-      "avg_price": 50.66
     },
     "AAPL": {
       "shares": 1,
@@ -5521,6 +5517,86 @@
       },
       "transactions": [],
       "reasoning": "ATTENZIONE: prezzi non disponibili per ['ENEL.MI', 'ENI.MI', 'ISP.MI', 'LDO.MI', 'MONC.MI']. Trading sospeso per questi titoli.\nAAPL: HOLD (deviation 0.0050 < 0.05)\nMSFT: HOLD (deviation 0.0089 < 0.05)\nGOOGL: HOLD (deviation 0.0000 < 0.05)\nAMZN: HOLD (deviation 0.0000 < 0.05)\nTSLA: HOLD (deviation 0.0000 < 0.05)\nJPM: HOLD (deviation 0.0000 < 0.05)\nNVDA: HOLD (deviation 0.0000 < 0.05)\nJNJ: HOLD (deviation 0.0248 < 0.05)\nV: HOLD (deviation 0.0015 < 0.05)\nKO: HOLD (deviation 0.0061 < 0.05)\nULVR.L: HOLD (deviation 0.0170 < 0.05)\nHSBA.L: HOLD (deviation 0.0000 < 0.05)\nBP.L: HOLD (deviation 0.0000 < 0.05)\nGSK.L: HOLD (deviation 0.0095 < 0.05)\nRIO.L: HOLD (deviation 0.0000 < 0.05)\nENI.MI: SKIP (prezzo non disponibile)\nISP.MI: SKIP (prezzo non disponibile)\nENEL.MI: SKIP (prezzo non disponibile)\nLDO.MI: SKIP (prezzo non disponibile)\nMONC.MI: SKIP (prezzo non disponibile)"
+    },
+    {
+      "timestamp": "2026-07-27T17:08:24.910869+00:00",
+      "session": "sera",
+      "total_value_eur": 3182.75,
+      "current_cash": 350.01,
+      "positions": {
+        "JNJ": {
+          "shares": 1,
+          "avg_price": 210.191
+        },
+        "V": {
+          "shares": 1,
+          "avg_price": 288.7884
+        },
+        "KO": {
+          "shares": 4,
+          "avg_price": 73.1739
+        },
+        "ISP.MI": {
+          "shares": 31,
+          "avg_price": 6.112
+        },
+        "ULVR.L": {
+          "shares": 5,
+          "avg_price": 53.5801
+        },
+        "GSK.L": {
+          "shares": 13,
+          "avg_price": 23.2069
+        },
+        "ENI.MI": {
+          "shares": 13,
+          "avg_price": 22.0092
+        },
+        "ENEL.MI": {
+          "shares": 32,
+          "avg_price": 9.9026
+        },
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 286.3551
+        },
+        "MSFT": {
+          "shares": 1,
+          "avg_price": 342.9864
+        }
+      },
+      "prices_used": {
+        "AAPL": 333.02,
+        "MSFT": 381.7,
+        "GOOGL": 319.74,
+        "AMZN": 232.11,
+        "TSLA": 313.03,
+        "JPM": 353.21,
+        "NVDA": 206.84,
+        "JNJ": 263.4,
+        "V": 355.74,
+        "KO": 82.25,
+        "ULVR.L": 4575.5,
+        "HSBA.L": 1552.8,
+        "BP.L": 548.4,
+        "GSK.L": 1919.5,
+        "RIO.L": 6869.0,
+        "ENEL.MI": 9.966,
+        "ENI.MI": 22.4,
+        "ISP.MI": 6.504,
+        "LDO.MI": 53.05,
+        "MONC.MI": 48.25
+      },
+      "transactions": [
+        {
+          "action": "SELL",
+          "ticker": "LDO.MI",
+          "shares": 3,
+          "price_eur": 53.05,
+          "total_proceeds_eur": 159.15
+        }
+      ],
+      "reasoning": "AAPL: HOLD (deviation 0.0080 < 0.05)\nMSFT: HOLD (deviation 0.0054 < 0.05)\nGOOGL: HOLD (deviation 0.0000 < 0.05)\nAMZN: HOLD (deviation 0.0000 < 0.05)\nTSLA: HOLD (deviation 0.0000 < 0.05)\nJPM: HOLD (deviation 0.0000 < 0.05)\nNVDA: HOLD (deviation 0.0000 < 0.05)\nJNJ: HOLD (deviation 0.0273 < 0.05)\nV: HOLD (deviation 0.0018 < 0.05)\nKO: HOLD (deviation 0.0092 < 0.05)\nULVR.L: HOLD (deviation 0.0159 < 0.05)\nHSBA.L: HOLD (deviation 0.0000 < 0.05)\nBP.L: HOLD (deviation 0.0000 < 0.05)\nGSK.L: HOLD (deviation 0.0083 < 0.05)\nRIO.L: HOLD (deviation 0.0000 < 0.05)\nENI.MI: HOLD (deviation 0.0085 < 0.05)\nISP.MI: HOLD (deviation 0.0367 < 0.05)\nENEL.MI: HOLD (deviation 0.0002 < 0.05)\nLDO.MI: SELL 3 @ 53.05EUR (deviation 0.0500, weight 0.000)\nMONC.MI: HOLD (deviation 0.0000 < 0.05)"
     }
   ]
 }
