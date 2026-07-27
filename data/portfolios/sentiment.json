@@ -3,7 +3,7 @@
   "metadata": {
     "initial_capital": 3000.0,
     "current_cash": 202.51,
-    "price_source": "investing.com(20/20)"
+    "price_source": "investing.com(15/20)"
   },
   "current_positions": {
     "JPM": {
@@ -6619,6 +6619,97 @@
       },
       "transactions": [],
       "reasoning": "AAPL: HOLD (deviation 0.0245 < 0.05)\nMSFT: BUY skipped (1 share @ 335.47EUR > cash 202.51EUR)\nGOOGL: HOLD (deviation 0.0000 < 0.05)\nAMZN: HOLD (deviation 0.0000 < 0.05)\nTSLA: HOLD (deviation 0.0000 < 0.05)\nJPM: HOLD (deviation 0.0208 < 0.05)\nNVDA: HOLD (deviation 0.0070 < 0.05)\nJNJ: HOLD (deviation 0.0085 < 0.05)\nV: HOLD (deviation 0.0242 < 0.05)\nKO: HOLD (deviation 0.0338 < 0.05)\nULVR.L: HOLD (deviation 0.0047 < 0.05)\nHSBA.L: HOLD (deviation 0.0210 < 0.05)\nBP.L: HOLD (deviation 0.0024 < 0.05)\nGSK.L: HOLD (deviation 0.0057 < 0.05)\nRIO.L: HOLD (deviation 0.0044 < 0.05)\nENI.MI: HOLD (deviation 0.0025 < 0.05)\nISP.MI: HOLD (deviation 0.0035 < 0.05)\nENEL.MI: HOLD (deviation 0.0008 < 0.05)\nLDO.MI: HOLD (deviation 0.0054 < 0.05)\nMONC.MI: HOLD (deviation 0.0100 < 0.05)"
+    },
+    {
+      "timestamp": "2026-07-27T10:09:57.059306+00:00",
+      "session": "sera",
+      "total_value_eur": 2436.16,
+      "current_cash": 202.51,
+      "positions": {
+        "JPM": {
+          "shares": 1,
+          "avg_price": 293.7645
+        },
+        "JNJ": {
+          "shares": 1,
+          "avg_price": 210.191
+        },
+        "ENI.MI": {
+          "shares": 8,
+          "avg_price": 21.075
+        },
+        "ISP.MI": {
+          "shares": 29,
+          "avg_price": 6.112
+        },
+        "ENEL.MI": {
+          "shares": 18,
+          "avg_price": 9.846
+        },
+        "LDO.MI": {
+          "shares": 3,
+          "avg_price": 48.06
+        },
+        "MONC.MI": {
+          "shares": 3,
+          "avg_price": 50.64
+        },
+        "KO": {
+          "shares": 1,
+          "avg_price": 73.9864
+        },
+        "V": {
+          "shares": 1,
+          "avg_price": 305.2659
+        },
+        "ULVR.L": {
+          "shares": 3,
+          "avg_price": 54.1768
+        },
+        "HSBA.L": {
+          "shares": 6,
+          "avg_price": 17.4775
+        },
+        "BP.L": {
+          "shares": 28,
+          "avg_price": 6.0859
+        },
+        "NVDA": {
+          "shares": 1,
+          "avg_price": 186.5852
+        },
+        "GSK.L": {
+          "shares": 7,
+          "avg_price": 22.5718
+        },
+        "RIO.L": {
+          "shares": 2,
+          "avg_price": 79.2162
+        },
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 295.9272
+        }
+      },
+      "prices_used": {
+        "AAPL": 333.02,
+        "MSFT": 381.7,
+        "GOOGL": 319.74,
+        "AMZN": 232.11,
+        "TSLA": 313.03,
+        "JPM": 353.21,
+        "NVDA": 206.84,
+        "JNJ": 263.4,
+        "V": 355.74,
+        "KO": 82.25,
+        "ULVR.L": 4575.5,
+        "HSBA.L": 1552.8,
+        "BP.L": 548.4,
+        "GSK.L": 1919.5,
+        "RIO.L": 6869.0
+      },
+      "transactions": [],
+      "reasoning": "ATTENZIONE: prezzi non disponibili per ['ENEL.MI', 'ENI.MI', 'ISP.MI', 'LDO.MI', 'MONC.MI']. Trading sospeso per questi titoli.\nAAPL: HOLD (deviation 0.0339 < 0.05)\nMSFT: BUY skipped (1 share @ 351.16EUR > cash 202.51EUR)\nGOOGL: BUY skipped (1 share @ 294.16EUR > cash 202.51EUR)\nAMZN: BUY skipped (1 share @ 213.54EUR > cash 202.51EUR)\nTSLA: HOLD (deviation 0.0000 < 0.05)\nJPM: HOLD (deviation 0.0452 < 0.05)\nNVDA: HOLD (deviation 0.0012 < 0.05)\nJNJ: HOLD (deviation 0.0158 < 0.05)\nV: HOLD (deviation 0.0486 < 0.05)\nKO: HOLD (deviation 0.0334 < 0.05)\nULVR.L: HOLD (deviation 0.0001 < 0.05)\nHSBA.L: HOLD (deviation 0.0157 < 0.05)\nBP.L: HOLD (deviation 0.0060 < 0.05)\nGSK.L: HOLD (deviation 0.0009 < 0.05)\nRIO.L: HOLD (deviation 0.0002 < 0.05)\nENI.MI: SKIP (prezzo non disponibile)\nISP.MI: SKIP (prezzo non disponibile)\nENEL.MI: SKIP (prezzo non disponibile)\nLDO.MI: SKIP (prezzo non disponibile)\nMONC.MI: SKIP (prezzo non disponibile)"
     }
   ]
 }
