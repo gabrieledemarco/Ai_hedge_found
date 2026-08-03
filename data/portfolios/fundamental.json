@@ -2,7 +2,7 @@
   "strategy": "fundamental",
   "metadata": {
     "initial_capital": 3000.0,
-    "current_cash": 343.43,
+    "current_cash": 201.19,
     "price_source": "investing.com(20/20)"
   },
   "current_positions": {
@@ -31,20 +31,36 @@
       "avg_price": 23.2069
     },
     "ENI.MI": {
-      "shares": 13,
+      "shares": 6,
       "avg_price": 22.0092
     },
     "ENEL.MI": {
-      "shares": 32,
+      "shares": 9,
       "avg_price": 9.9026
     },
     "AAPL": {
       "shares": 1,
       "avg_price": 293.3678
     },
-    "MSFT": {
+    "GOOGL": {
       "shares": 1,
-      "avg_price": 338.7795
+      "avg_price": 308.9636
+    },
+    "AMZN": {
+      "shares": 1,
+      "avg_price": 235.6115
+    },
+    "NVDA": {
+      "shares": 1,
+      "avg_price": 174.1624
+    },
+    "HSBA.L": {
+      "shares": 1,
+      "avg_price": 18.4392
+    },
+    "MONC.MI": {
+      "shares": 4,
+      "avg_price": 50.24
     }
   },
   "iterations_log": [
@@ -6690,6 +6706,151 @@
       },
       "transactions": [],
       "reasoning": "AAPL: HOLD (deviation 0.0090 < 0.05)\nMSFT: HOLD (deviation 0.0232 < 0.05)\nGOOGL: HOLD (deviation 0.0000 < 0.05)\nAMZN: HOLD (deviation 0.0000 < 0.05)\nTSLA: HOLD (deviation 0.0000 < 0.05)\nJPM: HOLD (deviation 0.0000 < 0.05)\nNVDA: HOLD (deviation 0.0000 < 0.05)\nJNJ: HOLD (deviation 0.0302 < 0.05)\nV: HOLD (deviation 0.0000 < 0.05)\nKO: HOLD (deviation 0.0034 < 0.05)\nULVR.L: HOLD (deviation 0.0158 < 0.05)\nHSBA.L: HOLD (deviation 0.0000 < 0.05)\nBP.L: HOLD (deviation 0.0000 < 0.05)\nGSK.L: HOLD (deviation 0.0125 < 0.05)\nRIO.L: HOLD (deviation 0.0000 < 0.05)\nENI.MI: HOLD (deviation 0.0075 < 0.05)\nISP.MI: HOLD (deviation 0.0398 < 0.05)\nENEL.MI: HOLD (deviation 0.0069 < 0.05)\nLDO.MI: HOLD (deviation 0.0000 < 0.05)\nMONC.MI: HOLD (deviation 0.0000 < 0.05)"
+    },
+    {
+      "timestamp": "2026-08-03T10:07:04.097426+00:00",
+      "session": "sera",
+      "total_value_eur": 3259.21,
+      "current_cash": 201.19,
+      "positions": {
+        "JNJ": {
+          "shares": 1,
+          "avg_price": 210.191
+        },
+        "V": {
+          "shares": 1,
+          "avg_price": 288.7884
+        },
+        "KO": {
+          "shares": 4,
+          "avg_price": 75.4676
+        },
+        "ISP.MI": {
+          "shares": 31,
+          "avg_price": 6.112
+        },
+        "ULVR.L": {
+          "shares": 5,
+          "avg_price": 53.5801
+        },
+        "GSK.L": {
+          "shares": 13,
+          "avg_price": 23.2069
+        },
+        "ENI.MI": {
+          "shares": 6,
+          "avg_price": 22.0092
+        },
+        "ENEL.MI": {
+          "shares": 9,
+          "avg_price": 9.9026
+        },
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 293.3678
+        },
+        "GOOGL": {
+          "shares": 1,
+          "avg_price": 308.9636
+        },
+        "AMZN": {
+          "shares": 1,
+          "avg_price": 235.6115
+        },
+        "NVDA": {
+          "shares": 1,
+          "avg_price": 174.1624
+        },
+        "HSBA.L": {
+          "shares": 1,
+          "avg_price": 18.4392
+        },
+        "MONC.MI": {
+          "shares": 4,
+          "avg_price": 50.24
+        }
+      },
+      "prices_used": {
+        "AAPL": 308.91,
+        "MSFT": 464.72,
+        "GOOGL": 356.13,
+        "AMZN": 271.58,
+        "TSLA": 311.21,
+        "JPM": 351.79,
+        "NVDA": 200.75,
+        "JNJ": 256.35,
+        "V": 366.13,
+        "KO": 87.59,
+        "ULVR.L": 4743.0,
+        "HSBA.L": 1576.0,
+        "BP.L": 552.5,
+        "GSK.L": 1931.5,
+        "RIO.L": 7174.0,
+        "ENEL.MI": 9.891,
+        "ENI.MI": 23.605,
+        "ISP.MI": 6.645,
+        "LDO.MI": 54.64,
+        "MONC.MI": 50.24
+      },
+      "transactions": [
+        {
+          "action": "SELL",
+          "ticker": "MSFT",
+          "shares": 1,
+          "price_eur": 403.1718,
+          "total_proceeds_eur": 403.17
+        },
+        {
+          "action": "BUY",
+          "ticker": "GOOGL",
+          "shares": 1,
+          "price_eur": 308.9636,
+          "total_cost_eur": 308.96
+        },
+        {
+          "action": "BUY",
+          "ticker": "AMZN",
+          "shares": 1,
+          "price_eur": 235.6115,
+          "total_cost_eur": 235.61
+        },
+        {
+          "action": "BUY",
+          "ticker": "NVDA",
+          "shares": 1,
+          "price_eur": 174.1624,
+          "total_cost_eur": 174.16
+        },
+        {
+          "action": "BUY",
+          "ticker": "HSBA.L",
+          "shares": 1,
+          "price_eur": 18.4392,
+          "total_cost_eur": 18.44
+        },
+        {
+          "action": "SELL",
+          "ticker": "ENI.MI",
+          "shares": 7,
+          "price_eur": 23.605,
+          "total_proceeds_eur": 165.23
+        },
+        {
+          "action": "SELL",
+          "ticker": "ENEL.MI",
+          "shares": 23,
+          "price_eur": 9.891,
+          "total_proceeds_eur": 227.49
+        },
+        {
+          "action": "BUY",
+          "ticker": "MONC.MI",
+          "shares": 4,
+          "price_eur": 50.24,
+          "total_cost_eur": 200.96
+        }
+      ],
+      "reasoning": "AAPL: HOLD (deviation 0.0353 < 0.05)\nMSFT: SELL 1 @ 403.17EUR (deviation 0.0728, weight 0.051)\nGOOGL: BUY 1 @ 308.96EUR (deviation 0.0578, weight 0.058)\nAMZN: BUY 1 @ 235.61EUR (deviation 0.0505, weight 0.050)\nTSLA: HOLD (deviation 0.0000 < 0.05)\nJPM: BUY skipped (1 share @ 305.20EUR > cash 202.03EUR)\nNVDA: BUY 1 @ 174.16EUR (deviation 0.0518, weight 0.052)\nJNJ: HOLD (deviation 0.0136 < 0.05)\nV: HOLD (deviation 0.0438 < 0.05)\nKO: HOLD (deviation 0.0479 < 0.05)\nULVR.L: HOLD (deviation 0.0276 < 0.05)\nHSBA.L: BUY 1 @ 18.44EUR (deviation 0.0508, weight 0.051)\nBP.L: HOLD (deviation 0.0396 < 0.05)\nGSK.L: HOLD (deviation 0.0241 < 0.05)\nRIO.L: BUY skipped (1 share @ 83.94EUR > cash 9.43EUR)\nENI.MI: SELL 7 @ 23.60EUR (deviation 0.0561, weight 0.038)\nISP.MI: HOLD (deviation 0.0003 < 0.05)\nENEL.MI: SELL 23 @ 9.89EUR (deviation 0.0713, weight 0.026)\nLDO.MI: HOLD (deviation 0.0495 < 0.05)\nMONC.MI: BUY 4 @ 50.24EUR (deviation 0.0669, weight 0.067)"
     }
   ]
 }
