@@ -10928,6 +10928,101 @@
       },
       "transactions": [],
       "reasoning": "ATTENZIONE: prezzi non disponibili per ['ENEL.MI', 'ENI.MI', 'ISP.MI', 'LDO.MI', 'MONC.MI']. Trading sospeso per questi titoli.\nAAPL: BUY skipped (1 share @ 280.84EUR > cash 147.27EUR)\nMSFT: BUY skipped (1 share @ 457.13EUR > cash 147.27EUR)\nGOOGL: BUY skipped (1 share @ 318.65EUR > cash 147.27EUR)\nAMZN: HOLD (deviation 0.0146 < 0.05)\nTSLA: HOLD (deviation 0.0394 < 0.05)\nJPM: HOLD (deviation 0.0447 < 0.05)\nNVDA: HOLD (deviation 0.0106 < 0.05)\nJNJ: HOLD (deviation 0.0214 < 0.05)\nV: HOLD (deviation 0.0471 < 0.05)\nKO: HOLD (deviation 0.0317 < 0.05)\nULVR.L: HOLD (deviation 0.0299 < 0.05)\nHSBA.L: HOLD (deviation 0.0141 < 0.05)\nBP.L: HOLD (deviation 0.0049 < 0.05)\nGSK.L: HOLD (deviation 0.0008 < 0.05)\nRIO.L: HOLD (deviation 0.0039 < 0.05)\nENI.MI: SKIP (prezzo non disponibile)\nISP.MI: SKIP (prezzo non disponibile)\nENEL.MI: SKIP (prezzo non disponibile)\nLDO.MI: SKIP (prezzo non disponibile)\nMONC.MI: SKIP (prezzo non disponibile)"
+    },
+    {
+      "timestamp": "2026-08-14T20:54:15.155253+00:00",
+      "session": "sera",
+      "total_value_eur": 2554.87,
+      "current_cash": 147.27,
+      "positions": {
+        "ENI.MI": {
+          "shares": 8,
+          "avg_price": 21.075
+        },
+        "ISP.MI": {
+          "shares": 29,
+          "avg_price": 6.112
+        },
+        "ENEL.MI": {
+          "shares": 18,
+          "avg_price": 9.846
+        },
+        "LDO.MI": {
+          "shares": 3,
+          "avg_price": 48.06
+        },
+        "MONC.MI": {
+          "shares": 3,
+          "avg_price": 50.64
+        },
+        "KO": {
+          "shares": 1,
+          "avg_price": 73.9864
+        },
+        "ULVR.L": {
+          "shares": 1,
+          "avg_price": 54.1768
+        },
+        "HSBA.L": {
+          "shares": 6,
+          "avg_price": 17.4775
+        },
+        "NVDA": {
+          "shares": 1,
+          "avg_price": 186.5852
+        },
+        "GSK.L": {
+          "shares": 7,
+          "avg_price": 22.5718
+        },
+        "RIO.L": {
+          "shares": 2,
+          "avg_price": 79.2162
+        },
+        "V": {
+          "shares": 1,
+          "avg_price": 339.0568
+        },
+        "AMZN": {
+          "shares": 1,
+          "avg_price": 250.4792
+        },
+        "JPM": {
+          "shares": 1,
+          "avg_price": 309.182
+        },
+        "JNJ": {
+          "shares": 1,
+          "avg_price": 224.1898
+        },
+        "BP.L": {
+          "shares": 28,
+          "avg_price": 6.2726
+        },
+        "TSLA": {
+          "shares": 1,
+          "avg_price": 284.1142
+        }
+      },
+      "prices_used": {
+        "AAPL": 305.26,
+        "MSFT": 496.88,
+        "GOOGL": 346.36,
+        "AMZN": 265.13,
+        "TSLA": 339.96,
+        "JPM": 363.11,
+        "NVDA": 225.3,
+        "JNJ": 262.08,
+        "V": 365.45,
+        "KO": 87.42,
+        "ULVR.L": 4628.5,
+        "HSBA.L": 1525.8,
+        "BP.L": 522.4,
+        "GSK.L": 1856.5,
+        "RIO.L": 7166.0
+      },
+      "transactions": [],
+      "reasoning": "ATTENZIONE: prezzi non disponibili per ['ENEL.MI', 'ENI.MI', 'ISP.MI', 'LDO.MI', 'MONC.MI']. Trading sospeso per questi titoli.\nAAPL: BUY skipped (1 share @ 280.84EUR > cash 147.27EUR)\nMSFT: BUY skipped (1 share @ 457.13EUR > cash 147.27EUR)\nGOOGL: BUY skipped (1 share @ 318.65EUR > cash 147.27EUR)\nAMZN: HOLD (deviation 0.0147 < 0.05)\nTSLA: HOLD (deviation 0.0395 < 0.05)\nJPM: HOLD (deviation 0.0449 < 0.05)\nNVDA: HOLD (deviation 0.0107 < 0.05)\nJNJ: HOLD (deviation 0.0215 < 0.05)\nV: HOLD (deviation 0.0473 < 0.05)\nKO: HOLD (deviation 0.0316 < 0.05)\nULVR.L: HOLD (deviation 0.0300 < 0.05)\nHSBA.L: HOLD (deviation 0.0143 < 0.05)\nBP.L: HOLD (deviation 0.0046 < 0.05)\nGSK.L: HOLD (deviation 0.0010 < 0.05)\nRIO.L: HOLD (deviation 0.0036 < 0.05)\nENI.MI: SKIP (prezzo non disponibile)\nISP.MI: SKIP (prezzo non disponibile)\nENEL.MI: SKIP (prezzo non disponibile)\nLDO.MI: SKIP (prezzo non disponibile)\nMONC.MI: SKIP (prezzo non disponibile)"
     }
   ]
 }
