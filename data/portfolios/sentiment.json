@@ -2,8 +2,8 @@
   "strategy": "sentiment",
   "metadata": {
     "initial_capital": 3000.0,
-    "current_cash": 230.9,
-    "price_source": "investing.com(20/20)"
+    "current_cash": 411.94,
+    "price_source": "investing.com(15/20)"
   },
   "current_positions": {
     "ENI.MI": {
@@ -46,10 +46,6 @@
       "shares": 2,
       "avg_price": 79.2162
     },
-    "V": {
-      "shares": 1,
-      "avg_price": 339.0568
-    },
     "JNJ": {
       "shares": 1,
       "avg_price": 224.1898
@@ -70,9 +66,9 @@
       "shares": 1,
       "avg_price": 191.8016
     },
-    "AAPL": {
+    "MSFT": {
       "shares": 1,
-      "avg_price": 285.108
+      "avg_price": 460.9384
     }
   },
   "iterations_log": [
@@ -14601,6 +14597,119 @@
       },
       "transactions": [],
       "reasoning": "AAPL: HOLD (deviation 0.0287 < 0.05)\nMSFT: BUY skipped (1 share @ 466.71EUR > cash 230.90EUR)\nGOOGL: HOLD (deviation 0.0381 < 0.05)\nAMZN: HOLD (deviation 0.0185 < 0.05)\nTSLA: BUY skipped (1 share @ 338.51EUR > cash 230.90EUR)\nJPM: BUY skipped (1 share @ 327.54EUR > cash 230.90EUR)\nNVDA: HOLD (deviation 0.0004 < 0.05)\nJNJ: HOLD (deviation 0.0199 < 0.05)\nV: HOLD (deviation 0.0476 < 0.05)\nKO: HOLD (deviation 0.0286 < 0.05)\nULVR.L: HOLD (deviation 0.0307 < 0.05)\nHSBA.L: HOLD (deviation 0.0159 < 0.05)\nBP.L: HOLD (deviation 0.0018 < 0.05)\nGSK.L: HOLD (deviation 0.0031 < 0.05)\nRIO.L: HOLD (deviation 0.0050 < 0.05)\nENI.MI: HOLD (deviation 0.0080 < 0.05)\nISP.MI: HOLD (deviation 0.0091 < 0.05)\nENEL.MI: HOLD (deviation 0.0013 < 0.05)\nLDO.MI: HOLD (deviation 0.0025 < 0.05)\nMONC.MI: HOLD (deviation 0.0068 < 0.05)"
+    },
+    {
+      "timestamp": "2026-09-02T11:16:47.774635+00:00",
+      "session": "sera",
+      "total_value_eur": 2615.01,
+      "current_cash": 411.94,
+      "positions": {
+        "ENI.MI": {
+          "shares": 8,
+          "avg_price": 21.075
+        },
+        "ISP.MI": {
+          "shares": 29,
+          "avg_price": 6.112
+        },
+        "ENEL.MI": {
+          "shares": 18,
+          "avg_price": 9.846
+        },
+        "LDO.MI": {
+          "shares": 3,
+          "avg_price": 48.06
+        },
+        "MONC.MI": {
+          "shares": 3,
+          "avg_price": 50.64
+        },
+        "KO": {
+          "shares": 1,
+          "avg_price": 73.9864
+        },
+        "ULVR.L": {
+          "shares": 1,
+          "avg_price": 54.1768
+        },
+        "HSBA.L": {
+          "shares": 6,
+          "avg_price": 17.4775
+        },
+        "GSK.L": {
+          "shares": 7,
+          "avg_price": 22.5718
+        },
+        "RIO.L": {
+          "shares": 2,
+          "avg_price": 79.2162
+        },
+        "JNJ": {
+          "shares": 1,
+          "avg_price": 224.1898
+        },
+        "BP.L": {
+          "shares": 28,
+          "avg_price": 6.2726
+        },
+        "AMZN": {
+          "shares": 1,
+          "avg_price": 240.4052
+        },
+        "GOOGL": {
+          "shares": 1,
+          "avg_price": 316.664
+        },
+        "NVDA": {
+          "shares": 1,
+          "avg_price": 191.8016
+        },
+        "MSFT": {
+          "shares": 1,
+          "avg_price": 460.9384
+        }
+      },
+      "prices_used": {
+        "AAPL": 325.13,
+        "MSFT": 501.02,
+        "GOOGL": 335.02,
+        "AMZN": 254.92,
+        "TSLA": 356.09,
+        "JPM": 354.95,
+        "NVDA": 217.44,
+        "JNJ": 271.19,
+        "V": 372.67,
+        "KO": 88.0,
+        "ULVR.L": 4811.0,
+        "HSBA.L": 1533.4,
+        "BP.L": 541.3,
+        "GSK.L": 1871.5,
+        "RIO.L": 7581.0
+      },
+      "transactions": [
+        {
+          "action": "SELL",
+          "ticker": "AAPL",
+          "shares": 1,
+          "price_eur": 299.1196,
+          "total_proceeds_eur": 299.12
+        },
+        {
+          "action": "BUY",
+          "ticker": "MSFT",
+          "shares": 1,
+          "price_eur": 460.9384,
+          "total_cost_eur": 460.94
+        },
+        {
+          "action": "SELL",
+          "ticker": "V",
+          "shares": 1,
+          "price_eur": 342.8564,
+          "total_proceeds_eur": 342.86
+        }
+      ],
+      "reasoning": "ATTENZIONE: prezzi non disponibili per ['ENEL.MI', 'ENI.MI', 'ISP.MI', 'LDO.MI', 'MONC.MI']. Trading sospeso per questi titoli.\nAAPL: SELL 1 @ 299.12EUR (deviation 0.0871, weight 0.000)\nMSFT: BUY 1 @ 460.94EUR (deviation 0.0666, weight 0.067)\nGOOGL: HOLD (deviation 0.0270 < 0.05)\nAMZN: HOLD (deviation 0.0100 < 0.05)\nTSLA: HOLD (deviation 0.0000 < 0.05)\nJPM: BUY skipped (1 share @ 326.55EUR > cash 69.08EUR)\nNVDA: HOLD (deviation 0.0046 < 0.05)\nJNJ: HOLD (deviation 0.0127 < 0.05)\nV: SELL 1 @ 342.86EUR (deviation 0.0998, weight 0.000)\nKO: HOLD (deviation 0.0368 < 0.05)\nULVR.L: HOLD (deviation 0.0406 < 0.05)\nHSBA.L: HOLD (deviation 0.0257 < 0.05)\nBP.L: HOLD (deviation 0.0055 < 0.05)\nGSK.L: HOLD (deviation 0.0125 < 0.05)\nRIO.L: HOLD (deviation 0.0055 < 0.05)\nENI.MI: SKIP (prezzo non disponibile)\nISP.MI: SKIP (prezzo non disponibile)\nENEL.MI: SKIP (prezzo non disponibile)\nLDO.MI: SKIP (prezzo non disponibile)\nMONC.MI: SKIP (prezzo non disponibile)"
     }
   ]
 }
