@@ -1,72 +1,72 @@
 {
   "sentiment": {
     "AAPL": {
-      "score": 0.1489,
-      "av_score": 0.155,
-      "finbert_score": 0.1348,
+      "score": 0.0614,
+      "av_score": 0.1452,
+      "finbert_score": -0.1342,
       "label": "Bullish",
       "num_articles": 50
     },
     "MSFT": {
-      "score": 0.0815,
-      "av_score": 0.1949,
-      "finbert_score": -0.1832,
+      "score": 0.1695,
+      "av_score": 0.1712,
+      "finbert_score": 0.1656,
       "label": "Bullish",
       "num_articles": 50
     },
     "GOOGL": {
-      "score": 0.0411,
-      "av_score": 0.0563,
-      "finbert_score": 0.0055,
+      "score": 0.1087,
+      "av_score": 0.0751,
+      "finbert_score": 0.187,
       "label": "Neutral",
       "num_articles": 50
     },
     "AMZN": {
-      "score": 0.1648,
-      "av_score": 0.1648,
+      "score": 0.1855,
+      "av_score": 0.1855,
       "finbert_score": 0.0,
       "label": "Bullish",
       "num_articles": 50
     },
     "TSLA": {
-      "score": -0.0358,
-      "av_score": -0.0942,
-      "finbert_score": 0.1006,
+      "score": 0.0649,
+      "av_score": -0.056,
+      "finbert_score": 0.3469,
       "label": "Neutral",
       "num_articles": 50
     },
     "JPM": {
-      "score": 0.1686,
-      "av_score": 0.1686,
-      "finbert_score": 0.0,
+      "score": 0.0488,
+      "av_score": 0.1447,
+      "finbert_score": -0.1751,
       "label": "Bullish",
       "num_articles": 50
     },
     "NVDA": {
-      "score": 0.1841,
-      "av_score": 0.1841,
+      "score": 0.1617,
+      "av_score": 0.1617,
       "finbert_score": 0.0,
       "label": "Bullish",
       "num_articles": 50
     },
     "JNJ": {
-      "score": 0.0317,
-      "av_score": 0.1272,
-      "finbert_score": -0.191,
+      "score": 0.0577,
+      "av_score": 0.11,
+      "finbert_score": -0.0643,
       "label": "Bullish",
       "num_articles": 50
     },
     "V": {
-      "score": 0.201,
-      "av_score": 0.201,
-      "finbert_score": 0.0,
+      "score": 0.21,
+      "av_score": 0.1931,
+      "finbert_score": 0.2494,
       "label": "Bullish",
       "num_articles": 50
     },
     "KO": {
-      "score": 0.2175,
-      "av_score": 0.2309,
-      "finbert_score": 0.1861,
+      "score": 0.2314,
+      "av_score": 0.2314,
+      "finbert_score": 0.0,
       "label": "Bullish",
       "num_articles": 50
     },
@@ -285,6 +285,6 @@
       "return_1m": 0.0
     }
   },
-  "sentiment_updated": "2026-09-08T10:00:20.143336+00:00",
-  "fundamentals_updated": "2026-09-08T09:56:01.640220+00:00"
+  "sentiment_updated": "2026-09-09T10:03:47.416908+00:00",
+  "fundamentals_updated": "2026-09-09T09:59:26.012087+00:00"
 }
