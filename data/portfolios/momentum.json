@@ -2,7 +2,7 @@
   "strategy": "momentum",
   "metadata": {
     "initial_capital": 3000.0,
-    "current_cash": 602.17,
+    "current_cash": 47.18,
     "price_source": "investing.com(15/20)"
   },
   "current_positions": {
@@ -41,6 +41,14 @@
     "ISP.MI": {
       "shares": 43,
       "avg_price": 6.698
+    },
+    "GOOGL": {
+      "shares": 1,
+      "avg_price": 321.5768
+    },
+    "AMZN": {
+      "shares": 1,
+      "avg_price": 233.4132
     }
   },
   "iterations_log": [
@@ -14326,6 +14334,92 @@
         }
       ],
       "reasoning": "ATTENZIONE: prezzi non disponibili per ['ENEL.MI', 'ENI.MI', 'ISP.MI', 'LDO.MI', 'MONC.MI']. Trading sospeso per questi titoli.\nAAPL: HOLD (deviation 0.0034 < 0.05)\nMSFT: HOLD (deviation 0.0419 < 0.05)\nGOOGL: BUY skipped (1 share @ 321.58EUR > cash 7.55EUR)\nAMZN: BUY skipped (1 share @ 233.41EUR > cash 7.55EUR)\nTSLA: BUY skipped (1 share @ 335.13EUR > cash 7.55EUR)\nJPM: HOLD (deviation 0.0005 < 0.05)\nNVDA: BUY skipped (1 share @ 204.49EUR > cash 7.55EUR)\nJNJ: HOLD (deviation 0.0224 < 0.05)\nV: HOLD (deviation 0.0058 < 0.05)\nKO: HOLD (deviation 0.0014 < 0.05)\nULVR.L: HOLD (deviation 0.0000 < 0.05)\nHSBA.L: SELL 16 @ 17.63EUR (deviation 0.0881, weight 0.000)\nBP.L: SELL 48 @ 6.51EUR (deviation 0.0976, weight 0.000)\nGSK.L: HOLD (deviation 0.0068 < 0.05)\nRIO.L: HOLD (deviation 0.0000 < 0.05)\nENI.MI: SKIP (prezzo non disponibile)\nISP.MI: SKIP (prezzo non disponibile)\nENEL.MI: SKIP (prezzo non disponibile)\nLDO.MI: SKIP (prezzo non disponibile)\nMONC.MI: SKIP (prezzo non disponibile)"
+    },
+    {
+      "timestamp": "2026-09-21T20:00:55.686108+00:00",
+      "session": "sera",
+      "total_value_eur": 2621.24,
+      "current_cash": 47.18,
+      "positions": {
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 258.7385
+        },
+        "JPM": {
+          "shares": 1,
+          "avg_price": 293.7645
+        },
+        "V": {
+          "shares": 1,
+          "avg_price": 288.7884
+        },
+        "JNJ": {
+          "shares": 1,
+          "avg_price": 238.5836
+        },
+        "MSFT": {
+          "shares": 1,
+          "avg_price": 361.882
+        },
+        "GSK.L": {
+          "shares": 1,
+          "avg_price": 22.5985
+        },
+        "KO": {
+          "shares": 4,
+          "avg_price": 80.8036
+        },
+        "ENI.MI": {
+          "shares": 12,
+          "avg_price": 24.43
+        },
+        "ISP.MI": {
+          "shares": 43,
+          "avg_price": 6.698
+        },
+        "GOOGL": {
+          "shares": 1,
+          "avg_price": 321.5768
+        },
+        "AMZN": {
+          "shares": 1,
+          "avg_price": 233.4132
+        }
+      },
+      "prices_used": {
+        "AAPL": 336.13,
+        "MSFT": 493.78,
+        "GOOGL": 349.54,
+        "AMZN": 253.71,
+        "TSLA": 364.27,
+        "JPM": 349.67,
+        "NVDA": 222.27,
+        "JNJ": 269.99,
+        "V": 368.29,
+        "KO": 88.25,
+        "ULVR.L": 4621.0,
+        "HSBA.L": 1512.6,
+        "BP.L": 558.7,
+        "GSK.L": 1877.5,
+        "RIO.L": 7218.0
+      },
+      "transactions": [
+        {
+          "action": "BUY",
+          "ticker": "GOOGL",
+          "shares": 1,
+          "price_eur": 321.5768,
+          "total_cost_eur": 321.58
+        },
+        {
+          "action": "BUY",
+          "ticker": "AMZN",
+          "shares": 1,
+          "price_eur": 233.4132,
+          "total_cost_eur": 233.41
+        }
+      ],
+      "reasoning": "ATTENZIONE: prezzi non disponibili per ['ENEL.MI', 'ENI.MI', 'ISP.MI', 'LDO.MI', 'MONC.MI']. Trading sospeso per questi titoli.\nAAPL: HOLD (deviation 0.0034 < 0.05)\nMSFT: HOLD (deviation 0.0419 < 0.05)\nGOOGL: BUY 1 @ 321.58EUR (deviation 0.1000, weight 0.100)\nAMZN: BUY 1 @ 233.41EUR (deviation 0.1000, weight 0.100)\nTSLA: BUY skipped (1 share @ 335.13EUR > cash 47.18EUR)\nJPM: HOLD (deviation 0.0005 < 0.05)\nNVDA: BUY skipped (1 share @ 204.49EUR > cash 47.18EUR)\nJNJ: HOLD (deviation 0.0224 < 0.05)\nV: HOLD (deviation 0.0058 < 0.05)\nKO: HOLD (deviation 0.0014 < 0.05)\nULVR.L: HOLD (deviation 0.0000 < 0.05)\nHSBA.L: HOLD (deviation 0.0000 < 0.05)\nBP.L: HOLD (deviation 0.0000 < 0.05)\nGSK.L: HOLD (deviation 0.0068 < 0.05)\nRIO.L: HOLD (deviation 0.0000 < 0.05)\nENI.MI: SKIP (prezzo non disponibile)\nISP.MI: SKIP (prezzo non disponibile)\nENEL.MI: SKIP (prezzo non disponibile)\nLDO.MI: SKIP (prezzo non disponibile)\nMONC.MI: SKIP (prezzo non disponibile)"
     }
   ]
 }
