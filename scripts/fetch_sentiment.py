@@ -2,7 +2,7 @@ import os
 import json
 import time
 import requests
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 AV_KEY = os.environ.get("ALPHA_VANTAGE_KEY", "")
 
@@ -66,25 +66,37 @@ def fetch_av_news_sentiment(ticker: str) -> dict:
         return {"score": 0.0, "label": "neutral", "num_articles": 0, "headlines": []}
 
 
-def run_finbert_on_headlines(headlines: list) -> float:
-    """
-    Run FinBERT on a list of headlines. Returns mean score in [-1, 1].
-    Lazy-loads the model (only if called).
-    Returns 0.0 if no headlines or if transformers is not available.
-    """
-    if not headlines:
-        return 0.0
-    try:
+_FINBERT = None
+
+
+def _get_finbert():
+    """Carica FinBERT una sola volta per processo (prima veniva ricaricato, ~400 MB,
+    per ognuno dei 20 ticker)."""
+    global _FINBERT
+    if _FINBERT is None:
         from transformers import pipeline as hf_pipeline
 
         print("[INFO] Loading FinBERT model...")
-        finbert = hf_pipeline(
+        _FINBERT = hf_pipeline(
             "text-classification",
             model="ProsusAI/finbert",
             truncation=True,
             max_length=512,
             device=-1,  # CPU
         )
+    return _FINBERT
+
+
+def run_finbert_on_headlines(headlines: list) -> float:
+    """
+    Run FinBERT on a list of headlines. Returns mean score in [-1, 1].
+    Lazy-loads the model once (only if called).
+    Returns 0.0 if no headlines or if transformers is not available.
+    """
+    if not headlines:
+        return 0.0
+    try:
+        finbert = _get_finbert()
         scores = []
         for headline in headlines:
             if not headline.strip():
@@ -99,8 +111,8 @@ def run_finbert_on_headlines(headlines: list) -> float:
                     scores.append(-conf)
                 else:
                     scores.append(0.0)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[WARN] FinBERT inference failed on a headline: {e}")
         return round(sum(scores) / len(scores), 4) if scores else 0.0
     except ImportError:
         print("[WARN] transformers not installed, skipping FinBERT")
@@ -110,18 +122,59 @@ def run_finbert_on_headlines(headlines: list) -> float:
         return 0.0
 
 
-def fetch_all_sentiment(universe: dict) -> dict:
+RECHECK_DAYS = 7
+
+
+def _recently_empty(previous: dict, now: datetime, recheck_days: int) -> bool:
+    """True se un controllo recente ha dato 0 articoli: inutile sprecare una delle
+    25 richieste giornaliere di Alpha Vantage per richiederlo ogni giorno."""
+    if not previous or previous.get("num_articles", 0) > 0:
+        return False
+    checked = previous.get("checked_at")
+    if not checked:
+        return False  # voce vecchia senza data: ricontrolla e metti il timbro
+    try:
+        when = datetime.fromisoformat(checked)
+    except ValueError:
+        return False
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    return now - when < timedelta(days=recheck_days)
+
+
+def fetch_all_sentiment(
+    universe: dict,
+    previous: dict | None = None,
+    recheck_days: int = RECHECK_DAYS,
+    now: datetime | None = None,
+) -> dict:
     """
     Fetch sentiment for all tickers in universe.
     Combines Alpha Vantage score (70%) + FinBERT score (30%) if headlines available.
     Respects AV rate limit: 13s sleep between requests.
+
+    I ticker che nell'ultimo controllo (entro `recheck_days`) non avevano articoli
+    non vengono richiesti di nuovo: con i titoli europei non coperti da Alpha
+    Vantage si risparmiano ~10 delle 25 richieste giornaliere.
     """
+    previous = previous or {}
+    now = now or datetime.now(timezone.utc)
     results = {}
     tickers = list(universe.keys())
 
     print(f"[INFO] Fetching sentiment for {len(tickers)} tickers...")
+    called = 0
     for i, ticker in enumerate(tickers):
+        prev = previous.get(ticker)
+        if _recently_empty(prev, now, recheck_days):
+            print(f"  [{i+1}/{len(tickers)}] {ticker}: nessun articolo di recente, salto")
+            results[ticker] = prev
+            continue
+
         print(f"  [{i+1}/{len(tickers)}] {ticker}...")
+        if called:
+            time.sleep(13)  # 5 req/min sul piano gratuito AV
+        called += 1
         av_data = fetch_av_news_sentiment(ticker)
 
         # Combine AV score with FinBERT
@@ -143,11 +196,8 @@ def fetch_all_sentiment(universe: dict) -> dict:
             "finbert_score": finbert_score,
             "label": av_data["label"],
             "num_articles": av_data["num_articles"],
+            "checked_at": now.isoformat(),
         }
-
-        # Rate limiting: 5 req/min AV free tier
-        if i < len(tickers) - 1:
-            time.sleep(13)
 
     return results
 
@@ -158,8 +208,6 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(__file__))
     from config import UNIVERSE
 
-    sentiment = fetch_all_sentiment(UNIVERSE)
-
     signals_path = os.path.join(
         os.path.dirname(__file__), "..", "data", "signals.json"
     )
@@ -168,6 +216,8 @@ if __name__ == "__main__":
             signals = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         signals = {}
+
+    sentiment = fetch_all_sentiment(UNIVERSE, previous=signals.get("sentiment"))
 
     signals["sentiment"] = sentiment
     signals["sentiment_updated"] = datetime.now(timezone.utc).isoformat()

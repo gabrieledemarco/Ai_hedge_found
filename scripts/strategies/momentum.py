@@ -1,4 +1,5 @@
 from .base import BaseStrategy
+from .signal_utils import has_momentum
 
 
 class MomentumStrategy(BaseStrategy):
@@ -8,11 +9,13 @@ class MomentumStrategy(BaseStrategy):
     def compute_weights(self, universe: dict, prices: dict, signals: dict) -> dict:
         momentum_data = signals.get("momentum", {})
 
-        scored = []
-        for ticker in universe:
-            ret_3m = momentum_data.get(ticker, {}).get("return_3m", 0.0)
-            scored.append((ticker, ret_3m))
-
+        # Solo titoli con un rendimento realmente calcolato: un segnale mancante
+        # non e' "0%", e trattarlo cosi' ridurrebbe la selezione all'ordine dell'universo.
+        scored = [
+            (ticker, momentum_data[ticker]["return_3m"])
+            for ticker in universe
+            if has_momentum(momentum_data.get(ticker))
+        ]
         scored.sort(key=lambda x: x[1], reverse=True)
         top = scored[: self.top_n]
 

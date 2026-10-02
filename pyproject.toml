@@ -1,0 +1,15 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["docs"]
+
+[tool.ruff.lint]
+# Regole minime e a basso rumore: errori di sintassi e di logica (pyflakes).
+select = ["E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+# Warning preesistenti nel generatore di dashboard, fuori scopo di questa PR.
+"scripts/dashboard_generator.py" = ["F401", "F841"]

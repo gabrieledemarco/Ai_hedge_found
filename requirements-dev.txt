@@ -1,0 +1,7 @@
+# Dipendenze per test e lint (nessun torch/transformers: i test non usano FinBERT)
+-r requirements-web.txt
+numpy
+requests==2.32.3
+investiny>=0.1.2
+pytest>=8
+ruff>=0.5

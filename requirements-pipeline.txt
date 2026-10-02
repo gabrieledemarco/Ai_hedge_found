@@ -1,0 +1,6 @@
+# Dipendenze della pipeline di trading (paper_trading.yml): niente torch/transformers,
+# che servono solo ad analisi di mercato (FinBERT) e sono pesanti da installare.
+requests==2.32.3
+yfinance==0.2.54
+pandas==2.2.3
+matplotlib==3.10.1

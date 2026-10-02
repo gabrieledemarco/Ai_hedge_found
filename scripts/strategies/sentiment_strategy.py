@@ -1,4 +1,5 @@
 from .base import BaseStrategy
+from .signal_utils import has_sentiment
 
 # Tickers con sentiment storicamente positivo usati come fallback
 # quando signals.json non è ancora disponibile.
@@ -15,10 +16,7 @@ class SentimentStrategy(BaseStrategy):
 
     def compute_weights(self, universe: dict, prices: dict, signals: dict) -> dict:
         sentiment_data = signals.get("sentiment", {})
-        has_real_data = any(
-            sentiment_data.get(t, {}).get("num_articles", 0) > 0
-            for t in universe
-        )
+        has_real_data = any(has_sentiment(sentiment_data.get(t)) for t in universe)
 
         if not has_real_data:
             # Fallback: equal weight su selezione growth pre-definita
@@ -29,7 +27,10 @@ class SentimentStrategy(BaseStrategy):
 
         positive = {}
         for ticker in universe:
-            score = sentiment_data.get(ticker, {}).get("score", 0.0)
+            data = sentiment_data.get(ticker, {})
+            if not has_sentiment(data):
+                continue  # nessun articolo = nessun dato, non "neutrale"
+            score = data.get("score", 0.0)
             if score >= self.min_score:  # >= include neutrali (0.0)
                 positive[ticker] = score + 1.0  # shift to [1, 2]
 

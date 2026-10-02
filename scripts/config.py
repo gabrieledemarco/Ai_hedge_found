@@ -34,3 +34,22 @@ STRATEGY_LABELS = {
 }
 
 FX_FALLBACK = {"USD": 0.92, "GBP": 1.17, "GBp": 0.0117, "EUR": 1.0}
+
+# Costo di transazione simulato (commissione + slippage), in punti base sul
+# controvalore di ogni ordine. 10 bps = 0.10%. Applicato solo ai nuovi trade.
+TRANSACTION_COST_BPS = 10.0
+
+# Tasso risk-free annuo usato per Sharpe/Sortino (approssimazione BTP/Bund breve).
+RISK_FREE_RATE = 0.02
+
+# Benchmark confrontati con le strategie (ticker Yahoo Finance -> etichetta).
+# Sono serie "total return" (prezzi aggiustati / ETF ad accumulazione): i dividendi sono
+# gia' reinvestiti. Quelli in valuta estera vengono convertiti in EUR con i cambi storici.
+BENCHMARKS = {
+    "SWDA.MI": "MSCI World (EUR)",
+    "SPY": "S&P 500 (in EUR)",
+}
+BENCHMARK_CURRENCIES = {"SWDA.MI": "EUR", "SPY": "USD"}
+
+# Ticker Yahoo per lo storico dei cambi verso EUR (usati per ricostruire l'equity).
+FX_HISTORY_TICKERS = {"USD": "USDEUR=X", "GBP": "GBPEUR=X"}

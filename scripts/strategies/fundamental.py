@@ -1,4 +1,5 @@
 from .base import BaseStrategy
+from .signal_utils import has_fundamental
 
 # Tickers con fondamentali storicamente solidi usati come fallback
 # quando signals.json non è ancora disponibile. Diverso da equal_weight
@@ -15,11 +16,7 @@ class FundamentalStrategy(BaseStrategy):
 
     def compute_weights(self, universe: dict, prices: dict, signals: dict) -> dict:
         fundamentals = signals.get("fundamentals", {})
-        has_real_data = any(
-            fundamentals.get(t, {}).get("f_score") is not None
-            and fundamentals[t].get("f_score") != 0.5
-            for t in universe
-        )
+        has_real_data = any(has_fundamental(fundamentals.get(t)) for t in universe)
 
         if not has_real_data:
             # Fallback: equal weight su selezione quality pre-definita
@@ -30,9 +27,9 @@ class FundamentalStrategy(BaseStrategy):
 
         raw = {}
         for ticker in universe:
-            f_score = fundamentals.get(ticker, {}).get("f_score", 0.0)
-            if f_score >= self.min_score:
-                raw[ticker] = f_score
+            entry = fundamentals.get(ticker)
+            if has_fundamental(entry) and entry["f_score"] >= self.min_score:
+                raw[ticker] = entry["f_score"]
 
         if not raw:
             return {t: 1.0 / len(universe) for t in universe}

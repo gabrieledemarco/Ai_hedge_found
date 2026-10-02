@@ -29,6 +29,7 @@ import matplotlib.dates as mdates
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 
 from config import UNIVERSE, STRATEGIES, STRATEGY_LABELS, FX_FALLBACK, INITIAL_CAPITAL
+from metrics import history_metrics
 
 PORTFOLIOS_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "portfolios")
 LEGACY_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "portfolio_history.json")
@@ -110,46 +111,7 @@ def load_portfolio() -> dict[str, Any]:
 # ── Metrics ───────────────────────────────────────────────────────────────────
 
 def _compute_metrics(history: list[dict]) -> dict[str, Any]:
-    if not history:
-        return {}
-    values = [e["total_value_eur"] for e in history]
-    initial = history[0].get("total_value_eur", values[0])
-    final = values[-1]
-    total_return = (final - initial) / initial * 100 if initial else 0
-    n = len(values)
-
-    daily_rets = [(values[i] - values[i - 1]) / values[i - 1] * 100
-                  for i in range(1, len(values)) if values[i - 1] > 0]
-    n_days = len(daily_rets)
-    avg_dr = sum(daily_rets) / n_days if n_days else 0
-    daily_vol = math.sqrt(sum((r - avg_dr) ** 2 for r in daily_rets) / n_days) if n_days else 0
-    ann_return = total_return / n * 252 if n else 0
-    ann_vol = daily_vol * math.sqrt(252)
-    sharpe = ann_return / ann_vol if ann_vol else 0
-
-    peak, max_dd = values[0], 0.0
-    for v in values:
-        peak = max(peak, v)
-        max_dd = max(max_dd, (peak - v) / peak * 100)
-    calmar = ann_return / max_dd if max_dd else 0
-
-    gains = [r for r in daily_rets if r > 0]
-    losses = [r for r in daily_rets if r < 0]
-    win_rate = len(gains) / n_days * 100 if n_days else 0
-    profit_factor = abs(sum(gains) / sum(losses)) if losses and sum(losses) != 0 else float("inf")
-
-    return {
-        "total_return": total_return,
-        "ann_return": ann_return,
-        "ann_vol": ann_vol,
-        "sharpe": sharpe,
-        "max_drawdown": max_dd,
-        "calmar": calmar,
-        "win_rate": win_rate,
-        "profit_factor": profit_factor,
-        "values": values,
-        "n_entries": n,
-    }
+    return history_metrics(history)
 
 
 # ── Chart builders ────────────────────────────────────────────────────────────

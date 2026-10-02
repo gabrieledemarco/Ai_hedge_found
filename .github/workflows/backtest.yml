@@ -1,0 +1,37 @@
+name: Backtest
+
+on:
+  workflow_dispatch:
+    inputs:
+      years:
+        description: "Anni di storico"
+        default: "5"
+  schedule:
+    - cron: "0 6 1 * *"  # primo del mese
+
+permissions:
+  contents: write
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: python scripts/backtest.py --years "${{ github.event.inputs.years || '5' }}"
+      - name: Commit results
+        run: |
+          git config user.name "Backtest Bot"
+          git config user.email "bot@paper-trading.local"
+          git add docs/backtest.json docs/backtest.md docs/backtest.png
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "chore: backtest update $(date -u '+%Y-%m-%d')"
+            git push
+          fi

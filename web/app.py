@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import traceback
@@ -9,16 +10,54 @@ from flask import Flask, jsonify
 from web.live_dashboard import build_live_html, load_all_portfolios
 from web.price_cache import get_live_prices
 from config import UNIVERSE  # Fixed: was incorrectly importing from main_pipeline
+from dashboard_data import build_payload
+from dashboard_generator import build_html
+from price_history import load_price_history
+from signals_utils import enrich_signals
 
 app = Flask(__name__)
+
+SIGNALS_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "signals.json")
+
+
+def _load_signals() -> dict:
+    try:
+        with open(SIGNALS_PATH, encoding="utf-8") as f:
+            signals = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        signals = {}
+    return enrich_signals(signals, UNIVERSE)
+
+
+def _live_prices() -> dict:
+    """Prezzi live (valuta locale); {} se il provider non risponde: la dashboard degrada."""
+    try:
+        prices = get_live_prices(list(UNIVERSE.keys()), ttl=60)
+    except Exception:
+        return {}
+    return {t: p for t, p in prices.items() if p and p > 0}
 
 
 @app.route("/")
 def dashboard():
-    tickers = list(UNIVERSE.keys())
-    live_prices = get_live_prices(tickers, ttl=60)
+    """Dashboard interattiva (stessa di GitHub Pages) con prezzi live."""
+    return build_html(load_all_portfolios(), _load_signals(), _live_prices())
+
+
+@app.route("/api/data")
+def api_data():
+    """Payload JSON completo della dashboard."""
+    payload = build_payload(
+        load_all_portfolios(), _load_signals(), load_price_history(), _live_prices()
+    )
+    return jsonify(payload)
+
+
+@app.route("/legacy")
+def dashboard_legacy():
+    """Vecchia dashboard con grafici matplotlib."""
     portfolios = load_all_portfolios()
-    return build_live_html(portfolios, live_prices)
+    return build_live_html(portfolios, get_live_prices(list(UNIVERSE.keys()), ttl=60))
 
 
 @app.route("/api/prices")

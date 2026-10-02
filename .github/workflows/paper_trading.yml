@@ -38,18 +38,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-
-      - name: Cache HuggingFace models
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/huggingface
-          key: ${{ runner.os }}-hf-finbert-v1
+          key: ${{ runner.os }}-pip-pipeline-${{ hashFiles('requirements-pipeline.txt') }}
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements-pipeline.txt
 
       - name: Determine session hour
         id: session
@@ -67,7 +61,7 @@ jobs:
         run: |
           BRANCH="${{ github.ref_name }}"
           git fetch origin "$BRANCH"
-          git checkout "origin/$BRANCH" -- data/portfolio_history.json data/portfolios/ data/signals.json data/investing_ids.json data/prices_cache.json docs/ || true
+          git checkout "origin/$BRANCH" -- data/portfolio_history.json data/portfolios/ data/signals.json data/investing_ids.json data/prices_cache.json data/fx_cache.json data/price_history.json docs/ || true
 
       - name: Run pipeline
         run: |
@@ -78,7 +72,7 @@ jobs:
         run: |
           git config user.name "Paper Trading Bot"
           git config user.email "bot@paper-trading.local"
-          git add data/portfolio_history.json data/portfolios/ data/signals.json data/investing_ids.json data/prices_cache.json docs/index.html
+          git add data/portfolio_history.json data/portfolios/ data/signals.json data/investing_ids.json data/prices_cache.json data/fx_cache.json data/price_history.json docs/index.html docs/data.json
           if git diff --cached --quiet; then
             echo "No changes to portfolio — skipping commit"
           else
