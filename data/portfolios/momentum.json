@@ -2,7 +2,7 @@
   "strategy": "momentum",
   "metadata": {
     "initial_capital": 3000.0,
-    "current_cash": 118.08,
+    "current_cash": 615.94,
     "price_source": "investing.com(20/20)"
   },
   "current_positions": {
@@ -45,10 +45,6 @@
     "JNJ": {
       "shares": 1,
       "avg_price": 232.6956
-    },
-    "MSFT": {
-      "shares": 1,
-      "avg_price": 497.858
     }
   },
   "iterations_log": [
@@ -18035,6 +18031,86 @@
         }
       ],
       "reasoning": "AAPL: HOLD (deviation 0.0052 < 0.05)\nMSFT: BUY 1 @ 497.86EUR (deviation 0.1000, weight 0.100)\nGOOGL: HOLD (deviation 0.0019 < 0.05)\nAMZN: HOLD (deviation 0.0278 < 0.05)\nTSLA: HOLD (deviation 0.0051 < 0.05)\nJPM: HOLD (deviation 0.0070 < 0.05)\nNVDA: HOLD (deviation 0.0371 < 0.05)\nJNJ: HOLD (deviation 0.0267 < 0.05)\nV: HOLD (deviation 0.0082 < 0.05)\nKO: HOLD (deviation 0.0001 < 0.05)\nULVR.L: HOLD (deviation 0.0000 < 0.05)\nHSBA.L: HOLD (deviation 0.0000 < 0.05)\nBP.L: HOLD (deviation 0.0000 < 0.05)\nGSK.L: HOLD (deviation 0.0063 < 0.05)\nRIO.L: HOLD (deviation 0.0000 < 0.05)\nENI.MI: HOLD (deviation 0.0000 < 0.05)\nISP.MI: HOLD (deviation 0.0000 < 0.05)\nENEL.MI: HOLD (deviation 0.0000 < 0.05)\nLDO.MI: HOLD (deviation 0.0000 < 0.05)\nMONC.MI: HOLD (deviation 0.0000 < 0.05)"
+    },
+    {
+      "timestamp": "2026-10-13T20:40:59.031478+00:00",
+      "session": "sera",
+      "total_value_eur": 3308.6,
+      "current_cash": 615.94,
+      "positions": {
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 258.7385
+        },
+        "V": {
+          "shares": 1,
+          "avg_price": 288.7884
+        },
+        "GSK.L": {
+          "shares": 1,
+          "avg_price": 22.5985
+        },
+        "KO": {
+          "shares": 4,
+          "avg_price": 80.8036
+        },
+        "AMZN": {
+          "shares": 1,
+          "avg_price": 233.4132
+        },
+        "NVDA": {
+          "shares": 1,
+          "avg_price": 210.5604
+        },
+        "GOOGL": {
+          "shares": 1,
+          "avg_price": 318.7524
+        },
+        "TSLA": {
+          "shares": 1,
+          "avg_price": 348.4316
+        },
+        "JPM": {
+          "shares": 1,
+          "avg_price": 305.7896
+        },
+        "JNJ": {
+          "shares": 1,
+          "avg_price": 232.6956
+        }
+      },
+      "prices_used": {
+        "AAPL": 340.97,
+        "MSFT": 541.15,
+        "GOOGL": 352.72,
+        "AMZN": 259.53,
+        "TSLA": 378.03,
+        "JPM": 334.3,
+        "NVDA": 226.32,
+        "JNJ": 263.73,
+        "V": 389.27,
+        "KO": 89.79,
+        "ULVR.L": 4738.0,
+        "HSBA.L": 1428.4,
+        "BP.L": 588.0,
+        "GSK.L": 1771.0,
+        "RIO.L": 7144.0,
+        "ENI.MI": 25.21,
+        "ISP.MI": 6.116,
+        "ENEL.MI": 8.867,
+        "LDO.MI": 46.81,
+        "MONC.MI": 43.52
+      },
+      "transactions": [
+        {
+          "action": "SELL",
+          "ticker": "MSFT",
+          "shares": 1,
+          "price_eur": 497.858,
+          "total_proceeds_eur": 497.86
+        }
+      ],
+      "reasoning": "AAPL: HOLD (deviation 0.0052 < 0.05)\nMSFT: SELL 1 @ 497.86EUR (deviation 0.0505, weight 0.100)\nGOOGL: HOLD (deviation 0.0019 < 0.05)\nAMZN: HOLD (deviation 0.0278 < 0.05)\nTSLA: HOLD (deviation 0.0051 < 0.05)\nJPM: HOLD (deviation 0.0070 < 0.05)\nNVDA: HOLD (deviation 0.0371 < 0.05)\nJNJ: HOLD (deviation 0.0267 < 0.05)\nV: HOLD (deviation 0.0082 < 0.05)\nKO: HOLD (deviation 0.0001 < 0.05)\nULVR.L: HOLD (deviation 0.0000 < 0.05)\nHSBA.L: HOLD (deviation 0.0000 < 0.05)\nBP.L: HOLD (deviation 0.0000 < 0.05)\nGSK.L: HOLD (deviation 0.0063 < 0.05)\nRIO.L: HOLD (deviation 0.0000 < 0.05)\nENI.MI: HOLD (deviation 0.0000 < 0.05)\nISP.MI: HOLD (deviation 0.0000 < 0.05)\nENEL.MI: HOLD (deviation 0.0000 < 0.05)\nLDO.MI: HOLD (deviation 0.0000 < 0.05)\nMONC.MI: HOLD (deviation 0.0000 < 0.05)"
     }
   ]
 }
