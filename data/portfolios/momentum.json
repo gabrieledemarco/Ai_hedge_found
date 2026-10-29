@@ -2,7 +2,7 @@
   "strategy": "momentum",
   "metadata": {
     "initial_capital": 3000.0,
-    "current_cash": 82.16,
+    "current_cash": 726.0,
     "price_source": "investing.com(20/20)"
   },
   "current_positions": {
@@ -41,14 +41,6 @@
     "JNJ": {
       "shares": 1,
       "avg_price": 231.072
-    },
-    "BP.L": {
-      "shares": 45,
-      "avg_price": 7.1686
-    },
-    "ENI.MI": {
-      "shares": 12,
-      "avg_price": 26.455
     }
   },
   "iterations_log": [
@@ -20671,6 +20663,89 @@
         }
       ],
       "reasoning": "AAPL: HOLD (deviation 0.0047 < 0.05)\nMSFT: HOLD (deviation 0.0472 < 0.05)\nGOOGL: HOLD (deviation 0.0000 < 0.05)\nAMZN: HOLD (deviation 0.0294 < 0.05)\nTSLA: HOLD (deviation 0.0120 < 0.05)\nJPM: HOLD (deviation 0.0000 < 0.05)\nNVDA: HOLD (deviation 0.0403 < 0.05)\nJNJ: HOLD (deviation 0.0249 < 0.05)\nV: HOLD (deviation 0.0110 < 0.05)\nKO: HOLD (deviation 0.0017 < 0.05)\nULVR.L: HOLD (deviation 0.0000 < 0.05)\nHSBA.L: HOLD (deviation 0.0000 < 0.05)\nBP.L: HOLD (deviation 0.0004 < 0.05)\nGSK.L: HOLD (deviation 0.0066 < 0.05)\nRIO.L: HOLD (deviation 0.0000 < 0.05)\nENI.MI: BUY 12 @ 26.45EUR (deviation 0.1000, weight 0.100)\nISP.MI: HOLD (deviation 0.0000 < 0.05)\nENEL.MI: HOLD (deviation 0.0000 < 0.05)\nLDO.MI: HOLD (deviation 0.0000 < 0.05)\nMONC.MI: HOLD (deviation 0.0000 < 0.05)"
+    },
+    {
+      "timestamp": "2026-10-29T12:56:03.328892+00:00",
+      "session": "sera",
+      "total_value_eur": 3250.48,
+      "current_cash": 726.0,
+      "positions": {
+        "AAPL": {
+          "shares": 1,
+          "avg_price": 258.7385
+        },
+        "V": {
+          "shares": 1,
+          "avg_price": 288.7884
+        },
+        "GSK.L": {
+          "shares": 1,
+          "avg_price": 22.5985
+        },
+        "KO": {
+          "shares": 4,
+          "avg_price": 80.8036
+        },
+        "AMZN": {
+          "shares": 1,
+          "avg_price": 233.4132
+        },
+        "NVDA": {
+          "shares": 1,
+          "avg_price": 210.5604
+        },
+        "MSFT": {
+          "shares": 1,
+          "avg_price": 487.1483
+        },
+        "TSLA": {
+          "shares": 1,
+          "avg_price": 332.6003
+        },
+        "JNJ": {
+          "shares": 1,
+          "avg_price": 231.072
+        }
+      },
+      "prices_used": {
+        "AAPL": 343.83,
+        "MSFT": 531.01,
+        "GOOGL": 324.89,
+        "AMZN": 254.6,
+        "TSLA": 404.22,
+        "JPM": 339.3,
+        "NVDA": 215.38,
+        "JNJ": 271.04,
+        "V": 400.6,
+        "KO": 91.73,
+        "ULVR.L": 4792.0,
+        "HSBA.L": 1296.6,
+        "BP.L": 619.9,
+        "GSK.L": 1831.5,
+        "RIO.L": 6393.0,
+        "ENI.MI": 26.455,
+        "ISP.MI": 6.022,
+        "ENEL.MI": 9.306,
+        "LDO.MI": 49.955,
+        "MONC.MI": 42.12
+      },
+      "transactions": [
+        {
+          "action": "SELL",
+          "ticker": "BP.L",
+          "shares": 45,
+          "price_eur": 7.2528,
+          "total_proceeds_eur": 326.38
+        },
+        {
+          "action": "SELL",
+          "ticker": "ENI.MI",
+          "shares": 12,
+          "price_eur": 26.455,
+          "total_proceeds_eur": 317.46
+        }
+      ],
+      "reasoning": "AAPL: HOLD (deviation 0.0050 < 0.05)\nMSFT: HOLD (deviation 0.0467 < 0.05)\nGOOGL: BUY skipped (1 share @ 291.73EUR > cash 82.16EUR)\nAMZN: HOLD (deviation 0.0297 < 0.05)\nTSLA: HOLD (deviation 0.0117 < 0.05)\nJPM: BUY skipped (1 share @ 304.67EUR > cash 82.16EUR)\nNVDA: HOLD (deviation 0.0405 < 0.05)\nJNJ: HOLD (deviation 0.0251 < 0.05)\nV: HOLD (deviation 0.0107 < 0.05)\nKO: HOLD (deviation 0.0014 < 0.05)\nULVR.L: HOLD (deviation 0.0000 < 0.05)\nHSBA.L: HOLD (deviation 0.0000 < 0.05)\nBP.L: SELL 45 @ 7.25EUR (deviation 0.1004, weight 0.000)\nGSK.L: HOLD (deviation 0.0066 < 0.05)\nRIO.L: HOLD (deviation 0.0000 < 0.05)\nENI.MI: SELL 12 @ 26.45EUR (deviation 0.0977, weight 0.000)\nISP.MI: HOLD (deviation 0.0000 < 0.05)\nENEL.MI: HOLD (deviation 0.0000 < 0.05)\nLDO.MI: HOLD (deviation 0.0000 < 0.05)\nMONC.MI: HOLD (deviation 0.0000 < 0.05)"
     }
   ]
 }
